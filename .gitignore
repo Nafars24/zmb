@@ -1,0 +1,20 @@
+# hasil build
+*.exe
+*.pdb
+# data pribadi & cache di laptop (jangan pernah diunggah)
+zmb_config.xml
+zmb_config.xml.*
+*.log
+cache/
+covers/
+backgrounds/
+boxart/
+logos/
+trailers/
+music/
+shots/
+backups/
+theme/
+themes/
+update_tmp/
+update_download/

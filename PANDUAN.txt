@@ -1,0 +1,309 @@
+=====================================================================
+                   ZMB  -  Launcher ala XMB PS3 untuk Windows
+=====================================================================
+
+A. CARA MEMBUAT EXE
+---------------------------------------------------------------------
+1. Ekstrak folder ini ke tempat tetap, misalnya  D:\ZMB
+2. Klik dua kali  BUILD.bat
+3. Tunggu sampai muncul [BERHASIL], lalu jalankan  ZMB.exe
+
+Tidak perlu install apa pun (compiler sudah ada di Windows 10/11).
+Jika SmartScreen memberi peringatan: "More info" > "Run anyway".
+
+Dari versi lama (XMB Launcher)? Salin  xmb_config.xml  ke folder ZMB
+lalu ganti namanya jadi  zmb_config.xml  supaya daftar game tidak hilang.
+
+
+B. MENU UTAMA
+---------------------------------------------------------------------
+ PENGGUNA    : Matikan, Restart, Sleep, Kunci, Keluar, Explorer, Browser
+ PENGATURAN  : Tema, latar, gelombang, suara, volume, ukuran tampilan,
+               layar penuh, latar game, trailer, folder media, emulator
+ FOTO        : Galeri, slideshow, jadikan wallpaper / latar ZMB
+ MUSIK       : Putar lagu/folder/acak, tetap jalan saat menjelajah menu
+ VIDEO       : Putar video layar penuh di dalam ZMB
+ GAME        : Terakhir Dimainkan, Favorit, Windows (PC + Steam),
+               PS1, PS2, PS3, PSP, Vita, NES, SNES, N64, GBA, NDS, 3DS,
+               GameCube/Wii, Genesis, Arcade, + platform buatanmu
+
+
+C. LATAR & TRAILER GAME (seperti PS3)
+---------------------------------------------------------------------
+Saat kamu berhenti di sebuah game, gambar latarnya muncul di belakang
+menu, lalu setelah ~1,5 detik trailernya diputar.
+
+ Cara tercepat: pilih game > tekan Tab/Y >
+   "Pilih Gambar Latar..."  dan  "Pilih Video Trailer..."
+
+ Otomatis (tanpa setting satu per satu):
+   * Game Steam  : gambar latar diambil dari Steam. Trailer diambil
+                   dari Steam Store lewat internet (bisa dimatikan di
+                   Pengaturan > Trailer Online).
+   * Game ROM    : taruh file bernama SAMA dengan file game:
+       <folder ROM>\trailers\Crash Bandicoot.mp4
+       <folder ROM>\backgrounds\Crash Bandicoot.jpg
+     (atau folder "videos" / "fanart", atau langsung di samping file game
+      dengan nama "Crash Bandicoot-bg.jpg")
+   * Game PC     : taruh "trailer.mp4" dan/atau "background.jpg" di folder
+                   game-nya, atau di folder ZMB:
+       ZMB\trailers\WIN\<Nama Game>.mp4
+       ZMB\backgrounds\WIN\<Nama Game>.jpg
+   * Kalau tidak ada gambar latar, cover game dipakai sebagai latar blur.
+
+ Format trailer: .mp4 (paling aman), .wmv, .avi. Link YouTube tidak bisa,
+ harus link langsung ke file .mp4.
+ Pengaturan terkait: Latar Gambar Game, Trailer di Latar, Suara Trailer,
+ Trailer Online (Steam), Jeda Sebelum Trailer.
+ Saat trailer bersuara, musik yang sedang diputar otomatis dikecilkan.
+
+
+C2. TROFI & ACHIEVEMENT (Steam, RetroAchievements, RPCS3)
+---------------------------------------------------------------------
+Lihat semua di:  Game > Koleksi Trofi
+Per game      :  pilih game > Tab/Y > "Lihat Trofi / Achievement"
+Progres trofi juga tampil di bawah nama game (contoh "Trofi 12/40 (30%)").
+Setelah game ditutup, ZMB mengecek ulang dan memberi tahu kalau ada
+trofi baru.
+
+Atur akun di:  Pengaturan > Akun Trofi & Achievement
+
+ STEAM
+   1. Buka https://steamcommunity.com/dev/apikey (login Steam),
+      isi domain bebas (misal: localhost), salin key-nya.
+   2. Tempel di "Steam Web API Key".
+   3. Steam ID terdeteksi otomatis dari Steam di laptop ini.
+   4. PENTING: Profil Steam > Edit Profile > Privacy Settings >
+      "Game details" harus "Public", kalau tidak data ditolak Steam.
+   Game PC non-Steam yang juga ada di Steam: Tab > "Steam AppID untuk
+   Achievement".
+
+ RETROACHIEVEMENTS (untuk PS1, PS2, PSP, NES, SNES, N64, GBA, NDS, dll)
+   1. Daftar/login di https://retroachievements.org
+   2. Buka Settings > bagian Keys > salin "Web API Key".
+   3. Isi Username dan Web API Key di ZMB.
+   4. Unlock achievement-nya tetap lewat emulator yang mendukung RA
+      (RetroArch, DuckStation, PCSX2, PPSSPP) yang sudah login RA.
+   Game dicocokkan otomatis (hash ROM / nama file). Kalau salah atau
+   tidak ketemu: Tab > "ID Game RetroAchievements", isi angka dari link
+   retroachievements.org/game/XXXX.
+
+ RPCS3 (trofi PS3)
+   Otomatis dibaca dari  <folder RPCS3>\dev_hdd0\home\...\trophy
+   asalkan emulator platform PS3 sudah diatur ke rpcs3.exe
+   (atau isi "Folder RPCS3" di pengaturan akun). Tidak perlu internet.
+
+
+C3. UNDUH MEDIA OTOMATIS (cover, latar, logo, video)
+---------------------------------------------------------------------
+Menu: Pengaturan > Unduh Media Otomatis
+  "Unduh Media yang Belum Ada"  -> hanya melengkapi yang kosong
+  "Unduh Ulang Semua (Timpa)"   -> ganti semua media
+  Per game     : Tab > "Unduh Media Game Ini"
+  Per platform : Tab di platform > "Unduh Media Semua Game PS1" (dst)
+Progres tampil di bawah layar. Bisa dibatalkan kapan saja.
+
+ STEAMGRIDDB (gratis, untuk semua game: PC, Steam, emulator)
+   Login di steamgriddb.com > Preferences > API > salin key,
+   tempel di "SteamGridDB API Key".
+   Memberi: cover lebar (grid), latar HD (hero), dan logo.
+
+ SCREENSCRAPER (khusus game retro/emulator, game dikenali lewat
+ checksum ROM)
+   1. Daftar gratis di screenscraper.fr, isi Username & Password.
+   2. API ScreenScraper juga meminta "Dev ID" dan "Dev Password".
+      Minta di forum screenscraper.fr (bagian API/Developer).
+      Tekan "Tes Koneksi" untuk cek apakah akunmu sudah bisa dipakai.
+   Memberi: box art, fanart (latar), logo (wheel), dan VIDEO gameplay
+   pendek yang otomatis dipakai sebagai trailer latar.
+   Akun gratis punya kuota harian, jadi koleksi besar bisa butuh
+   beberapa hari. ZMB mengunduh satu per satu agar tidak diblokir.
+
+ Hasil disimpan di folder ZMB: covers\, backgrounds\, logos\, trailers\
+ Logo game tampil di pojok kanan bawah saat latar game muncul
+ (bisa dimatikan: "Logo Game di Latar").
+
+
+C4. TAMPILAN TROFI
+---------------------------------------------------------------------
+Saat membuka daftar trofi game, di kanan muncul kartu trofi:
+ * ikon game, lingkaran progres %, jumlah Platinum/Emas/Perak/Perunggu
+   (PS3) atau poin (RetroAchievements) atau achievement paling langka
+   (Steam)
+ * detail trofi yang dipilih: ikon besar, nama, deskripsi, tanggal,
+   tingkat kelangkaan
+ * grid semua ikon trofi (yang terkunci tampil redup)
+Trofi baru setelah main game muncul sebagai popup "Kamu mendapat
+trofi!" lengkap dengan suara. Ingin lihat contohnya? Pilih trofi yang
+sudah terbuka > Tab > "Putar Animasi Trofi".
+Level trofi ala PS3 (dari trofi RPCS3) tampil di Koleksi Trofi.
+
+
+C5. MODE COVERFLOW (ala Aurora Xbox 360)
+---------------------------------------------------------------------
+Ganti mode: tekan F2, atau Pengaturan > Mode Tampilan.
+ * Game tampil seperti rak: case lain berdiri menampilkan PUNGGUNG-nya
+   (judul vertikal, pita platform di atas, warna diambil dari box art).
+   Case yang dipilih berputar keluar dan menampilkan muka/cover-nya.
+ * Bentuk case mengikuti jenisnya:
+     Video        -> case Blu-ray biru
+     Musik        -> CD jewel case
+     Foto         -> bingkai foto putih
+     PC / Steam   -> case DVD dengan label "PC"
+     PS1          -> jewel case hitam      PS2 -> case DVD hitam
+     PS3          -> case Blu-ray hitam    PSP -> case UMD tinggi
+     Vita, NDS, 3DS, GameCube/Wii, Mega Drive -> case masing-masing
+     NES, SNES, N64, GBA, Arcade -> kotak kardus (mengikuti bentuk gambar)
+ * Kontrol: Kiri/Kanan = pindah game, Atas/Bawah = ganti kategori
+   (di dalam folder: Atas = kembali), scroll mouse = pindah game.
+ * Box art: Steam memakai gambar portrait bawaan Steam. Untuk game lain,
+   jalankan "Unduh Media Otomatis" (sekarang juga mengunduh box art
+   portrait), atau Tab > "Pilih Box Art (Coverflow)...".
+ * Latar game, trailer, musik, dan trofi tetap jalan di mode ini.
+
+
+C6. FITUR BARU v2.5
+---------------------------------------------------------------------
+ MENU HOME (seperti tombol PS)
+   Saat game berjalan: tahan BACK + START di stik 1 detik, atau tekan
+   Ctrl+Shift+Home di keyboard. Muncul menu:
+   Kembali ke Game / Tutup Game / Tutup Paksa / kontrol musik.
+   (Game yang dibuka lewat Steam tidak bisa ditutup dari ZMB.)
+
+ SAVE STATE & MEMORY CARD
+   Pilih game atau platform > Tab > "Save & Memory Card":
+   lihat file save, Cadangkan Sekarang (ZIP di folder backups),
+   Pulihkan dari Cadangan, buka folder save.
+   Lokasi save dikenali otomatis untuk DuckStation, PCSX2, PPSSPP,
+   RPCS3, RetroArch, Dolphin, Vita3K, Azahar/Citra, Project64.
+   "Lanjutkan dari Save State Terakhir": otomatis untuk DuckStation.
+   Emulator lain: isi "Argumen Lanjutkan" sesuai dokumentasi emulatornya.
+
+ PROFIL (Pengguna > Profil Saya)
+   Ala halaman profil Steam: level & XP, total jam main, minggu ini,
+   hari ini, 5 game paling sering dimainkan, grafik 7 hari, trofi.
+   Tab di halaman profil untuk ganti foto profil.
+   Riwayat sesi mulai tercatat sejak versi ini.
+
+ DETEKSI EMULATOR OTOMATIS
+   Pengaturan > Emulator & Platform > "Deteksi Emulator Otomatis".
+   Mencari emulator di Program Files, Desktop, Downloads, Documents,
+   dan folder di tiap drive, lalu mengisi path + argumen layar penuh.
+   Kalau ada RetroArch, core yang terpasang dipakai untuk platform
+   yang belum punya emulator.
+
+ PEMERIKSA ROM (Pengaturan > Pemeriksa ROM)
+   File rusak (0 byte, ZIP rusak, .cue yang file .bin-nya hilang),
+   duplikat (isi file sama), game tanpa cover / box art / latar.
+   Bisa langsung "Unduh Media untuk Semua" atau pindahkan duplikat.
+
+ UPDATE DARI DALAM ZMB (Pengaturan > Update ZMB)
+   Download ZMB.zip versi baru ke folder Downloads, lalu buka ZMB:
+   update ditawarkan otomatis, atau pilih "Pasang dari File ZIP".
+   ZMB menyusun ulang dirinya sendiri lalu restart. Tidak perlu BUILD.bat
+   lagi (BUILD.bat tetap ada sebagai cadangan).
+
+ TEMA, PARTIKEL, SCREENSAVER
+   Pengaturan > Paket Tema > "Buka Folder Tema Kustom": taruh ikon
+   kategori (icons\game.png dst), suara (sounds\tick.wav dst),
+   background.jpg, dan theme.txt. Petunjuk lengkap ada di BACA_SAYA.txt
+   di folder itu. Paket lain: folder themes\NamaTema\.
+   Gaya Gelombang: Klasik / Garis tipis / Mati.
+   Partikel: Otomatis (salju di bulan Desember) / Kilau / Salju / Mati.
+   Screensaver: slideshow latar game dengan efek zoom pelan setelah
+   beberapa menit tanpa input. Tekan tombol apa saja untuk keluar.
+
+ MUSIK TEMA GAME (seperti SND0 di PS3)
+   Saat game dipilih, musik temanya diputar pelan di belakang.
+   Taruh file .mp3 bernama sama dengan game di:
+     ZMB\music\<PLATFORM>\<nama>.mp3   (contoh music\PS1\Crash Bandicoot.mp3)
+     <folder ROM>\music\<nama file game>.mp3
+     folder game PC: theme.mp3
+   Atau Tab > "Pilih Musik Tema...". Game Steam: music\STEAM\<AppID>.mp3
+
+ DETAIL GAME ALA AURORA
+   Tekan X (stik) / I (keyboard), atau Tab > "Detail Game".
+   Menampilkan case game, deskripsi, developer, publisher, tahun, genre,
+   jumlah pemain, rating, statistik main, trofi, dan galeri screenshot
+   (Kiri/Kanan: screenshot tampil penuh di latar). Enter = mainkan.
+   Data diambil dari Steam (game Steam) atau ScreenScraper (game retro).
+
+
+C7. GAME PS3: FILE ISO
+---------------------------------------------------------------------
+ ZMB sekarang membaca game PS3 dalam bentuk .iso (didukung RPCS3 versi
+ baru) maupun format folder (PS3_GAME\USRDIR\EBOOT.BIN).
+ Isi ISO dibaca langsung tanpa ekstrak: judul asli & Title ID (PARAM.SFO),
+ ikon game (ICON0), gambar latar (PIC1) seperti di PS3, dan ID trofi.
+ Gambar disimpan di cache\ps3 supaya scan berikutnya cepat.
+ Catatan: untuk ISO yang masih terenkripsi, ikon & latar mungkin tidak
+ terbaca. Gunakan "Unduh Media Otomatis" sebagai gantinya.
+ Save RPCS3 di menu "Save & Memory Card" otomatis difilter per Title ID.
+
+
+C8. UPDATE OTOMATIS DARI INTERNET (GitHub)
+---------------------------------------------------------------------
+ Pengaturan > Update ZMB > "Repositori Update (GitHub)" -> isi nama/repo.
+ ZMB lalu mengecek rilis terbaru di GitHub saat dibuka dan tiap 6 jam.
+ Kalau ada versi baru, muncul tawaran "Unduh & pasang sekarang?".
+ ZMB mengunduh, menyusun ulang dirinya sendiri, lalu restart.
+ Matikan lewat "Update Otomatis dari Internet". Data pribadimu
+ (zmb_config.xml, API key) tidak pernah diunggah ke mana pun.
+
+
+D. KONTROL
+---------------------------------------------------------------------
+                    KEYBOARD              GAMEPAD (Xbox/XInput)
+ Navigasi           Panah / WASD          D-Pad / Stik kiri
+ Pilih              Enter / X             A
+ Kembali            Esc / Backspace / C   B
+ Menu Opsi          Tab / T               Y   (seperti Segitiga)
+ Lompat 6 item      PageUp / PageDown     LT / RT
+ Musik Putar/Jeda   Spasi                 START
+ Lagu Sebelum/Lanjut  [  /  ]             LB / RB
+ Layar Penuh        F11
+ Refresh daftar     F5
+ Kembali dari game  -                     Tahan BACK + START 1 detik
+ Mouse: scroll = naik/turun, klik kiri = pilih, klik kanan = opsi
+ Stik PS4/PS5: pakai DS4Windows atau Steam agar terbaca seperti stik Xbox.
+
+
+E. MENAMBAH GAME PC
+---------------------------------------------------------------------
+ Game > Windows > "Tambah Game"       : pilih .exe atau shortcut
+ Game > Windows > "Scan Folder Game"  : pilih folder induk (mis. D:\Games)
+ Game Steam muncul otomatis. Tab/Y pada game untuk opsi lainnya.
+
+
+F. MENGATUR EMULATOR
+---------------------------------------------------------------------
+ Pilih platform di menu Game > Tab:
+   1. "Pilih Emulator (.exe)"   2. "Pilih Folder Game"
+
+ Contoh argumen ("Argumen Emulator"):
+   PS1   DuckStation   ->  -fullscreen "{rom}"
+   PS2   PCSX2         ->  -fullscreen "{rom}"
+   PS3   RPCS3         ->  --no-gui "{rom}"     (file .iso atau folder game, keduanya otomatis)
+   PSP   PPSSPP        ->  --fullscreen "{rom}"
+   NDS   melonDS       ->  -f "{rom}"
+   GCN   Dolphin       ->  -b -e "{rom}"
+   GBA   mGBA          ->  -f "{rom}"
+   ARC   MAME          ->  {romname}
+   RetroArch           ->  -f -L "cores\snes9x_libretro.dll" "{rom}"
+ Kode: {rom} {romname} {romdir} {emudir}
+
+
+G. COVER GAME
+---------------------------------------------------------------------
+ Tab > "Pilih Gambar Cover...", atau taruh gambar bernama sama dengan
+ file game di folder yang sama / subfolder "covers".
+
+
+H. MASALAH UMUM
+---------------------------------------------------------------------
+ * Trailer/video tidak tampil: pakai .mp4 (H.264). Untuk mkv dll,
+   install K-Lite Codec Pack Basic.
+ * Musik .flac/.ogg tidak bunyi: install K-Lite Codec Pack Basic.
+ * Masih terasa berat: matikan "Trailer di Latar" atau "Efek Gelombang",
+   dan pastikan laptop memakai mode daya "Best performance".
+ * Error tercatat di  zmb_error.log.  Reset total: hapus  zmb_config.xml
