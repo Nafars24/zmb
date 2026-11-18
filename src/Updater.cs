@@ -121,17 +121,37 @@ namespace ZMB
         // Versi terbaru langsung dari cabang (dibaca dari src/Program.cs), unduh arsip ZIP cabang tsb
         public static OnlineRelease CheckBranch(string repo, string branch)
         {
-            string prog;
-            using (WebClient wc = new WebClient())
+            string prog = null;
+            // 1) lewat API GitHub (isi file dalam base64)
+            try
             {
-                wc.Headers[HttpRequestHeader.UserAgent] = "ZMB-Updater";
-                wc.Encoding = Encoding.UTF8;
-                try { prog = wc.DownloadString("https://raw.githubusercontent.com/" + repo + "/" + branch + "/src/Program.cs?t=" + DateTime.UtcNow.Ticks); }
-                catch (WebException ex)
+                using (WebClient wc = new WebClient())
                 {
-                    HttpWebResponse r = ex.Response as HttpWebResponse;
-                    if (r != null && (int)r.StatusCode == 404) throw new Exception("Repositori " + repo + " belum berisi ZMB (atau bersifat private)");
-                    throw new Exception("Gagal cek update: " + ex.Message);
+                    wc.Headers[HttpRequestHeader.UserAgent] = "ZMB-Updater";
+                    wc.Headers[HttpRequestHeader.Accept] = "application/vnd.github+json";
+                    wc.Encoding = Encoding.UTF8;
+                    string cj = wc.DownloadString("https://api.github.com/repos/" + repo + "/contents/src/Program.cs?ref=" + branch);
+                    Dictionary<string, object> d = new JavaScriptSerializer().DeserializeObject(cj) as Dictionary<string, object>;
+                    object c;
+                    if (d != null && d.TryGetValue("content", out c) && c != null)
+                        prog = Encoding.UTF8.GetString(Convert.FromBase64String(c.ToString().Replace("\n", "").Replace("\r", "")));
+                }
+            }
+            catch { prog = null; }
+            // 2) cadangan: raw.githubusercontent.com
+            if (prog == null)
+            {
+                using (WebClient wc = new WebClient())
+                {
+                    wc.Headers[HttpRequestHeader.UserAgent] = "ZMB-Updater";
+                    wc.Encoding = Encoding.UTF8;
+                    try { prog = wc.DownloadString("https://raw.githubusercontent.com/" + repo + "/" + branch + "/src/Program.cs?t=" + DateTime.UtcNow.Ticks); }
+                    catch (WebException ex)
+                    {
+                        HttpWebResponse r = ex.Response as HttpWebResponse;
+                        if (r != null && (int)r.StatusCode == 404) throw new Exception("Repositori " + repo + " belum berisi ZMB (atau bersifat private)");
+                        throw new Exception("Gagal cek update: " + ex.Message);
+                    }
                 }
             }
             Match m = Regex.Match(prog, "AssemblyVersion\\(\"([0-9.]+)\"\\)");
