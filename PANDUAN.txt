@@ -172,6 +172,10 @@ Ganti mode: tekan F2, atau Pengaturan > Mode Tampilan.
    Gambar spine boleh tegak atau mendatar, ZMB memutarnya sendiri.
    Lapisan plastik ada di assets\ps1_case.png dan assets\ps1_spine.png;
    boleh diganti dengan PNG transparan lain berukuran serupa.
+ * Game multi-disc (v2.8.1): "(Disc 1)", "(Disc 2 of 3)", "[Disc2]", "CD1",
+   "Disk 1", atau tiap disc di foldernya sendiri -> cukup tampil sekali
+   (disc 1) dengan nama tanpa label disc. Kalau ada file .m3u untuk game
+   itu, .m3u yang dipakai (ganti disc lewat menu emulator).
 
 
 C6. FITUR BARU v2.5

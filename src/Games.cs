@@ -211,12 +211,83 @@ namespace ZMB
                 if ((e == ".cue" || e == ".chd") && m3uDirs.Contains(dir) && Regex.IsMatch(f, @"\((Disc|Disk|CD)\s*\d", RegexOptions.IgnoreCase)) continue;
                 res.Add(f);
             }
+            res = CollapseDiscs(res);
             // PS3 / RPCS3: tampilkan hanya EBOOT.BIN
             if (p.Short == "PS3")
                 res = res.Where(f => Ps3Meta.IsIso(f) ||
                     (Path.GetFileName(f).Equals("EBOOT.BIN", StringComparison.OrdinalIgnoreCase) &&
                      Path.GetFileName(Path.GetDirectoryName(f)).Equals("USRDIR", StringComparison.OrdinalIgnoreCase))).ToList();
             return res;
+        }
+
+        // Penanda disc: "(Disc 1)", "[Disc 2 of 3]", "CD2", "_Disk 1", dll.
+        static readonly Regex DiscRx = new Regex(@"[\s_\-\.]*[\(\[]?(?<![A-Za-z0-9])(?:Disc|Disk|CD)[\s_\-\.]*(\d{1,2})(?:\s*(?:of|/)\s*\d{1,2})?\b[\)\]]?", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        public static string StripDisc(string name)
+        {
+            if (string.IsNullOrEmpty(name)) return name;
+            string r = DiscRx.Replace(name, "");
+            r = Regex.Replace(r, @"\s{2,}", " ").Trim(' ', '-', '_', '.');
+            return r.Length > 0 ? r : name;
+        }
+
+        // Nomor disc dari nama file (atau nama folder induknya), 0 kalau bukan game multi-disc
+        static int DiscNo(string f, out string groupKey)
+        {
+            groupKey = null;
+            string dir = Path.GetDirectoryName(f);
+            string nm = Path.GetFileNameWithoutExtension(f);
+            Match m = DiscRx.Match(nm);
+            if (m.Success)
+            {
+                groupKey = (dir + "|" + StripDisc(nm) + "|" + Path.GetExtension(f)).ToLowerInvariant();
+                return int.Parse(m.Groups[1].Value);
+            }
+            // tiap disc di foldernya sendiri: "Game (Disc 1)\game.cue"
+            string folder = Path.GetFileName(dir);
+            m = DiscRx.Match(folder ?? "");
+            if (m.Success)
+            {
+                groupKey = (Path.GetDirectoryName(dir) + "|" + StripDisc(folder) + "|" + Path.GetExtension(f)).ToLowerInvariant();
+                return int.Parse(m.Groups[1].Value);
+            }
+            return 0;
+        }
+
+        // Game multi-disc cukup tampil sekali (disc 1). Kalau ada .m3u untuk game itu, .m3u yang dipakai.
+        static List<string> CollapseDiscs(List<string> roms)
+        {
+            HashSet<string> m3uNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (string f in roms)
+                if (Path.GetExtension(f).Equals(".m3u", StringComparison.OrdinalIgnoreCase))
+                {
+                    m3uNames.Add(Path.GetDirectoryName(f) + "|" + StripDisc(Path.GetFileNameWithoutExtension(f)));
+                    try { m3uNames.Add(Path.GetDirectoryName(Path.GetDirectoryName(f)) + "|" + StripDisc(Path.GetFileNameWithoutExtension(f))); } catch { }
+                }
+            Dictionary<string, string> best = new Dictionary<string, string>();
+            Dictionary<string, int> bestNo = new Dictionary<string, int>();
+            List<string> outList = new List<string>();
+            foreach (string f in roms)
+            {
+                string key = null;
+                int no = Path.GetExtension(f).Equals(".m3u", StringComparison.OrdinalIgnoreCase) ? 0 : DiscNo(f, out key);
+                if (no == 0 || key == null) { outList.Add(f); continue; }
+                string dir = Path.GetDirectoryName(f);
+                string bare = StripDisc(Path.GetFileNameWithoutExtension(f));
+                string bareFolder = StripDisc(Path.GetFileName(dir) ?? "");
+                if (m3uNames.Contains(dir + "|" + bare) || m3uNames.Contains(Path.GetDirectoryName(dir) + "|" + bareFolder)) continue;
+                int cur;
+                if (!bestNo.TryGetValue(key, out cur))
+                {
+                    bestNo[key] = no; best[key] = f; outList.Add(f);
+                }
+                else if (no < cur)
+                {
+                    outList[outList.IndexOf(best[key])] = f;
+                    bestNo[key] = no; best[key] = f;
+                }
+            }
+            return outList;
         }
 
         public static string RomDisplayName(PlatformCfg p, string rom)
@@ -240,6 +311,13 @@ namespace ZMB
                 catch { }
             }
             string n = Path.GetFileNameWithoutExtension(rom);
+            if (DiscRx.IsMatch(n)) n = StripDisc(n);
+            else
+            {
+                // disc di folder sendiri: pakai nama folder tanpa penanda disc
+                string folder = Path.GetFileName(Path.GetDirectoryName(rom)) ?? "";
+                if (DiscRx.IsMatch(folder) && StripDisc(folder).Length > 0) n = StripDisc(folder);
+            }
             n = Regex.Replace(n, @"\s*\[[^\]]*\]", "");
             return n.Trim();
         }
@@ -261,6 +339,15 @@ namespace ZMB
                     string c = Path.Combine(d, name + e);
                     if (File.Exists(c)) return c;
                 }
+            // game multi-disc: cover boleh bernama tanpa "(Disc 1)"
+            string bareName = StripDisc(name);
+            if (bareName != name)
+                foreach (string d in dirs)
+                    foreach (string e in imgExt)
+                    {
+                        string c = Path.Combine(d, bareName + e);
+                        if (File.Exists(c)) return c;
+                    }
             if (p != null && p.Short == "PS3")
             {
                 try
