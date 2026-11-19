@@ -336,11 +336,11 @@ namespace ZMB
                 // frame yang tersendat (mis. saat tekstur diunggah ke GPU) tidak membuat gerakan melompat
                 if (!bootClockStarted) { bootClockStarted = true; bootClock.Start(); bootLast = 0; return; }
                 double now = bootClock.Elapsed.TotalSeconds;
-                double dt = now - bootLast;
+                double step = now - bootLast;
                 bootLast = now;
-                if (dt > 1.0 / 30) dt = 1.0 / 30;
-                if (dt < 0) dt = 0;
-                bootTime += dt;
+                if (step > 1.0 / 30) step = 1.0 / 30;
+                if (step < 0) step = 0;
+                bootTime += step;
                 UpdateBoot(bootTime);
             };
             CompositionTarget.Rendering += bootTick;
