@@ -292,7 +292,7 @@ namespace ZMB
             l.Add(ss);
 
             l.Add(Toggle("Notifikasi Trofi Saat Main", "Popup trofi ala PlayStation di kanan bawah layar, di atas game yang sedang jalan", "\uE7FC", delegate { return cfg.TrophyOverlay; }, delegate (bool v) { cfg.TrophyOverlay = v; if (!v) StopAchvPolling(); }));
-            l.Add(Toggle("Animasi Boot Konsol", "Konsol 3D PS1/PS3 memasukkan disc game lalu menyala sebelum game jalan", "\uE7FC", delegate { return cfg.Ps1BootAnim; }, delegate (bool v) { cfg.Ps1BootAnim = v; }));
+            l.Add(Toggle("Animasi Boot Konsol", "Konsol 3D PS1/PS2/PS3 memasukkan disc game lalu menyala sebelum game jalan", "\uE7FC", delegate { return cfg.Ps1BootAnim; }, delegate (bool v) { cfg.Ps1BootAnim = v; }));
             l.Add(Toggle("Musik Tema Game", "Putar musik tema saat game dipilih (file di folder music)", "\uE8D6", delegate { return cfg.ThemeMusicOn; }, delegate (bool v) { cfg.ThemeMusicOn = v; if (!v) StopThemeMusic(); focusKey = null; }));
             l.Add(Toggle("Tombol Home Keyboard", "Ctrl+Shift+Home membuka Menu Home dari dalam game", "\uE80F", delegate { return cfg.HomeHotkey; }, delegate (bool v) { cfg.HomeHotkey = v; ShowToast("Berlaku setelah ZMB dibuka ulang"); }));
 
@@ -317,7 +317,7 @@ namespace ZMB
             help.Children = BuildHelpItems;
             l.Add(help);
 
-            XmbItem about = MakeItem("Tentang ZMB", "Versi 2.13  \u2022  Model 3D PS one: Vladimir_Sofyanov (Sketchfab, CC-BY 4.0)  \u2022  Enter: buka folder data", "\uE946", delegate { ShowInExplorer(Config.FilePath); });
+            XmbItem about = MakeItem("Tentang ZMB", "Versi 2.14  \u2022  Model 3D PS one: Vladimir_Sofyanov (Sketchfab, CC-BY 4.0)  \u2022  Enter: buka folder data", "\uE946", delegate { ShowInExplorer(Config.FilePath); });
             l.Add(about);
             return l;
         }
@@ -710,7 +710,7 @@ namespace ZMB
                 }));
                 if (!string.IsNullOrEmpty(g.Spine))
                     o.Add(new OptionItem("Hapus Spine Kustom", delegate { ForgetImage("spine:" + g.Spine); g.Spine = ""; SaveAndRefresh(); }));
-                if (g.Platform == "PS1" || g.Platform == "PS3")
+                if (g.Platform == "PS1" || g.Platform == "PS2" || g.Platform == "PS3")
                 {
                     o.Add(new OptionItem("Pilih Gambar Disc (Animasi Boot)...", delegate
                     {

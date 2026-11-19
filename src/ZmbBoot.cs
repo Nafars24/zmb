@@ -37,6 +37,13 @@ namespace ZMB
         static readonly Point3D Ps3DiscFront = new Point3D(1.95, 0.27, -0.80);
         static readonly Point3D Ps3DiscStart = new Point3D(2.6, 1.9, -2.2);
 
+        // PS2: laci (tray) keluar dari depan, disc diletakkan, laci masuk lagi
+        const int Ps2TrayFront = 10, Ps2Eject = 11, Ps2Reset = 12, Ps2TrayLogo = 13, Ps2TrayBody = 14;
+        const double Ps2TrayOut = 1.40;
+        static readonly Point3D Ps2DiscSeat = new Point3D(0.14, 0.136, -0.57); // di atas laci saat tertutup
+        static readonly Point3D Ps2DiscStart = new Point3D(2.6, 1.8, -2.4);
+        TranslateTransform3D bootTrayT;
+
         // Bagian model (lihat assets/ps1_console.bin)
         const int PartLid = 1, PartReset = 5, PartLed = 13, PartPower = 40, PartOpen = 41;
         const double HingeX = -0.90, HingeY = 0.19;          // poros engsel tutup CD
@@ -67,6 +74,7 @@ namespace ZMB
             if (g == null) return null;
             if (string.Equals(g.Platform, "PS1", StringComparison.OrdinalIgnoreCase)) return "ps1";
             if (string.Equals(g.Platform, "PS3", StringComparison.OrdinalIgnoreCase)) return "ps3";
+            if (string.Equals(g.Platform, "PS2", StringComparison.OrdinalIgnoreCase)) return "ps2";
             return null;
         }
 
@@ -107,7 +115,7 @@ namespace ZMB
         void PreloadBootModel()
         {
             if (!cfg.Ps1BootAnim) return;
-            System.Threading.ThreadPool.QueueUserWorkItem(delegate { ConsoleModel("ps1"); ConsoleModel("ps3"); });
+            System.Threading.ThreadPool.QueueUserWorkItem(delegate { ConsoleModel("ps1"); ConsoleModel("ps2"); ConsoleModel("ps3"); });
         }
 
         static BootModel LoadConsoleModel(string baseName)
@@ -251,9 +259,11 @@ namespace ZMB
         {
             bootKind = BootKindFor(g) ?? "ps1";
             BootModel bm = ConsoleModel(bootKind);
-            bool ps3 = bootKind == "ps3";
-            bootCamPos = ps3 ? new Point3D(5.0, 2.25, 2.6) : new Point3D(4.2, 3.4, 2.85);
-            bootCamTarget = ps3 ? new Point3D(0.25, 0.0, 0.15) : new Point3D(0, 0.35, 0);
+            bool ps3 = bootKind == "ps3", ps2 = bootKind == "ps2";
+            if (ps3) { bootCamPos = new Point3D(5.0, 2.25, 2.6); bootCamTarget = new Point3D(0.25, 0.0, 0.15); }
+            else if (ps2) { bootCamPos = new Point3D(4.6, 2.3, 2.4); bootCamTarget = new Point3D(0.55, 0.0, -0.25); }
+            else { bootCamPos = new Point3D(4.2, 3.4, 2.85); bootCamTarget = new Point3D(0, 0.35, 0); }
+            bootTrayT = new TranslateTransform3D();
             bootGame = g; bootAdmin = forceAdmin; bootResume = launchResume;
             bootSndOpen = bootSndClose = bootSndPower = false;
             StopTrailer(true);
@@ -271,6 +281,7 @@ namespace ZMB
                 MaterialGroup mg = new MaterialGroup();
                 mg.Children.Add(new DiffuseMaterial(texBrush));
                 mg.Children.Add(ps3 ? new SpecularMaterial(SolidOf(Color.FromArgb(120, 255, 255, 255)), 45)
+                              : ps2 ? new SpecularMaterial(SolidOf(Color.FromArgb(80, 255, 255, 255)), 32)
                                     : new SpecularMaterial(SolidOf(Color.FromArgb(60, 255, 255, 255)), 28));
                 mg.Freeze();
                 mats.Add(mg);
@@ -285,8 +296,14 @@ namespace ZMB
                 Material mat = mats.Count > 0 ? mats[ti] : new DiffuseMaterial(Brushes.Gray);
                 GeometryModel3D gm = new GeometryModel3D(kv.Value, mat);
                 gm.BackMaterial = mat;
-                if (ps3)
+                if (ps3 || ps2)
                 {
+                    if (ps2)
+                    {
+                        if (kv.Key == Ps2TrayFront || kv.Key == Ps2TrayLogo || kv.Key == Ps2TrayBody) gm.Transform = bootTrayT;
+                        else if (kv.Key == Ps2Eject) { bootOpenT = new TranslateTransform3D(); gm.Transform = bootOpenT; }
+                        else if (kv.Key == Ps2Reset) { bootPowerT = new TranslateTransform3D(); gm.Transform = bootPowerT; }
+                    }
                     if (kv.Key == bm.LedPart && bm.LedTex != null)
                     {
                         bootLedImg = new ImageBrush(bm.LedTex);
@@ -330,9 +347,9 @@ namespace ZMB
             dTop.Children.Add(new DiffuseMaterial(discBrush));
             dTop.Children.Add(new SpecularMaterial(SolidOf(Color.FromArgb(140, 255, 255, 255)), 60));
             MaterialGroup dBot = new MaterialGroup(); // sisi data: PS1 hitam mengilap, Blu-ray perak kebiruan
-            dBot.Children.Add(new DiffuseMaterial(SolidOf(ps3 ? Rgb(150, 160, 185) : Rgb(16, 16, 20))));
+            dBot.Children.Add(new DiffuseMaterial(SolidOf(ps3 ? Rgb(150, 160, 185) : ps2 ? Rgb(60, 80, 165) : Rgb(16, 16, 20))));
             dBot.Children.Add(new SpecularMaterial(SolidOf(Color.FromArgb(200, 170, 150, 255)), 40));
-            GeometryModel3D disc = new GeometryModel3D(DiscMesh(ps3 ? 0.6 : 0.72), dTop);
+            GeometryModel3D disc = new GeometryModel3D(DiscMesh(ps3 || ps2 ? 0.6 : 0.72), dTop);
             disc.BackMaterial = dBot;
             bootDiscSpin = new AxisAngleRotation3D(new Vector3D(0, 1, 0), 0);
             bootDiscTilt = new AxisAngleRotation3D(new Vector3D(0, 0, 1), 0);
@@ -435,7 +452,9 @@ namespace ZMB
             bootScale.ScaleX = sc; bootScale.ScaleY = sc; bootScale.ScaleZ = sc;
             bootYaw.Angle = -26 + 22 * EaseInOut(t / 4.3);
 
-            if (bootKind == "ps3") UpdateBootPs3(t); else UpdateBootPs1(t);
+            if (bootKind == "ps3") UpdateBootPs3(t);
+            else if (bootKind == "ps2") UpdateBootPs2(t);
+            else UpdateBootPs1(t);
 
             // 5. kamera mendekat, layar memudar ke hitam
             double push = EaseInOut(Seg(t, 3.35, 4.3));
@@ -475,6 +494,33 @@ namespace ZMB
             if (t >= 2.75 && !bootSndClose) { bootSndClose = true; Sfx.Back(); } // disc terpasang
             if (t >= 3.0 && !bootSndPower) { bootSndPower = true; Sfx.Ok(); }    // power
             if (bootLedImg != null) bootLedImg.Opacity = Smooth(Seg(t, 3.02, 3.3));
+        }
+
+        // PS2: tombol eject, laci keluar, disc diletakkan di laci, laci masuk, tombol reset/power, lampu hijau
+        void UpdateBootPs2(double t)
+        {
+            bootOpenT.OffsetX = -0.012 * Pulse(t, 0.55, 0.8);
+            if (t >= 0.62 && !bootSndOpen) { bootSndOpen = true; Sfx.Tick(); }
+            double tray = t < 2.35 ? Ps2TrayOut * EaseOut3(Seg(t, 0.75, 1.45)) : Ps2TrayOut * (1 - EaseInOut(Seg(t, 2.35, 3.0)));
+            bootTrayT.OffsetX = tray;
+            if (t >= 3.0 && !bootSndClose) { bootSndClose = true; Sfx.Back(); }
+
+            if (t < 1.2) bootDiscT.OffsetY = 100;
+            else
+            {
+                double u = EaseInOut(Seg(t, 1.2, 2.2));
+                Point3D a = Ps2DiscStart;
+                Point3D e = new Point3D(Ps2DiscSeat.X + Ps2TrayOut, Ps2DiscSeat.Y, Ps2DiscSeat.Z);
+                bootDiscT.OffsetX = t >= 2.35 ? Ps2DiscSeat.X + tray : Bez(a.X, a.X * 0.6 + e.X * 0.4, e.X, e.X, u);
+                bootDiscT.OffsetY = Bez(a.Y, a.Y * 0.6 + e.Y * 0.4 + 0.4, e.Y + 0.4, e.Y, u);
+                bootDiscT.OffsetZ = Bez(a.Z, a.Z * 0.6 + e.Z * 0.4, e.Z, e.Z, u);
+                bootDiscTilt.Angle = 42 * (1 - Smooth(Seg(t, 1.2, 2.15)));
+                bootDiscSpin.Angle = -360 * EaseOut3(Seg(t, 1.2, 2.4));
+            }
+
+            bootPowerT.OffsetX = -0.012 * Pulse(t, 3.05, 3.3);
+            if (t >= 3.15 && !bootSndPower) { bootSndPower = true; Sfx.Ok(); }
+            if (bootLedImg != null) bootLedImg.Opacity = Smooth(Seg(t, 3.18, 3.45));
         }
 
         void UpdateBootPs1(double t)
@@ -537,7 +583,7 @@ namespace ZMB
         {
             if (bootHoldTimer != null) { bootHoldTimer.Stop(); bootHoldTimer = null; }
             if (bootLayer != null) { root.Children.Remove(bootLayer); bootLayer = null; }
-            bootLidRot = null; bootOpenT = null; bootPowerT = null; bootLedBrush = null; bootLedImg = null;
+            bootLidRot = null; bootOpenT = null; bootPowerT = null; bootLedBrush = null; bootLedImg = null; bootTrayT = null;
         }
 
         // dipanggil dari HandleKey: true kalau input dipakai oleh animasi boot

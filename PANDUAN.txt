@@ -189,6 +189,9 @@ Ganti mode: tekan F2, atau Pengaturan > Mode Tampilan.
    * PS3 (v2.13): konsol PS3 3D, disc Blu-ray melayang ke slot depan lalu
      ditarik masuk, lampu power menyala hijau, layar hitam, game jalan.
      Gambar disc PS3: ZMB\discs\PS3\<nama game>.png atau Tab > "Pilih Gambar Disc".
+   * PS2 (v2.14): konsol PS2 3D, tombol eject ditekan, laci keluar, disc
+     diletakkan di laci, laci masuk, tombol reset ditekan, lampu hijau.
+     Gambar disc PS2: ZMB\discs\PS2\<nama rom>.png.
    * Gambar disc per game, urutan pencarian:
        1. Tab > "Pilih Gambar Disc (Animasi Boot)..."
        2. ZMB\discs\PS1\<nama rom>.png, atau <nama rom>-disc.png di

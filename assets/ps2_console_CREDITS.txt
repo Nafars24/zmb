@@ -1,0 +1,12 @@
+Model 3D konsol PS2 (assets/ps2_console.bin + ps2_console_*.jpg)
+
+Sumber: file playstation-2.zip yang diberikan pemilik ZMB (format Collada).
+Nama pembuat dan lisensi tidak disertakan di dalam arsip; lengkapi bagian
+ini dengan tautan sumber dan lisensinya.
+
+Perubahan untuk ZMB: dikonversi dari Collada ke format mesh ZMB, diputar
+90 derajat dan diskalakan, panel laci dan tombol dipisah agar bisa
+dianimasikan, badan laci ditambahkan, tekstur albedo digabung dengan ambient
+occlusion dan diperkecil. Normal, roughness, metallic dan opacity tidak dipakai.
+PlayStation adalah merek dagang Sony Interactive Entertainment.
+ZMB tidak berafiliasi dengan Sony.
