@@ -62,7 +62,10 @@ namespace ZMB
                         cs.Overlay = CaseOverlay.Ps1;
                         cs.SpineRatio = CaseOverlay.Ps1.SpineRatio;
                         break;
-                    case "PS2": cs = new CaseStyle(CaseStyle.DVD, 0.71, Rgb(10, 10, 14), Rgb(6, 6, 8), "PlayStation 2"); break;
+                    case "PS2":
+                        if (CaseOverlay.For("PS2") != null) cs = OverlayStyle(CaseStyle.DVD, CaseOverlay.Ps2, Rgb(10, 10, 14), Rgb(6, 6, 8));
+                        else cs = new CaseStyle(CaseStyle.DVD, 0.71, Rgb(10, 10, 14), Rgb(6, 6, 8), "PlayStation 2");
+                        break;
                     case "PS3":
                         if (CaseOverlay.Ps3.Ready)
                         {
@@ -76,7 +79,10 @@ namespace ZMB
                     case "VITA": cs = new CaseStyle(CaseStyle.DVD, 0.78, Rgb(20, 40, 90), Rgb(28, 62, 140), "PS Vita"); break;
                     case "NDS": cs = new CaseStyle(CaseStyle.DVD, 0.88, Rgb(222, 223, 228), Rgb(236, 237, 241), "Nintendo DS"); cs.DarkText = true; break;
                     case "3DS": cs = new CaseStyle(CaseStyle.DVD, 0.88, Rgb(232, 232, 236), Rgb(190, 28, 40), "Nintendo 3DS"); break;
-                    case "GCN": cs = new CaseStyle(CaseStyle.DVD, 0.71, Rgb(12, 12, 16), Rgb(76, 54, 150), "GameCube / Wii"); break;
+                    case "GCN":
+                        if (CaseOverlay.For("GCN") != null) cs = OverlayStyle(CaseStyle.DVD, CaseOverlay.Gcn, Rgb(235, 235, 238), Rgb(210, 210, 214));
+                        else cs = new CaseStyle(CaseStyle.DVD, 0.71, Rgb(12, 12, 16), Rgb(76, 54, 150), "GameCube / Wii");
+                        break;
                     case "NES": cs = new CaseStyle(CaseStyle.CART, 0.72, Rgb(30, 30, 30), Rgb(0, 0, 0), ""); cs.ImageAspect = true; break;
                     case "SNES": cs = new CaseStyle(CaseStyle.CART, 1.38, Rgb(30, 30, 30), Rgb(0, 0, 0), ""); cs.ImageAspect = true; break;
                     case "N64": cs = new CaseStyle(CaseStyle.CART, 1.38, Rgb(30, 30, 30), Rgb(0, 0, 0), ""); cs.ImageAspect = true; break;
@@ -164,6 +170,14 @@ namespace ZMB
             double fs = Math.Max(8, cover.Width * 0.09);
             FormattedText ft = FTW(it.Title, fs, 2, cover.Width * 0.86, 3);
             dc.DrawText(ft, new Point(cover.X + (cover.Width - ft.Width) / 2, ib.Bottom + cover.Height * 0.06));
+        }
+
+        static CaseStyle OverlayStyle(int kind, CaseOverlay ov, Color body, Color spine)
+        {
+            CaseStyle cs = new CaseStyle(kind, ov.Aspect, body, spine, "");
+            cs.Overlay = ov;
+            cs.SpineRatio = ov.SpineRatio;
+            return cs;
         }
 
         void DrawCase(DrawingContext dc, XmbItem it, CaseStyle cs, Rect r)

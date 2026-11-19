@@ -173,6 +173,9 @@ Ganti mode: tekan F2, atau Pengaturan > Mode Tampilan.
  * PS3 (v2.12): case Blu-ray bening dengan spine Blu-ray, cara kerja dan
    urutan pencarian spine sama seperti PS1 (folder ZMB\spines\PS3\).
    Lapisan plastik PS3 ada di assets\ps3_case.png dan assets\ps3_spine.png.
+ * PS2 (case biru) dan GameCube/Wii (case putih) juga memakai case & spine
+   plastik asli (assets\ps2_*.png, assets\gcn_*.png); spine kustom di
+   ZMB\spines\PS2\ dan ZMB\spines\GCN\.
    Lapisan plastik ada di assets\ps1_case.png dan assets\ps1_spine.png;
    boleh diganti dengan PNG transparan lain berukuran serupa.
  * Game multi-disc (v2.8.1): "(Disc 1)", "(Disc 2 of 3)", "[Disc2]", "CD1",

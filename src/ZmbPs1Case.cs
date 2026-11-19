@@ -23,6 +23,18 @@ namespace ZMB
             0.100, 0.970, 0.020, 0.978, 0.150, 0.862, 0.022, 0.978);
         public static readonly CaseOverlay Ps3 = new CaseOverlay("ps3", "PS3", 0.900, 0.1123,
             0.0523, 0.9486, 0.1182, 0.9579, 0.183, 0.822, 0.111, 0.953);
+        public static readonly CaseOverlay Ps2 = new CaseOverlay("ps2", "PS2", 0.7242, 0.0828,
+            0.0289, 0.9551, 0.0267, 0.9740, 0.1862, 0.8138, 0.0394, 0.9640);
+        public static readonly CaseOverlay Gcn = new CaseOverlay("gcn", "Wii", 0.6856, 0.0887,
+            0.0289, 0.9483, 0.0248, 0.9766, 0.1429, 0.8442, 0.0369, 0.9724);
+
+        // case dengan lapisan plastik untuk platform ini (null kalau tidak ada / gambar tidak ditemukan)
+        public static CaseOverlay For(string platform)
+        {
+            CaseOverlay o = null;
+            switch (platform) { case "PS1": o = Ps1; break; case "PS2": o = Ps2; break; case "PS3": o = Ps3; break; case "GCN": o = Gcn; break; }
+            return (o != null && o.Ready) ? o : null;
+        }
 
         public CaseOverlay(string name, string label, double aspect, double spine,
             double cx0, double cx1, double cy0, double cy1, double sx0, double sx1, double sy0, double sy1)
@@ -186,17 +198,20 @@ namespace ZMB
         // Spine otomatis ala PS1: hitam, label platform di atas, judul vertikal, tanda warna di bawah
         void DrawAutoSpine(DrawingContext dc, XmbItem it, Rect win, string label)
         {
-            LinearGradientBrush bg = new LinearGradientBrush(Rgb(22, 22, 26), Rgb(8, 8, 10), 0);
+            bool light = label == "Wii"; // spine Wii putih dengan teks gelap
+            Brush ink = light ? SolidOf(Rgb(30, 30, 34)) : brWhite;
+            LinearGradientBrush bg = light ? new LinearGradientBrush(Rgb(246, 246, 248), Rgb(226, 226, 230), 0)
+                                           : new LinearGradientBrush(Rgb(22, 22, 26), Rgb(8, 8, 10), 0);
             bg.Freeze();
             dc.DrawRectangle(bg, null, win);
             double w = win.Width;
             double topH = Math.Min(win.Height * 0.14, w * 1.5);
-            dc.DrawRectangle(SolidOf(Rgb(36, 36, 41)), null, new Rect(win.X, win.Y, w, topH));
-            dc.DrawRectangle(WhiteA(0.25), null, new Rect(win.X, win.Y + topH, w, Math.Max(0.6, w * 0.02)));
+            dc.DrawRectangle(SolidOf(light ? Rgb(232, 232, 236) : Rgb(36, 36, 41)), null, new Rect(win.X, win.Y, w, topH));
+            dc.DrawRectangle(light ? BlackA(0.15) : WhiteA(0.25), null, new Rect(win.X, win.Y + topH, w, Math.Max(0.6, w * 0.02)));
 
             FormattedText lt = FT(label, Math.Max(5, w * 0.32), 2, false, topH * 0.8);
             dc.PushTransform(new MatrixTransform(0, 1, -1, 0, win.X + w / 2 + lt.Height / 2, win.Y + (topH - lt.Width) / 2));
-            lt.SetForegroundBrush(WhiteA(0.85));
+            lt.SetForegroundBrush(light ? ink : WhiteA(0.85));
             dc.DrawText(lt, new Point(0, 0));
             lt.SetForegroundBrush(brWhite);
             dc.Pop();
@@ -214,7 +229,9 @@ namespace ZMB
             FormattedText ft = FT(it.Title.ToUpperInvariant(), fsz, 2, false, maxLen);
             double tx = win.X + w / 2 + ft.Height / 2, ty = win.Y + topH + pad;
             dc.PushTransform(new MatrixTransform(0, 1, -1, 0, tx, ty));
+            if (light) ft.SetForegroundBrush(ink);
             dc.DrawText(ft, new Point(0, 0));
+            if (light) ft.SetForegroundBrush(brWhite);
             dc.Pop();
         }
     }
