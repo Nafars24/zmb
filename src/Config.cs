@@ -128,6 +128,7 @@ namespace ZMB
         public bool ThemeMusicOn = true;
         public bool Ps1BootAnim = true;
         public bool TrophyOverlay = true;
+        public bool AutoFullscreen = true;
         public bool HomeHotkey = true;
         public string AvatarPath = "";
         public bool CheckUpdateDownloads = true;

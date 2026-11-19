@@ -1173,8 +1173,11 @@ namespace ZMB
             LaunchNow(g, forceAdmin);
         }
 
+        bool launchIsEmu;
+
         void LaunchNow(GameEntry g, bool forceAdmin)
         {
+            launchIsEmu = false;
             ProcessStartInfo psi;
             if (g.Platform == "WIN" || g.Platform == "STEAM")
             {
@@ -1207,6 +1210,8 @@ namespace ZMB
                     tmp.Args = resumeT.Replace("{args}", string.IsNullOrEmpty(p.Args) ? "\"{rom}\"" : p.Args);
                     argStr = GameScanner.BuildArgs(tmp, g.Path);
                 }
+                if (cfg.AutoFullscreen) argStr = AutoFullscreen.AddFlag(p.Emulator, argStr);
+                launchIsEmu = true;
                 psi = new ProcessStartInfo(p.Emulator, argStr);
                 psi.UseShellExecute = true;
                 psi.WorkingDirectory = Path.GetDirectoryName(p.Emulator);
@@ -1216,6 +1221,8 @@ namespace ZMB
             StopTrailer(true);
             AchvWatchStart(g);
             Process proc = null;
+            bool isEmu = launchIsEmu;
+            launchIsEmu = false;
             try { proc = Process.Start(psi); }
             catch (Win32Exception ex)
             {
@@ -1244,6 +1251,7 @@ namespace ZMB
                 runningGame = g;
                 runningStart = DateTime.Now;
                 try { proc.EnableRaisingEvents = true; proc.Exited += OnGameExited; } catch { runningProc = null; }
+                if (isEmu && cfg.AutoFullscreen) AutoFullscreen.WatchAndForce(proc);
             }
             if (cfg.MinimizeOnLaunch) launchMinimizeAt = T + 1.3;
         }

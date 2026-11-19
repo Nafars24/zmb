@@ -369,3 +369,14 @@ H. MASALAH UMUM
        Share + Options = kembali ke ZMB saat main.
    * Ikon di layar ikut stik yang terakhir ditekan, dan kembali ke ikon
      keyboard begitu keyboard/mouse dipakai.
+
+ AUTO LAYAR PENUH (v2.15)
+   * Semua game konsol (emulator) dibuka layar penuh otomatis.
+   * Emulator yang dikenal otomatis diberi argumen fullscreen-nya sendiri:
+     DuckStation, PCSX2, PPSSPP, RPCS3, Dolphin, melonDS, mGBA, RetroArch,
+     Snes9x, Mesen, Kega Fusion, Cemu, Ryujinx, Xenia.
+   * Emulator lain (Azahar/Citra, Vita3K, Project64, dll.): kalau jendela
+     game belum menutup layar sekitar 3-4 detik setelah muncul, ZMB
+     menjadikannya borderless dan menutup seluruh monitor.
+   * Game PC (Windows/Steam) tidak diubah.
+   * Matikan di Pengaturan > "Auto Layar Penuh (Emulator)".
