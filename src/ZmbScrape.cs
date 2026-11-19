@@ -89,7 +89,7 @@ namespace ZMB
             j.NeedSpine = rom && j.SsSystem > 0 && (overwrite || SpinePath(g) == null);
             string discF = null;
             try { discF = GameScanner.FindDisc(g); } catch { }
-            j.NeedDisc = rom && j.SsSystem > 0 && g.Platform == "PS1" && (overwrite || discF == null);
+            j.NeedDisc = rom && j.SsSystem > 0 && (g.Platform == "PS1" || g.Platform == "PS3") && (overwrite || discF == null);
             string tr = null;
             try { tr = GameScanner.FindTrailer(g, p); } catch { }
             j.NeedVideo = rom && cfg.ScrapeVideos && (overwrite || tr == null);

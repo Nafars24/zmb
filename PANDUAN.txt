@@ -185,7 +185,10 @@ Ganti mode: tekan F2, atau Pengaturan > Mode Tampilan.
    tutup CD terbuka, disc game masuk, tutup ditutup, tombol POWER ditekan,
    lampu hijau menyala, layar hitam, lalu game jalan (sekitar 4 detik).
    * Tekan tombol apa saja / klik untuk langsung masuk game.
-   * Matikan di Pengaturan > "Animasi Boot PS1".
+   * Matikan di Pengaturan > "Animasi Boot Konsol".
+   * PS3 (v2.13): konsol PS3 3D, disc Blu-ray melayang ke slot depan lalu
+     ditarik masuk, lampu power menyala hijau, layar hitam, game jalan.
+     Gambar disc PS3: ZMB\discs\PS3\<nama game>.png atau Tab > "Pilih Gambar Disc".
    * Gambar disc per game, urutan pencarian:
        1. Tab > "Pilih Gambar Disc (Animasi Boot)..."
        2. ZMB\discs\PS1\<nama rom>.png, atau <nama rom>-disc.png di

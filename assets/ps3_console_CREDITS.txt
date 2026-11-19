@@ -1,0 +1,11 @@
+Model 3D konsol PS3 (assets/ps3_console.bin + ps3_console_*.jpg)
+
+Sumber: file playstation-3.zip yang diberikan pemilik ZMB (format Collada,
+diekspor dengan Assimp, 2020). Nama pembuat dan lisensi tidak disertakan
+di dalam arsip; lengkapi bagian ini dengan tautan sumber dan lisensinya.
+
+Perubahan untuk ZMB: dikonversi dari Collada ke format mesh ZMB, diputar
+180 derajat dan diskalakan, tekstur albedo digabung dengan ambient occlusion
+dan diperkecil (2048/1024/512 px). Normal, roughness dan metallic tidak dipakai.
+PlayStation adalah merek dagang Sony Interactive Entertainment.
+ZMB tidak berafiliasi dengan Sony.

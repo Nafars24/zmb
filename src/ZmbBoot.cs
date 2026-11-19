@@ -20,12 +20,22 @@ namespace ZMB
         class BootModel
         {
             public Dictionary<int, MeshGeometry3D> Parts = new Dictionary<int, MeshGeometry3D>();
-            public ImageSource Tex;
+            public Dictionary<int, int> PartTex = new Dictionary<int, int>();
+            public List<ImageSource> Texs = new List<ImageSource>();
+            public int LedPart = -1;
+            public ImageSource LedTex;
         }
 
-        static BootModel ps1Model;
-        static bool ps1ModelTried;
-        static MeshGeometry3D discMesh;
+        static Dictionary<string, BootModel> bootModels = new Dictionary<string, BootModel>();
+        static Dictionary<string, string> bootModelErrors = new Dictionary<string, string>();
+        static Dictionary<double, MeshGeometry3D> discMeshes = new Dictionary<double, MeshGeometry3D>();
+        string bootKind = "ps1";
+        Point3D bootCamPos, bootCamTarget;
+
+        // PS3: disc masuk lewat slot depan (model sudah diputar agar sisi depan menghadap +X)
+        static readonly Point3D Ps3DiscSeat = new Point3D(-0.15, 0.265, -0.80);
+        static readonly Point3D Ps3DiscFront = new Point3D(1.95, 0.27, -0.80);
+        static readonly Point3D Ps3DiscStart = new Point3D(2.6, 1.9, -2.2);
 
         // Bagian model (lihat assets/ps1_console.bin)
         const int PartLid = 1, PartReset = 5, PartLed = 13, PartPower = 40, PartOpen = 41;
@@ -44,6 +54,7 @@ namespace ZMB
         TranslateTransform3D bootOpenT, bootPowerT, bootDiscT;
         ScaleTransform3D bootScale;
         SolidColorBrush bootLedBrush;
+        ImageBrush bootLedImg;
         Stopwatch bootClock;
         double bootTime, bootLast;
         bool bootClockStarted;
@@ -51,45 +62,52 @@ namespace ZMB
         DispatcherTimer bootHoldTimer;
         GameEntry bootGame;
         bool bootAdmin, bootResume, bootActive, bootSndOpen, bootSndClose, bootSndPower;
-        static readonly Point3D BootCamPos = new Point3D(4.2, 3.4, 2.85);
-        static readonly Point3D BootCamTarget = new Point3D(0, 0.35, 0);
+        static string BootKindFor(GameEntry g)
+        {
+            if (g == null) return null;
+            if (string.Equals(g.Platform, "PS1", StringComparison.OrdinalIgnoreCase)) return "ps1";
+            if (string.Equals(g.Platform, "PS3", StringComparison.OrdinalIgnoreCase)) return "ps3";
+            return null;
+        }
 
         bool BootAnimFor(GameEntry g)
         {
             if (!cfg.Ps1BootAnim || g == null) return false;
-            if (!string.Equals(g.Platform, "PS1", StringComparison.OrdinalIgnoreCase)) return false;
+            string kind = BootKindFor(g);
+            if (kind == null) return false;
             PlatformCfg p = cfg.FindPlatform(g.Platform);
             if (p == null || string.IsNullOrEmpty(p.Emulator) || !File.Exists(p.Emulator) || !File.Exists(g.Path)) return false;
-            if (Ps1Model() == null)
+            if (ConsoleModel(kind) == null)
             {
-                string why = ps1ModelError ?? "file assets\\ps1_console.bin tidak ditemukan";
+                string why;
+                if (!bootModelErrors.TryGetValue(kind, out why) || why == null) why = "file assets\\" + kind + "_console.bin tidak ditemukan";
                 Log("Boot anim dilewati: " + why);
-                ShowToast("Animasi boot PS1 dilewati: " + why);
+                ShowToast("Animasi boot " + kind.ToUpperInvariant() + " dilewati: " + why);
                 return false;
             }
             return true;
         }
 
-        static readonly object ps1ModelLock = new object();
-        static string ps1ModelError;
+        static readonly object bootModelLock = new object();
 
-        static BootModel Ps1Model()
+        static BootModel ConsoleModel(string kind)
         {
-            lock (ps1ModelLock)
+            lock (bootModelLock)
             {
-                if (ps1ModelTried) return ps1Model;
-                ps1ModelTried = true;
-                try { ps1Model = LoadConsoleModel("ps1_console"); }
-                catch (Exception ex) { ps1Model = null; ps1ModelError = ex.Message; }
-                return ps1Model;
+                BootModel m;
+                if (bootModels.TryGetValue(kind, out m)) return m;
+                try { m = LoadConsoleModel(kind + "_console"); }
+                catch (Exception ex) { m = null; bootModelErrors[kind] = ex.Message; }
+                bootModels[kind] = m;
+                return m;
             }
         }
 
         // Muat model di belakang layar supaya animasi tidak tersendat di awal
         void PreloadBootModel()
         {
-            if (!cfg.Ps1BootAnim || ps1ModelTried) return;
-            System.Threading.ThreadPool.QueueUserWorkItem(delegate { Ps1Model(); });
+            if (!cfg.Ps1BootAnim) return;
+            System.Threading.ThreadPool.QueueUserWorkItem(delegate { ConsoleModel("ps1"); ConsoleModel("ps3"); });
         }
 
         static BootModel LoadConsoleModel(string baseName)
@@ -97,15 +115,25 @@ namespace ZMB
             byte[] bin = LoadAssetBytes(baseName + ".bin");
             if (bin == null) return null;
             BootModel m = new BootModel();
-            m.Tex = LoadAsset(baseName + ".jpg");
             using (BinaryReader br = new BinaryReader(new MemoryStream(bin)))
             {
                 if (new string(br.ReadChars(4)) != "ZMB3") return null;
-                br.ReadInt32(); // versi
+                int ver = br.ReadInt32();
+                if (ver >= 2)
+                {
+                    // v2: beberapa tekstur + bagian yang punya lampu
+                    int nt = br.ReadInt32();
+                    for (int i = 0; i < nt; i++) m.Texs.Add(LoadAsset(ReadStr(br)));
+                    m.LedPart = br.ReadInt32();
+                    string led = ReadStr(br);
+                    if (led.Length > 0) m.LedTex = LoadAsset(led);
+                }
+                else m.Texs.Add(LoadAsset(baseName + ".jpg"));
                 int count = br.ReadInt32();
                 for (int i = 0; i < count; i++)
                 {
                     int id = br.ReadInt32();
+                    m.PartTex[id] = ver >= 2 ? br.ReadInt32() : 0;
                     int nv = br.ReadInt32();
                     Point3DCollection pos = new Point3DCollection(nv);
                     Vector3DCollection nor = new Vector3DCollection(nv);
@@ -128,11 +156,18 @@ namespace ZMB
             return m;
         }
 
-        // Cincin disc (atas menghadap +Y), UV memetakan gambar persegi ke seluruh piringan
-        static MeshGeometry3D DiscMesh()
+        static string ReadStr(BinaryReader br)
         {
-            if (discMesh != null) return discMesh;
-            const double R = 0.72, r = 0.075;
+            int n = br.ReadInt32();
+            return System.Text.Encoding.ASCII.GetString(br.ReadBytes(n));
+        }
+
+        // Cincin disc (atas menghadap +Y), UV memetakan gambar persegi ke seluruh piringan
+        static MeshGeometry3D DiscMesh(double R)
+        {
+            MeshGeometry3D cached;
+            if (discMeshes.TryGetValue(R, out cached)) return cached;
+            const double r = 0.075;
             const int seg = 96;
             MeshGeometry3D m = new MeshGeometry3D();
             Point3DCollection pos = new Point3DCollection();
@@ -154,7 +189,7 @@ namespace ZMB
             }
             m.Positions = pos; m.Normals = nor; m.TextureCoordinates = uv; m.TriangleIndices = idx;
             m.Freeze();
-            discMesh = m;
+            discMeshes[R] = m;
             return m;
         }
 
@@ -214,28 +249,57 @@ namespace ZMB
 
         void StartBoot(GameEntry g, bool forceAdmin)
         {
-            BootModel bm = Ps1Model();
+            bootKind = BootKindFor(g) ?? "ps1";
+            BootModel bm = ConsoleModel(bootKind);
+            bool ps3 = bootKind == "ps3";
+            bootCamPos = ps3 ? new Point3D(5.0, 2.25, 2.6) : new Point3D(4.2, 3.4, 2.85);
+            bootCamTarget = ps3 ? new Point3D(0.25, 0.0, 0.15) : new Point3D(0, 0.35, 0);
             bootGame = g; bootAdmin = forceAdmin; bootResume = launchResume;
             bootSndOpen = bootSndClose = bootSndPower = false;
             StopTrailer(true);
             StopThemeMusic();
 
-            ImageBrush texBrush = new ImageBrush(bm.Tex);
-            texBrush.ViewportUnits = BrushMappingMode.Absolute;
-            texBrush.Viewport = new Rect(0, 0, 1, 1);
-            texBrush.TileMode = TileMode.Tile;
-            texBrush.Freeze();
-            MaterialGroup mat = new MaterialGroup();
-            mat.Children.Add(new DiffuseMaterial(texBrush));
-            mat.Children.Add(new SpecularMaterial(SolidOf(Color.FromArgb(60, 255, 255, 255)), 28));
-            mat.Freeze();
+            // satu material per tekstur; PS3 hitam piano lebih mengilap
+            List<Material> mats = new List<Material>();
+            foreach (ImageSource tx in bm.Texs)
+            {
+                ImageBrush texBrush = new ImageBrush(tx);
+                texBrush.ViewportUnits = BrushMappingMode.Absolute;
+                texBrush.Viewport = new Rect(0, 0, 1, 1);
+                texBrush.TileMode = TileMode.Tile;
+                texBrush.Freeze();
+                MaterialGroup mg = new MaterialGroup();
+                mg.Children.Add(new DiffuseMaterial(texBrush));
+                mg.Children.Add(ps3 ? new SpecularMaterial(SolidOf(Color.FromArgb(120, 255, 255, 255)), 45)
+                                    : new SpecularMaterial(SolidOf(Color.FromArgb(60, 255, 255, 255)), 28));
+                mg.Freeze();
+                mats.Add(mg);
+            }
+            bootLedImg = null;
 
             Model3DGroup console = new Model3DGroup();
             foreach (KeyValuePair<int, MeshGeometry3D> kv in bm.Parts)
             {
+                int ti;
+                if (!bm.PartTex.TryGetValue(kv.Key, out ti) || ti < 0 || ti >= mats.Count) ti = 0;
+                Material mat = mats.Count > 0 ? mats[ti] : new DiffuseMaterial(Brushes.Gray);
                 GeometryModel3D gm = new GeometryModel3D(kv.Value, mat);
                 gm.BackMaterial = mat;
-                if (kv.Key == PartLid)
+                if (ps3)
+                {
+                    if (kv.Key == bm.LedPart && bm.LedTex != null)
+                    {
+                        bootLedImg = new ImageBrush(bm.LedTex);
+                        bootLedImg.ViewportUnits = BrushMappingMode.Absolute;
+                        bootLedImg.Viewport = new Rect(0, 0, 1, 1);
+                        bootLedImg.Opacity = 0;
+                        MaterialGroup lm = new MaterialGroup();
+                        lm.Children.Add(mat);
+                        lm.Children.Add(new EmissiveMaterial(bootLedImg));
+                        gm.Material = lm; gm.BackMaterial = lm;
+                    }
+                }
+                else if (kv.Key == PartLid)
                 {
                     bootLidRot = new AxisAngleRotation3D(new Vector3D(0, 0, 1), 0);
                     gm.Transform = new RotateTransform3D(bootLidRot, HingeX, HingeY, 0);
@@ -265,10 +329,10 @@ namespace ZMB
             MaterialGroup dTop = new MaterialGroup();
             dTop.Children.Add(new DiffuseMaterial(discBrush));
             dTop.Children.Add(new SpecularMaterial(SolidOf(Color.FromArgb(140, 255, 255, 255)), 60));
-            MaterialGroup dBot = new MaterialGroup(); // sisi data PS1: hitam mengilap
-            dBot.Children.Add(new DiffuseMaterial(SolidOf(Rgb(16, 16, 20))));
+            MaterialGroup dBot = new MaterialGroup(); // sisi data: PS1 hitam mengilap, Blu-ray perak kebiruan
+            dBot.Children.Add(new DiffuseMaterial(SolidOf(ps3 ? Rgb(150, 160, 185) : Rgb(16, 16, 20))));
             dBot.Children.Add(new SpecularMaterial(SolidOf(Color.FromArgb(200, 170, 150, 255)), 40));
-            GeometryModel3D disc = new GeometryModel3D(DiscMesh(), dTop);
+            GeometryModel3D disc = new GeometryModel3D(DiscMesh(ps3 ? 0.6 : 0.72), dTop);
             disc.BackMaterial = dBot;
             bootDiscSpin = new AxisAngleRotation3D(new Vector3D(0, 1, 0), 0);
             bootDiscTilt = new AxisAngleRotation3D(new Vector3D(0, 0, 1), 0);
@@ -293,7 +357,7 @@ namespace ZMB
             scene.Children.Add(new DirectionalLight(Rgb(90, 100, 125), new Vector3D(0.7, -0.25, 0.9)));
             scene.Children.Add(console);
 
-            bootCam = new PerspectiveCamera(BootCamPos, BootCamTarget - BootCamPos, new Vector3D(0, 1, 0), 46);
+            bootCam = new PerspectiveCamera(bootCamPos, bootCamTarget - bootCamPos, new Vector3D(0, 1, 0), 46);
             bootCam.NearPlaneDistance = 0.05; bootCam.FarPlaneDistance = 60;
 
             bootVp = new Viewport3D();
@@ -371,6 +435,50 @@ namespace ZMB
             bootScale.ScaleX = sc; bootScale.ScaleY = sc; bootScale.ScaleZ = sc;
             bootYaw.Angle = -26 + 22 * EaseInOut(t / 4.3);
 
+            if (bootKind == "ps3") UpdateBootPs3(t); else UpdateBootPs1(t);
+
+            // 5. kamera mendekat, layar memudar ke hitam
+            double push = EaseInOut(Seg(t, 3.35, 4.3));
+            Point3D cp = bootCamPos + (bootCamTarget - bootCamPos) * (0.30 * push);
+            bootCam.Position = cp;
+            bootCam.LookDirection = bootCamTarget - cp;
+            bootFade.Opacity = Smooth(Seg(t, 3.55, 4.25));
+
+            if (t >= 4.3) FinishBoot(false);
+        }
+
+        // PS3: disc melayang ke depan slot, lalu ditarik masuk; lampu power menyala hijau
+        void UpdateBootPs3(double t)
+        {
+            if (t < 1.0) bootDiscT.OffsetY = 100;
+            else if (t < 2.0)
+            {
+                double u = EaseInOut(Seg(t, 1.0, 1.95));
+                Point3D a = Ps3DiscStart, f = Ps3DiscFront;
+                bootDiscT.OffsetX = Bez(a.X, a.X * 0.7 + f.X * 0.3, f.X + 0.6, f.X, u);
+                bootDiscT.OffsetY = Bez(a.Y, a.Y * 0.7 + f.Y * 0.3 + 0.5, f.Y + 0.15, f.Y, u);
+                bootDiscT.OffsetZ = Bez(a.Z, a.Z * 0.7 + f.Z * 0.3, f.Z, f.Z, u);
+                bootDiscTilt.Angle = 40 * (1 - Smooth(Seg(t, 1.0, 1.9)));
+                bootDiscSpin.Angle = -300 * EaseOut3(Seg(t, 1.0, 2.0));
+            }
+            else
+            {
+                double u = Seg(t, 2.05, 2.75);
+                u = u * u * (3 - 2 * u);
+                bootDiscT.OffsetX = Ps3DiscFront.X + (Ps3DiscSeat.X - Ps3DiscFront.X) * u;
+                bootDiscT.OffsetY = Ps3DiscFront.Y + (Ps3DiscSeat.Y - Ps3DiscFront.Y) * u;
+                bootDiscT.OffsetZ = Ps3DiscFront.Z;
+                bootDiscTilt.Angle = 0;
+                bootDiscSpin.Angle = -300;
+            }
+            if (t >= 2.08 && !bootSndOpen) { bootSndOpen = true; Sfx.Tick(); }   // slot menarik disc
+            if (t >= 2.75 && !bootSndClose) { bootSndClose = true; Sfx.Back(); } // disc terpasang
+            if (t >= 3.0 && !bootSndPower) { bootSndPower = true; Sfx.Ok(); }    // power
+            if (bootLedImg != null) bootLedImg.Opacity = Smooth(Seg(t, 3.02, 3.3));
+        }
+
+        void UpdateBootPs1(double t)
+        {
             // 2. tombol OPEN ditekan, tutup terbuka dengan sedikit pantulan
             bootOpenT.OffsetY = -0.014 * Pulse(t, 0.55, 0.8);
             if (t >= 0.62 && !bootSndOpen) { bootSndOpen = true; Sfx.Tick(); }
@@ -398,15 +506,6 @@ namespace ZMB
             if (t >= 3.15 && !bootSndPower) { bootSndPower = true; Sfx.Ok(); }
             double led = Smooth(Seg(t, 3.18, 3.45));
             bootLedBrush.Color = Color.FromArgb((byte)(255 * led), 60, 255, 90);
-
-            // 5. kamera mendekat, layar memudar ke hitam
-            double push = EaseInOut(Seg(t, 3.35, 4.3));
-            Point3D cp = BootCamPos + (BootCamTarget - BootCamPos) * (0.30 * push);
-            bootCam.Position = cp;
-            bootCam.LookDirection = BootCamTarget - cp;
-            bootFade.Opacity = Smooth(Seg(t, 3.55, 4.25));
-
-            if (t >= 4.3) FinishBoot(false);
         }
 
         // Selesai (atau dilewati): jalankan game, layar tetap hitam sebentar sampai emulator muncul
@@ -438,7 +537,7 @@ namespace ZMB
         {
             if (bootHoldTimer != null) { bootHoldTimer.Stop(); bootHoldTimer = null; }
             if (bootLayer != null) { root.Children.Remove(bootLayer); bootLayer = null; }
-            bootLidRot = null; bootOpenT = null; bootPowerT = null; bootLedBrush = null;
+            bootLidRot = null; bootOpenT = null; bootPowerT = null; bootLedBrush = null; bootLedImg = null;
         }
 
         // dipanggil dari HandleKey: true kalau input dipakai oleh animasi boot
