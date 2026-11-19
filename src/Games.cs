@@ -211,7 +211,7 @@ namespace ZMB
                 if ((e == ".cue" || e == ".chd") && m3uDirs.Contains(dir) && Regex.IsMatch(f, @"\((Disc|Disk|CD)\s*\d", RegexOptions.IgnoreCase)) continue;
                 res.Add(f);
             }
-            res = CollapseDiscs(res);
+            res = CleanRomList(res);
             // PS3 / RPCS3: tampilkan hanya EBOOT.BIN
             if (p.Short == "PS3")
                 res = res.Where(f => Ps3Meta.IsIso(f) ||
@@ -252,6 +252,64 @@ namespace ZMB
                 return int.Parse(m.Groups[1].Value);
             }
             return 0;
+        }
+
+        static readonly Regex TrackRx = new Regex(@"\s*[\(\[]\s*Track\s*(\d{1,2})\s*[\)\]]", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        // Nama tanpa label disc/track: "Parasite Eve (Disc 1)" -> "Parasite Eve"
+        public static string CleanRomName(string name)
+        {
+            if (string.IsNullOrEmpty(name)) return name;
+            string n = TrackRx.Replace(name, "");
+            n = StripDisc(n);
+            n = Regex.Replace(n, @"\s{2,}", " ").Trim();
+            return n.Length > 0 ? n : name;
+        }
+
+        public static bool HasDiscOrTrackLabel(string name)
+        {
+            return !string.IsNullOrEmpty(name) && (TrackRx.IsMatch(name) || DiscRx.IsMatch(name));
+        }
+
+        // Rapikan daftar rom (juga dipakai untuk entri tersimpan dari versi lama):
+        // - file track .bin/.img yang punya .cue -> disembunyikan
+        // - "(Track 01..NN)" tanpa .cue -> cukup track terkecil
+        // - game multi-disc -> cukup disc 1 (atau .m3u)
+        public static List<string> CleanRomList(List<string> roms)
+        {
+            List<string> keep = new List<string>();
+            Dictionary<string, int> trackBest = new Dictionary<string, int>();
+            Dictionary<string, int> trackPos = new Dictionary<string, int>();
+            foreach (string f in roms)
+            {
+                string e = Path.GetExtension(f).ToLowerInvariant();
+                if (e == ".bin" || e == ".img")
+                {
+                    string dir = Path.GetDirectoryName(f) ?? "";
+                    string nm = Path.GetFileNameWithoutExtension(f);
+                    Match tm = TrackRx.Match(nm);
+                    string bare = tm.Success ? TrackRx.Replace(nm, "").Trim() : nm;
+                    bool hasSheet = false;
+                    try
+                    {
+                        hasSheet = File.Exists(Path.Combine(dir, nm + ".cue")) || File.Exists(Path.Combine(dir, bare + ".cue"))
+                            || (tm.Success && Directory.GetFiles(dir, "*.cue").Length > 0);
+                    }
+                    catch { }
+                    if (hasSheet) continue;
+                    if (tm.Success)
+                    {
+                        string key = (dir + "|" + bare + e).ToLowerInvariant();
+                        int no = int.Parse(tm.Groups[1].Value);
+                        int cur;
+                        if (!trackBest.TryGetValue(key, out cur)) { trackBest[key] = no; trackPos[key] = keep.Count; keep.Add(f); }
+                        else if (no < cur) { trackBest[key] = no; keep[trackPos[key]] = f; }
+                        continue;
+                    }
+                }
+                keep.Add(f);
+            }
+            return CollapseDiscs(keep);
         }
 
         // Game multi-disc cukup tampil sekali (disc 1). Kalau ada .m3u untuk game itu, .m3u yang dipakai.
@@ -311,6 +369,7 @@ namespace ZMB
                 catch { }
             }
             string n = Path.GetFileNameWithoutExtension(rom);
+            n = TrackRx.Replace(n, "").Trim();
             if (DiscRx.IsMatch(n)) n = StripDisc(n);
             else
             {

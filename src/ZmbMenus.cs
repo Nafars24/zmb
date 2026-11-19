@@ -316,7 +316,7 @@ namespace ZMB
             help.Children = BuildHelpItems;
             l.Add(help);
 
-            XmbItem about = MakeItem("Tentang ZMB", "Versi 2.9.3  \u2022  Model 3D PS one: Vladimir_Sofyanov (Sketchfab, CC-BY 4.0)  \u2022  Enter: buka folder data", "\uE946", delegate { ShowInExplorer(Config.FilePath); });
+            XmbItem about = MakeItem("Tentang ZMB", "Versi 2.9.4  \u2022  Model 3D PS one: Vladimir_Sofyanov (Sketchfab, CC-BY 4.0)  \u2022  Enter: buka folder data", "\uE946", delegate { ShowInExplorer(Config.FilePath); });
             l.Add(about);
             return l;
         }
@@ -850,11 +850,13 @@ namespace ZMB
             HashSet<string> set = new HashSet<string>(roms, StringComparer.OrdinalIgnoreCase);
             foreach (GameEntry m in cfg.Meta)
                 if (m.Platform == p.Short && !set.Contains(m.Path) && File.Exists(m.Path)) { roms.Add(m.Path); set.Add(m.Path); }
+            roms = GameScanner.CleanRomList(roms); // entri lama (disc 2, track 02, ...) ikut dirapikan
 
             List<XmbItem> games = new List<XmbItem>();
             foreach (string rom in roms)
             {
                 GameEntry g = cfg.GetMeta(rom, p.Short, GameScanner.RomDisplayName(p, rom));
+                if (GameScanner.HasDiscOrTrackLabel(g.Name)) g.Name = GameScanner.CleanRomName(g.Name); // nama tersimpan dari versi lama
                 games.Add(GameItem(g, null));
             }
             games.Sort((a, b) => string.Compare(a.Title, b.Title, StringComparison.OrdinalIgnoreCase));
