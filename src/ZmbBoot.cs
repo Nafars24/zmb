@@ -45,6 +45,8 @@ namespace ZMB
         ScaleTransform3D bootScale;
         SolidColorBrush bootLedBrush;
         Stopwatch bootClock;
+        double bootTime, bootLast;
+        bool bootClockStarted;
         EventHandler bootTick;
         DispatcherTimer bootHoldTimer;
         GameEntry bootGame;
@@ -58,16 +60,36 @@ namespace ZMB
             if (!string.Equals(g.Platform, "PS1", StringComparison.OrdinalIgnoreCase)) return false;
             PlatformCfg p = cfg.FindPlatform(g.Platform);
             if (p == null || string.IsNullOrEmpty(p.Emulator) || !File.Exists(p.Emulator) || !File.Exists(g.Path)) return false;
-            return Ps1Model() != null;
+            if (Ps1Model() == null)
+            {
+                string why = ps1ModelError ?? "file assets\\ps1_console.bin tidak ditemukan";
+                Log("Boot anim dilewati: " + why);
+                ShowToast("Animasi boot PS1 dilewati: " + why);
+                return false;
+            }
+            return true;
         }
+
+        static readonly object ps1ModelLock = new object();
+        static string ps1ModelError;
 
         static BootModel Ps1Model()
         {
-            if (ps1ModelTried) return ps1Model;
-            ps1ModelTried = true;
-            try { ps1Model = LoadConsoleModel("ps1_console"); }
-            catch { ps1Model = null; }
-            return ps1Model;
+            lock (ps1ModelLock)
+            {
+                if (ps1ModelTried) return ps1Model;
+                ps1ModelTried = true;
+                try { ps1Model = LoadConsoleModel("ps1_console"); }
+                catch (Exception ex) { ps1Model = null; ps1ModelError = ex.Message; }
+                return ps1Model;
+            }
+        }
+
+        // Muat model di belakang layar supaya animasi tidak tersendat di awal
+        void PreloadBootModel()
+        {
+            if (!cfg.Ps1BootAnim || ps1ModelTried) return;
+            System.Threading.ThreadPool.QueueUserWorkItem(delegate { Ps1Model(); });
         }
 
         static BootModel LoadConsoleModel(string baseName)
@@ -304,69 +326,86 @@ namespace ZMB
             root.Children.Add(bootLayer);
 
             bootActive = true;
+            bootTime = 0; bootLast = 0; bootClockStarted = false;
             UpdateBoot(0);
-            bootClock = Stopwatch.StartNew();
-            bootTick = delegate { if (bootActive) UpdateBoot(bootClock.Elapsed.TotalSeconds); };
+            bootClock = new Stopwatch();
+            bootTick = delegate
+            {
+                if (!bootActive) return;
+                // jam mulai di frame pertama yang benar-benar tampil; langkah dibatasi supaya
+                // frame yang tersendat (mis. saat tekstur diunggah ke GPU) tidak membuat gerakan melompat
+                if (!bootClockStarted) { bootClockStarted = true; bootClock.Start(); bootLast = 0; return; }
+                double now = bootClock.Elapsed.TotalSeconds;
+                double dt = now - bootLast;
+                bootLast = now;
+                if (dt > 1.0 / 30) dt = 1.0 / 30;
+                if (dt < 0) dt = 0;
+                bootTime += dt;
+                UpdateBoot(bootTime);
+            };
             CompositionTarget.Rendering += bootTick;
         }
 
         static double Clamp01(double v) { return v < 0 ? 0 : (v > 1 ? 1 : v); }
         static double Seg(double t, double a, double b) { return Clamp01((t - a) / (b - a)); }
-        static double EaseOut3(double u) { u = 1 - u; return 1 - u * u * u; }
-        static double EaseIn2(double u) { return u * u; }
-        static double EaseInOut(double u) { return u < 0.5 ? 4 * u * u * u : 1 - Math.Pow(-2 * u + 2, 3) / 2; }
-        static double EaseOutBack(double u) { const double c1 = 1.4, c3 = c1 + 1; double v = u - 1; return 1 + c3 * v * v * v + c1 * v * v; }
+        static double Smooth(double u) { u = Clamp01(u); return u * u * u * (u * (u * 6 - 15) + 10); } // smootherstep
+        static double EaseOut3(double u) { u = 1 - Clamp01(u); return 1 - u * u * u; }
+        static double EaseInOut(double u) { u = Clamp01(u); return u < 0.5 ? 4 * u * u * u : 1 - Math.Pow(-2 * u + 2, 3) / 2; }
+        static double EaseOutBack(double u) { const double c1 = 0.9, c3 = c1 + 1; double v = Clamp01(u) - 1; return 1 + c3 * v * v * v + c1 * v * v; }
         static double Pulse(double t, double a, double b) { double u = Seg(t, a, b); return (u <= 0 || u >= 1) ? 0 : Math.Sin(Math.PI * u); }
+        static double Bez(double a, double b, double c, double d, double u)
+        {
+            double v = 1 - u;
+            return v * v * v * a + 3 * v * v * u * b + 3 * v * u * u * c + u * u * u * d;
+        }
 
         void UpdateBoot(double t)
         {
-            // 1. konsol muncul
-            double appear = EaseOut3(Seg(t, 0, 0.75));
-            bootDim.Opacity = Clamp01(t / 0.45);
-            bootVp.Opacity = appear;
-            bootHint.Opacity = Seg(t, 0.8, 1.3) * (1 - Seg(t, 3.3, 3.6));
-            double sc = 0.84 + 0.16 * appear;
+            // 1. konsol muncul; kamera berputar pelan sepanjang animasi (tidak pernah berhenti mendadak)
+            double appear = EaseOut3(Seg(t, 0, 0.9));
+            bootDim.Opacity = Smooth(t / 0.6);
+            bootVp.Opacity = Smooth(t / 0.7);
+            bootHint.Opacity = Smooth(Seg(t, 0.9, 1.5)) * (1 - Smooth(Seg(t, 3.2, 3.6)));
+            double sc = 0.86 + 0.14 * appear;
             bootScale.ScaleX = sc; bootScale.ScaleY = sc; bootScale.ScaleZ = sc;
-            bootYaw.Angle = -30 * (1 - appear) - 4 * Seg(t, 0.7, 4.2);
+            bootYaw.Angle = -26 + 22 * EaseInOut(t / 4.3);
 
-            // 2. tombol OPEN ditekan, tutup terbuka
-            bootOpenT.OffsetY = -0.014 * Pulse(t, 0.55, 0.78);
+            // 2. tombol OPEN ditekan, tutup terbuka dengan sedikit pantulan
+            bootOpenT.OffsetY = -0.014 * Pulse(t, 0.55, 0.8);
             if (t >= 0.62 && !bootSndOpen) { bootSndOpen = true; Sfx.Tick(); }
-            double lid = 0;
-            if (t >= 0.75 && t < 1.45) lid = LidOpenDeg * EaseOutBack(Seg(t, 0.75, 1.45));
-            else if (t >= 1.45 && t < 2.35) lid = LidOpenDeg;
-            else if (t >= 2.35 && t < 2.78) lid = LidOpenDeg * (1 - EaseIn2(Seg(t, 2.35, 2.78)));
-            else if (t >= 2.78 && t < 2.96) lid = 3.5 * Math.Sin(Math.PI * Seg(t, 2.78, 2.96));
+            double lid;
+            if (t < 2.35) lid = LidOpenDeg * EaseOutBack(Seg(t, 0.72, 1.55));
+            else lid = LidOpenDeg * (1 - EaseInOut(Seg(t, 2.35, 2.85)));
+            if (t >= 2.85) lid += 2.2 * Math.Sin(Math.PI * Seg(t, 2.85, 3.05)) ; // tutup memantul kecil
             bootLidRot.Angle = lid;
-            if (t >= 2.78 && !bootSndClose) { bootSndClose = true; Sfx.Back(); }
+            if (t >= 2.85 && !bootSndClose) { bootSndClose = true; Sfx.Back(); }
 
-            // 3. disc masuk ke dalam konsol
-            if (t < 1.2) bootDiscT.OffsetY = 100;
+            // 3. disc melayang turun mengikuti lengkung halus lalu duduk di spindle
+            if (t < 1.1) bootDiscT.OffsetY = 100;
             else
             {
-                double u = EaseInOut(Seg(t, 1.2, 2.25));
-                double arc = Math.Sin(Math.PI * u) * 0.35 * (1 - u);
-                bootDiscT.OffsetX = DiscStart.X + (DiscSeat.X - DiscStart.X) * u;
-                bootDiscT.OffsetY = DiscStart.Y + (DiscSeat.Y - DiscStart.Y) * u + arc;
-                bootDiscT.OffsetZ = DiscStart.Z + (DiscSeat.Z - DiscStart.Z) * u;
-                bootDiscTilt.Angle = 48 * Math.Pow(1 - u, 1.6);
-                bootDiscSpin.Angle = -420 * EaseOut3(Seg(t, 1.2, 2.4));
+                double u = EaseInOut(Seg(t, 1.1, 2.3));
+                bootDiscT.OffsetX = Bez(DiscStart.X, DiscStart.X * 0.55, DiscSeat.X + 0.25, DiscSeat.X, u);
+                bootDiscT.OffsetY = Bez(DiscStart.Y, DiscStart.Y + 0.35, DiscSeat.Y + 0.55, DiscSeat.Y, u);
+                bootDiscT.OffsetZ = Bez(DiscStart.Z, DiscStart.Z * 0.6, DiscSeat.Z + 0.05, DiscSeat.Z, u);
+                bootDiscTilt.Angle = 46 * (1 - Smooth(Seg(t, 1.1, 2.25)));
+                bootDiscSpin.Angle = -380 * EaseOut3(Seg(t, 1.1, 2.6));
             }
 
-            // 4. tombol POWER, lampu menyala
-            bootPowerT.OffsetY = -0.014 * Pulse(t, 3.0, 3.22);
-            if (t >= 3.1 && !bootSndPower) { bootSndPower = true; Sfx.Ok(); }
-            double led = Seg(t, 3.12, 3.3);
+            // 4. tombol POWER, lampu menyala perlahan
+            bootPowerT.OffsetY = -0.014 * Pulse(t, 3.05, 3.3);
+            if (t >= 3.15 && !bootSndPower) { bootSndPower = true; Sfx.Ok(); }
+            double led = Smooth(Seg(t, 3.18, 3.45));
             bootLedBrush.Color = Color.FromArgb((byte)(255 * led), 60, 255, 90);
 
-            // 5. kamera mendekat, layar hitam
-            double push = EaseIn2(Seg(t, 3.4, 4.15));
-            Point3D cp = BootCamPos + (BootCamTarget - BootCamPos) * (0.28 * push);
+            // 5. kamera mendekat, layar memudar ke hitam
+            double push = EaseInOut(Seg(t, 3.35, 4.3));
+            Point3D cp = BootCamPos + (BootCamTarget - BootCamPos) * (0.30 * push);
             bootCam.Position = cp;
             bootCam.LookDirection = BootCamTarget - cp;
-            bootFade.Opacity = EaseIn2(Seg(t, 3.45, 4.1));
+            bootFade.Opacity = Smooth(Seg(t, 3.55, 4.25));
 
-            if (t >= 4.2) FinishBoot(false);
+            if (t >= 4.3) FinishBoot(false);
         }
 
         // Selesai (atau dilewati): jalankan game, layar tetap hitam sebentar sampai emulator muncul
@@ -404,7 +443,12 @@ namespace ZMB
         // dipanggil dari HandleKey: true kalau input dipakai oleh animasi boot
         bool BootConsumeKey()
         {
-            if (bootActive) { FinishBoot(true); return true; }
+            if (bootActive)
+            {
+                if (bootTime < 0.8) return true; // abaikan sisa tekanan tombol yang membuka game
+                FinishBoot(true);
+                return true;
+            }
             if (bootLayer != null) { EndBootLayer(); return true; }
             return false;
         }

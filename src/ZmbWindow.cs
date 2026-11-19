@@ -261,6 +261,7 @@ namespace ZMB
             MouseDown += OnMouseDownZmb;
             Activated += OnActivatedZmb;
             SourceInitialized += delegate { InitHotkey(); };
+            ContentRendered += delegate { PreloadBootModel(); };
             MouseMove += delegate (object s, MouseEventArgs e)
             {
                 Point mp = e.GetPosition(this);
@@ -790,6 +791,7 @@ namespace ZMB
                 RefreshAll(); ShowToast("Daftar diperbarui");
                 e.Handled = true; return;
             }
+            if (e.IsRepeat && (bootActive || bootLayer != null)) { e.Handled = true; return; }
             XKey k = MapKey(key);
             if (k != XKey.None) { HandleKey(k); e.Handled = true; }
         }
@@ -1156,7 +1158,13 @@ namespace ZMB
             if (BootAnimFor(g))
             {
                 try { StartBoot(g, forceAdmin); return; }
-                catch (Exception ex) { Log("Boot anim: " + ex); try { EndBootLayer(); } catch { } bootActive = false; }
+                catch (Exception ex)
+                {
+                    Log("Boot anim: " + ex);
+                    try { CompositionTarget.Rendering -= bootTick; EndBootLayer(); } catch { }
+                    bootActive = false;
+                    ShowToast("Animasi boot gagal: " + ex.Message);
+                }
             }
             LaunchNow(g, forceAdmin);
         }
