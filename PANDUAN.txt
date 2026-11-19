@@ -170,6 +170,9 @@ Ganti mode: tekan F2, atau Pengaturan > Mode Tampilan.
      4. "Unduh Media Otomatis" (ScreenScraper, jenis box-2D-side)
      5. Kalau tidak ada: spine hitam otomatis ala PS1 (judul vertikal)
    Gambar spine boleh tegak atau mendatar, ZMB memutarnya sendiri.
+ * PS3 (v2.12): case Blu-ray bening dengan spine Blu-ray, cara kerja dan
+   urutan pencarian spine sama seperti PS1 (folder ZMB\spines\PS3\).
+   Lapisan plastik PS3 ada di assets\ps3_case.png dan assets\ps3_spine.png.
    Lapisan plastik ada di assets\ps1_case.png dan assets\ps1_spine.png;
    boleh diganti dengan PNG transparan lain berukuran serupa.
  * Game multi-disc (v2.8.1): "(Disc 1)", "(Disc 2 of 3)", "[Disc2]", "CD1",

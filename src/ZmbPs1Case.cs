@@ -8,16 +8,50 @@ using System.Windows.Media.Imaging;
 
 namespace ZMB
 {
-    // Jewel case & spine PS1 dengan lapisan plastik transparan asli (assets/ps1_case.png, assets/ps1_spine.png)
+    // Case & spine dengan lapisan plastik transparan asli per platform
+    // (assets/ps1_case.png + ps1_spine.png untuk PS1, assets/ps3_case.png + ps3_spine.png untuk PS3)
+    public class CaseOverlay
+    {
+        public string Name, Label;
+        public double Aspect, SpineRatio;
+        // posisi jendela bening (pecahan ukuran gambar), diukur dari gambar aslinya
+        public double CX0, CX1, CY0, CY1, SX0, SX1, SY0, SY1;
+        public ImageSource CaseImg, SpineImg;
+        public bool Tried;
+
+        public static readonly CaseOverlay Ps1 = new CaseOverlay("ps1", "PS1", 1.101, 0.103,
+            0.100, 0.970, 0.020, 0.978, 0.150, 0.862, 0.022, 0.978);
+        public static readonly CaseOverlay Ps3 = new CaseOverlay("ps3", "PS3", 0.900, 0.1123,
+            0.0523, 0.9486, 0.1182, 0.9579, 0.183, 0.822, 0.111, 0.953);
+
+        public CaseOverlay(string name, string label, double aspect, double spine,
+            double cx0, double cx1, double cy0, double cy1, double sx0, double sx1, double sy0, double sy1)
+        {
+            Name = name; Label = label; Aspect = aspect; SpineRatio = spine;
+            CX0 = cx0; CX1 = cx1; CY0 = cy0; CY1 = cy1; SX0 = sx0; SX1 = sx1; SY0 = sy0; SY1 = sy1;
+        }
+
+        public bool Ready
+        {
+            get
+            {
+                if (!Tried)
+                {
+                    Tried = true;
+                    CaseImg = ZmbWindow.LoadAsset(Name + "_case.png");
+                    SpineImg = ZmbWindow.LoadAsset(Name + "_spine.png");
+                }
+                return CaseImg != null && SpineImg != null;
+            }
+        }
+
+        public Rect CaseWindow(Rect r) { return new Rect(r.X + r.Width * CX0, r.Y + r.Height * CY0, r.Width * (CX1 - CX0), r.Height * (CY1 - CY0)); }
+        public Rect SpineWindow(Rect r) { return new Rect(r.X + r.Width * SX0, r.Y + r.Height * SY0, r.Width * (SX1 - SX0), r.Height * (SY1 - SY0)); }
+    }
+
     public partial class ZmbWindow
     {
-        ImageSource ps1CaseImg, ps1SpineImg;
-        bool ps1CaseTried, ps1SpineTried;
         Dictionary<string, string> spinePathCache = new Dictionary<string, string>();
-
-        // Posisi jendela bening (dalam pecahan ukuran gambar), diukur dari gambar aslinya
-        const double CaseWinX0 = 0.100, CaseWinX1 = 0.970, CaseWinY0 = 0.020, CaseWinY1 = 0.978;
-        const double SpineWinX0 = 0.150, SpineWinX1 = 0.862, SpineWinY0 = 0.022, SpineWinY1 = 0.978;
 
         // Aset bawaan: dari resource di dalam exe, kalau tidak ada dari folder assets di sebelah ZMB.exe
         static byte[] LoadAssetBytes(string name)
@@ -39,7 +73,7 @@ namespace ZMB
             catch { return null; }
         }
 
-        static ImageSource LoadAsset(string name)
+        internal static ImageSource LoadAsset(string name)
         {
             try
             {
@@ -59,18 +93,6 @@ namespace ZMB
             catch { return null; }
         }
 
-        ImageSource Ps1CaseImg()
-        {
-            if (!ps1CaseTried) { ps1CaseTried = true; ps1CaseImg = LoadAsset("ps1_case.png"); }
-            return ps1CaseImg;
-        }
-
-        ImageSource Ps1SpineImg()
-        {
-            if (!ps1SpineTried) { ps1SpineTried = true; ps1SpineImg = LoadAsset("ps1_spine.png"); }
-            return ps1SpineImg;
-        }
-
         string SpinePath(GameEntry g)
         {
             if (g == null) return null;
@@ -82,19 +104,18 @@ namespace ZMB
             return p;
         }
 
-        void DrawPs1Case(DrawingContext dc, XmbItem it, CaseStyle cs, Rect r)
+        void DrawOverlayCase(DrawingContext dc, XmbItem it, CaseStyle cs, Rect r)
         {
-            Rect win = new Rect(r.X + r.Width * CaseWinX0, r.Y + r.Height * CaseWinY0,
-                                r.Width * (CaseWinX1 - CaseWinX0), r.Height * (CaseWinY1 - CaseWinY0));
+            CaseOverlay ov = cs.Overlay;
+            Rect win = ov.CaseWindow(r);
             dc.DrawRectangle(SolidOf(Rgb(12, 12, 14)), null, win);
             DrawCoverArea(dc, it, cs, win);
-            dc.DrawImage(Ps1CaseImg(), r);
+            dc.DrawImage(ov.CaseImg, r);
         }
 
-        void DrawPs1Spine(DrawingContext dc, XmbItem it, Rect r)
+        void DrawOverlaySpine(DrawingContext dc, XmbItem it, CaseOverlay ov, Rect r)
         {
-            Rect win = new Rect(r.X + r.Width * SpineWinX0, r.Y + r.Height * SpineWinY0,
-                                r.Width * (SpineWinX1 - SpineWinX0), r.Height * (SpineWinY1 - SpineWinY0));
+            Rect win = ov.SpineWindow(r);
             string sp = SpinePath(it.Game);
             ImageSource art = null;
             if (sp != null)
@@ -103,8 +124,8 @@ namespace ZMB
                 art = GetImage("spine:" + spp, delegate { return ImgConv.LoadFile(spp, 1400); });
             }
             if (art != null) DrawSpineArt(dc, art, win);
-            else DrawPs1AutoSpine(dc, it, win);
-            dc.DrawImage(Ps1SpineImg(), r);
+            else DrawAutoSpine(dc, it, win, ov.Label);
+            dc.DrawImage(ov.SpineImg, r);
         }
 
         // Gambar spine kustom; kalau gambarnya mendatar (lebar > tinggi), diputar 90 derajat
@@ -126,7 +147,7 @@ namespace ZMB
         }
 
         // Spine otomatis ala PS1: hitam, label platform di atas, judul vertikal, tanda warna di bawah
-        void DrawPs1AutoSpine(DrawingContext dc, XmbItem it, Rect win)
+        void DrawAutoSpine(DrawingContext dc, XmbItem it, Rect win, string label)
         {
             LinearGradientBrush bg = new LinearGradientBrush(Rgb(22, 22, 26), Rgb(8, 8, 10), 0);
             bg.Freeze();
@@ -136,7 +157,7 @@ namespace ZMB
             dc.DrawRectangle(SolidOf(Rgb(36, 36, 41)), null, new Rect(win.X, win.Y, w, topH));
             dc.DrawRectangle(WhiteA(0.25), null, new Rect(win.X, win.Y + topH, w, Math.Max(0.6, w * 0.02)));
 
-            FormattedText lt = FT("PS1", Math.Max(5, w * 0.32), 2, false, topH * 0.8);
+            FormattedText lt = FT(label, Math.Max(5, w * 0.32), 2, false, topH * 0.8);
             dc.PushTransform(new MatrixTransform(0, 1, -1, 0, win.X + w / 2 + lt.Height / 2, win.Y + (topH - lt.Width) / 2));
             lt.SetForegroundBrush(WhiteA(0.85));
             dc.DrawText(lt, new Point(0, 0));
