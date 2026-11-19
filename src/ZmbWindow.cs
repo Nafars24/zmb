@@ -1326,6 +1326,7 @@ namespace ZMB
 
         void OnClosingZmb(object sender, CancelEventArgs e)
         {
+            try { StopAchvPolling(); if (trophyWin != null) { trophyWin.Close(); trophyWin = null; } } catch { }
             try
             {
                 CompositionTarget.Rendering -= OnFrame;

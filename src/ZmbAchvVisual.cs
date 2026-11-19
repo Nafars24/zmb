@@ -12,6 +12,7 @@ namespace ZMB
     {
         public string Head, Name, Sub, Icon, Grade;
         public double Start = -1;
+        public bool Overlay;      // tampil di atas game yang sedang jalan (jendela overlay)
     }
 
     public partial class ZmbWindow
@@ -299,20 +300,48 @@ namespace ZMB
             return w;
         }
 
-        // ===================== POPUP "TROFI DIDAPAT" =====================
-        void EnqueueTrophyPopup(Achv a, AchvSet set)
+        // ===================== POPUP "TROFI DIDAPAT" (gaya PlayStation, kanan bawah) =====================
+        const double TrophyDur = 6.0;
+
+        // Grade untuk ikon trofi: PS3 punya sendiri; RA dari poin; Steam perunggu
+        static string PopupGrade(Achv a, AchvSet set)
+        {
+            if (a.Grade != null) return a.Grade;
+            if (set.Source == "RetroAchievements")
+                return a.Points >= 25 ? "G" : (a.Points >= 10 ? "S" : "B");
+            return "B";
+        }
+
+        void EnqueueTrophyPopup(Achv a, AchvSet set) { EnqueueTrophyPopup(a, set, false); }
+
+        void EnqueueTrophyPopup(Achv a, AchvSet set, bool overlay)
         {
             TrophyPopup p = new TrophyPopup();
-            p.Head = set.Source == "RPCS3" ? "Kamu mendapat trofi!" : "Achievement terbuka!";
+            p.Grade = PopupGrade(a, set);
+            p.Head = "Kamu mendapat trofi.";
             p.Name = a.Name;
             List<string> sub = new List<string>();
-            if (a.Grade != null) sub.Add(GradeName(a.Grade));
+            sub.Add(GradeName(p.Grade));
             if (a.Points > 0 && set.Source == "RetroAchievements") sub.Add(a.Points + " poin");
             sub.Add(set.Title);
             p.Sub = string.Join("  \u2022  ", sub.ToArray());
             p.Icon = a.Icon;
-            p.Grade = a.Grade;
-            popups.Add(p);
+            p.Overlay = overlay && cfg.TrophyOverlay;
+            if (!string.IsNullOrEmpty(p.Icon)) GetImage("ach:" + p.Icon, IconLoader(p.Icon, 160)); // mulai unduh ikon lebih awal
+            if (p.Overlay) ShowOverlayPopup(p); else popups.Add(p);
+        }
+
+        // Trofi platinum ala PS saat semua trofi/achievement game sudah didapat
+        void EnqueuePlatinum(AchvSet set, bool overlay)
+        {
+            TrophyPopup p = new TrophyPopup();
+            p.Grade = "P";
+            p.Head = "Kamu mendapat trofi platinum!";
+            p.Name = set.Title;
+            p.Sub = "Platinum  \u2022  " + set.Total + "/" + set.Total + " terbuka";
+            p.Icon = set.Icon;
+            p.Overlay = overlay && cfg.TrophyOverlay;
+            if (p.Overlay) ShowOverlayPopup(p); else popups.Add(p);
         }
 
         void DrawTrophyPopups(DrawingContext dc, double W, double H)
@@ -321,28 +350,45 @@ namespace ZMB
             TrophyPopup p = popups[0];
             double now = T;
             if (p.Start < 0) { p.Start = now; Sfx.Trophy(); }
-            double age = now - p.Start, dur = 4.8;
-            if (age > dur) { popups.RemoveAt(0); return; }
+            double age = now - p.Start;
+            if (age > TrophyDur) { popups.RemoveAt(0); return; }
             double s = S;
-            double inT = Math.Min(1, age / 0.45), outT = Math.Max(0, (age - (dur - 0.45)) / 0.45);
+            double w = 460 * s, h = 104 * s;
+            DrawTrophyCard(dc, p, W - w - 48 * s, H - h - 92 * s, s, age);
+        }
+
+        // Kartu notifikasi: ikon trofi game di kiri, trofi berwarna + teks di kanan
+        void DrawTrophyCard(DrawingContext dc, TrophyPopup p, double x, double y, double s, double age)
+        {
+            double w = 460 * s, h = 104 * s;
+            double inT = Math.Min(1, age / 0.4), outT = Math.Max(0, (age - (TrophyDur - 0.4)) / 0.4);
             double e = 1 - Math.Pow(1 - inT, 3);
-            double a = Math.Min(e, 1 - outT);
-            double w = 560 * s, h = 112 * s;
-            double x = W - w - 40 * s;
-            double y = 30 * s - (1 - e) * 140 * s - outT * 40 * s;
+            double a = Math.Max(0, Math.Min(e, 1 - outT));
+            if (a <= 0) return;
+            x += (1 - e) * 70 * s + outT * 50 * s;
             Rect r = new Rect(x, y, w, h);
-            dc.PushOpacity(Math.Max(0, a));
-            dc.DrawRoundedRectangle(SolidOf(Color.FromArgb(225, 12, 14, 22)), penLine, r, 14 * s, 14 * s);
-            Rect ib = new Rect(x + 16 * s, y + 16 * s, 80 * s, 80 * s);
-            Glow(dc, ib.X + 40 * s, ib.Y + 40 * s, 70 * s, 0.25 + 0.15 * Math.Sin(age * 6));
+            dc.PushOpacity(a);
+            // bayangan lembut + panel gelap
+            dc.DrawRoundedRectangle(SolidOf(Color.FromArgb(70, 0, 0, 0)), null, new Rect(x + 3 * s, y + 5 * s, w, h), 12 * s, 12 * s);
+            LinearGradientBrush bg = new LinearGradientBrush(Color.FromArgb(246, 44, 45, 52), Color.FromArgb(246, 28, 29, 34), 90);
+            bg.Freeze();
+            dc.DrawRoundedRectangle(bg, new Pen(SolidOf(Color.FromArgb(38, 255, 255, 255)), Math.Max(1, s)), r, 12 * s, 12 * s);
+
+            Rect ib = new Rect(x + 16 * s, y + 16 * s, 72 * s, 72 * s);
             Achv fake = new Achv(); fake.Grade = p.Grade; fake.Unlocked = true;
-            AchvSet dummy = new AchvSet();
-            DrawIconBox(dc, p.Icon, ib, 1, fake, dummy);
-            double tx = ib.Right + 18 * s, tw = r.Right - tx - 18 * s;
-            if (p.Grade != null) DrawTrophyColored(dc, tx + 10 * s, y + 28 * s, 26 * s, GradeColor(p.Grade), 1);
-            Txt(dc, p.Head, 16 * s, 0, tx + (p.Grade != null ? 28 * s : 0), y + 16 * s, 0.75, tw, 0, false);
-            Txt(dc, p.Name, 23 * s, 2, tx, y + 42 * s, 1, tw, 0, false);
-            Txt(dc, p.Sub, 15 * s, 0, tx, y + 76 * s, 0.6, tw, 0, false);
+            DrawIconBox(dc, p.Icon, ib, 1, fake, new AchvSet());
+            // kilau singkat saat muncul
+            double shine = Math.Max(0, 1 - Math.Abs(age - 0.55) / 0.35);
+            if (shine > 0) dc.DrawRoundedRectangle(WhiteA(0.28 * shine), null, ib, 6 * s, 6 * s);
+
+            double tx = ib.Right + 16 * s, tw = r.Right - tx - 16 * s;
+            Color gc = GradeColor(p.Grade);
+            DrawTrophyColored(dc, tx + 9 * s, y + 29 * s, 20 * s, gc, 1);
+            Txt(dc, p.Head, 15 * s, 0, tx + 24 * s, y + 19 * s, 0.82, tw - 24 * s, 0, false);
+            Txt(dc, p.Name, 21 * s, 2, tx, y + 43 * s, 1, tw, 0, false);
+            Txt(dc, p.Sub, 13.5 * s, 0, tx, y + 74 * s, 0.55, tw, 0, false);
+            // garis warna grade di tepi bawah
+            dc.DrawRoundedRectangle(SolidOf(Color.FromArgb(200, gc.R, gc.G, gc.B)), null, new Rect(x + 16 * s, r.Bottom - 4 * s, w - 32 * s, 2 * s), s, s);
             dc.Pop();
         }
     }

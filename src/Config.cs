@@ -127,6 +127,7 @@ namespace ZMB
         public int ScreensaverMin = 5; // 0 = mati
         public bool ThemeMusicOn = true;
         public bool Ps1BootAnim = true;
+        public bool TrophyOverlay = true;
         public bool HomeHotkey = true;
         public string AvatarPath = "";
         public bool CheckUpdateDownloads = true;

@@ -561,9 +561,11 @@ namespace ZMB
         // ===================== PANTAU TROFI BARU =====================
         void AchvWatchStart(GameEntry g)
         {
+            StopAchvPolling();
             watchSrc = SourceFor(g);
             watchBefore = -1;
             if (watchSrc == null) return;
+            StartAchvPolling();
             AchvSet s = Peek<AchvSet>(watchSrc.Key);
             watchIds = null;
             if (s != null && s.Error == null) { watchBefore = s.Unlocked; watchIds = new HashSet<string>(s.Items.Where(a => a.Unlocked).Select(a => a.Id)); return; }
@@ -586,6 +588,7 @@ namespace ZMB
             int before = watchBefore;
             HashSet<string> ids = watchIds;
             watchSrc = null;
+            StopAchvPolling();
             InvalidateAsync(w.Key);
             GetAsync<AchvSet>(w.Key, w.Fetch, 0, delegate (AchvSet r)
             {
@@ -597,7 +600,7 @@ namespace ZMB
                 int gained = Math.Max(fresh.Count, r.Unlocked - before);
                 if (gained > 0)
                 {
-                    foreach (Achv a in fresh.Take(8)) EnqueueTrophyPopup(a, r);
+                    AnnounceTrophies(fresh, r, before, false);
                     if (fresh.Count == 0) Sfx.Ok();
                     ShowToast("Selamat! " + gained + " trofi baru di " + r.Title);
                 }

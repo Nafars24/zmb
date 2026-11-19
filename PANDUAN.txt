@@ -338,3 +338,15 @@ H. MASALAH UMUM
  * Masih terasa berat: matikan "Trailer di Latar" atau "Efek Gelombang",
    dan pastikan laptop memakai mode daya "Best performance".
  * Error tercatat di  zmb_error.log.  Reset total: hapus  zmb_config.xml
+
+ NOTIFIKASI TROFI ALA PLAYSTATION (v2.10)
+   * Saat game jalan, ZMB memeriksa trofi/achievement baru secara berkala
+     (RPCS3 tiap 6 detik, Steam 15 detik, RetroAchievements 30 detik) dan
+     menampilkan popup di kanan bawah layar, di atas game, lengkap dengan
+     ikon trofi game dan trofi berwarna (perunggu/perak/emas/platinum).
+   * RetroAchievements: warna trofi dari poin (25+ emas, 10+ perak, sisanya
+     perunggu). Steam: perunggu. Semua terbuka = popup trofi platinum.
+   * Popup tampil di atas game mode jendela / borderless fullscreen.
+     Game dengan "exclusive fullscreen" bisa menutupinya; ganti ke
+     borderless di pengaturan emulator/game kalau popup tidak terlihat.
+   * Matikan di Pengaturan > "Notifikasi Trofi Saat Main".
