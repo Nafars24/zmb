@@ -323,6 +323,7 @@ namespace ZMB
             bootLayer.Children.Add(bootVp);
             bootLayer.Children.Add(bootHint);
             bootLayer.Children.Add(bootFade);
+            Panel.SetZIndex(bootLayer, 100); // di atas semua lapisan XMB (ZIndex 1-6)
             root.Children.Add(bootLayer);
 
             bootActive = true;
