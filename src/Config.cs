@@ -26,6 +26,7 @@ namespace ZMB
         public string Logo = "";
         public string BoxArt = "";
         public string Spine = "";
+        public string Disc = "";
         public string ThemeMusic = "";
         public string Desc = "";
         public string Developer = "";
@@ -125,6 +126,7 @@ namespace ZMB
         public int Particles = 0;      // 0 otomatis, 1 kilau, 2 salju, 3 mati
         public int ScreensaverMin = 5; // 0 = mati
         public bool ThemeMusicOn = true;
+        public bool Ps1BootAnim = true;
         public bool HomeHotkey = true;
         public string AvatarPath = "";
         public bool CheckUpdateDownloads = true;

@@ -1,0 +1,12 @@
+Model 3D konsol PS1 (assets/ps1_console.bin + ps1_console.jpg)
+
+"SONY PlayStation One" oleh Vladimir_Sofyanov
+https://sketchfab.com/3d-models/sony-playstation-one-4afd87cc153346f8a8400a1e8517a6c9
+Penulis: https://sketchfab.com/vladimirsoufl
+Lisensi: CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+
+Perubahan untuk ZMB: dikonversi dari glTF ke format mesh ZMB, bagian tombol
+dipisah agar bisa dianimasikan, tekstur diperkecil ke 2048 px dan digabung
+dengan peta emission. Normal map dan roughness tidak dipakai.
+PlayStation dan PS one adalah merek dagang Sony Interactive Entertainment.
+ZMB tidak berafiliasi dengan Sony.

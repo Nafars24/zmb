@@ -19,3 +19,12 @@ Setelah terpasang, ZMB mengecek repositori ini dan menawarkan update sendiri (Pe
 Panduan lengkap: [PANDUAN.txt](PANDUAN.txt)
 
 Data pribadi (`zmb_config.xml`, API key, daftar game) hanya tersimpan di komputer pengguna dan tidak pernah diunggah.
+
+## Kredit
+
+- Model 3D konsol PS1 untuk animasi boot: "SONY PlayStation One" oleh
+  [Vladimir_Sofyanov](https://sketchfab.com/vladimirsoufl),
+  [sumber](https://sketchfab.com/3d-models/sony-playstation-one-4afd87cc153346f8a8400a1e8517a6c9),
+  lisensi [CC-BY-4.0](http://creativecommons.org/licenses/by/4.0/).
+  Dikonversi dan diperkecil untuk ZMB (lihat `assets/ps1_console_CREDITS.txt`).
+- PlayStation adalah merek dagang Sony Interactive Entertainment. ZMB tidak berafiliasi dengan Sony.

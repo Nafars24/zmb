@@ -5,3 +5,5 @@
 *.md   text eol=lf
 *.ico  binary
 *.png  binary
+*.jpg  binary
+*.bin  binary

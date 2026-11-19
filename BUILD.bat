@@ -18,7 +18,7 @@ if not exist "%FW%\csc.exe" (
 )
 
 set "RES="
-for %%f in (assets\*.png) do set "RES=!RES! /resource:%%f,ZMB.%%~nxf"
+for %%f in (assets\*.png assets\*.jpg assets\*.bin) do set "RES=!RES! /resource:%%f,ZMB.%%~nxf"
 
 "%FW%\csc.exe" /nologo /target:winexe /optimize+ /platform:anycpu ^
   /out:ZMB.exe ^

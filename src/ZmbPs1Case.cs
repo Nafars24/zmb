@@ -19,18 +19,33 @@ namespace ZMB
         const double CaseWinX0 = 0.100, CaseWinX1 = 0.970, CaseWinY0 = 0.020, CaseWinY1 = 0.978;
         const double SpineWinX0 = 0.150, SpineWinX1 = 0.862, SpineWinY0 = 0.022, SpineWinY1 = 0.978;
 
+        // Aset bawaan: dari resource di dalam exe, kalau tidak ada dari folder assets di sebelah ZMB.exe
+        static byte[] LoadAssetBytes(string name)
+        {
+            try
+            {
+                using (Stream rs = Assembly.GetExecutingAssembly().GetManifestResourceStream("ZMB." + name))
+                {
+                    if (rs != null)
+                    {
+                        MemoryStream ms = new MemoryStream();
+                        rs.CopyTo(ms);
+                        return ms.ToArray();
+                    }
+                }
+                string f = Path.Combine(Path.Combine(Config.BaseDir, "assets"), name);
+                return File.Exists(f) ? File.ReadAllBytes(f) : null;
+            }
+            catch { return null; }
+        }
+
         static ImageSource LoadAsset(string name)
         {
             try
             {
-                Stream st = Assembly.GetExecutingAssembly().GetManifestResourceStream("ZMB." + name);
-                if (st == null)
-                {
-                    string f = Path.Combine(Path.Combine(Config.BaseDir, "assets"), name);
-                    if (!File.Exists(f)) return null;
-                    st = new MemoryStream(File.ReadAllBytes(f));
-                }
-                using (st)
+                byte[] data = LoadAssetBytes(name);
+                if (data == null) return null;
+                using (Stream st = new MemoryStream(data))
                 {
                     BitmapImage bi = new BitmapImage();
                     bi.BeginInit();

@@ -826,6 +826,7 @@ namespace ZMB
         {
             if (saverOn) { ExitScreensaver(); return; }
             lastInputAt = T;
+            if (BootConsumeKey()) return;
             try { HandleKeyInner(k); }
             catch (Exception ex) { Log(ex.ToString()); ShowToast("Error: " + ex.Message); }
         }
@@ -1150,6 +1151,17 @@ namespace ZMB
 
         // ===================== GAME =====================
         void Launch(GameEntry g, bool forceAdmin)
+        {
+            if (bootActive || bootLayer != null) return;
+            if (BootAnimFor(g))
+            {
+                try { StartBoot(g, forceAdmin); return; }
+                catch (Exception ex) { Log("Boot anim: " + ex); try { EndBootLayer(); } catch { } bootActive = false; }
+            }
+            LaunchNow(g, forceAdmin);
+        }
+
+        void LaunchNow(GameEntry g, bool forceAdmin)
         {
             ProcessStartInfo psi;
             if (g.Platform == "WIN" || g.Platform == "STEAM")

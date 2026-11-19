@@ -87,6 +87,9 @@ namespace ZMB
             try { boxArt = GameScanner.FindBoxArt(g, p); } catch { }
             j.NeedBox = overwrite || boxArt == null;
             j.NeedSpine = rom && j.SsSystem > 0 && (overwrite || SpinePath(g) == null);
+            string discF = null;
+            try { discF = GameScanner.FindDisc(g); } catch { }
+            j.NeedDisc = rom && j.SsSystem > 0 && g.Platform == "PS1" && (overwrite || discF == null);
             string tr = null;
             try { tr = GameScanner.FindTrailer(g, p); } catch { }
             j.NeedVideo = rom && cfg.ScrapeVideos && (overwrite || tr == null);
@@ -129,7 +132,7 @@ namespace ZMB
             foreach (GameEntry g in games)
             {
                 ScrapeJob j = MakeJob(g, overwrite);
-                if (j.NeedCover || j.NeedBg || j.NeedLogo || j.NeedVideo || j.NeedBox || (j.NeedSpine && !string.IsNullOrEmpty(cfg.SsUser))) jobs.Add(j);
+                if (j.NeedCover || j.NeedBg || j.NeedLogo || j.NeedVideo || j.NeedBox || ((j.NeedSpine || j.NeedDisc) && !string.IsNullOrEmpty(cfg.SsUser))) jobs.Add(j);
             }
             if (jobs.Count == 0) { ShowToast("Semua media sudah lengkap"); return; }
 
@@ -176,6 +179,7 @@ namespace ZMB
             if (r.Cover != null) { ForgetImage("img:" + g.Cover); g.Cover = r.Cover; ForgetImage("img:" + r.Cover); cntCover++; changed = true; }
             if (r.Background != null) { g.Background = r.Background; ForgetImage("bg:" + r.Background); cntBg++; changed = true; }
             if (r.Video != null) { g.Trailer = r.Video; cntVid++; changed = true; }
+            if (r.Disc != null) { g.Disc = r.Disc; changed = true; }
             if (r.Spine != null) { g.Spine = r.Spine; ForgetImage("spine:" + r.Spine); spinePathCache.Clear(); changed = true; }
             if (r.Box != null) { g.BoxArt = r.Box; ForgetImage("box:" + r.Box); changed = true; }
             if (r.Logo != null) { g.Logo = r.Logo; ForgetImage("logo:" + r.Logo); cntLogo++; changed = true; }

@@ -236,8 +236,9 @@ namespace ZMB
             args.Append("/nowarn:168,219,414,649,618,252 ");
             string assetDir = Path.Combine(srcRoot, "assets");
             if (Directory.Exists(assetDir))
-                foreach (string png in Directory.GetFiles(assetDir, "*.png"))
-                    args.Append("/resource:\"" + png + "\",ZMB." + Path.GetFileName(png) + " ");
+                foreach (string pat in new string[] { "*.png", "*.jpg", "*.bin" })
+                    foreach (string af in Directory.GetFiles(assetDir, pat))
+                        args.Append("/resource:\"" + af + "\",ZMB." + Path.GetFileName(af) + " ");
             args.Append("/lib:\"" + fw.TrimEnd('\\') + "\" /lib:\"" + Path.Combine(fw, "WPF") + "\" ");
             foreach (string r in new string[] { "System.dll", "System.Core.dll", "System.Drawing.dll", "System.Windows.Forms.dll", "System.Xml.dll",
                 "System.Web.Extensions.dll", "System.IO.Compression.dll", "System.Xaml.dll", "WindowsBase.dll", "PresentationCore.dll", "PresentationFramework.dll" })

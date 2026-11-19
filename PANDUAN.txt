@@ -177,6 +177,21 @@ Ganti mode: tekan F2, atau Pengaturan > Mode Tampilan.
    (disc 1) dengan nama tanpa label disc. Kalau ada file .m3u untuk game
    itu, .m3u yang dipakai (ganti disc lewat menu emulator).
 
+ ANIMASI BOOT PS1 (v2.9)
+   Saat game PS1 dijalankan: konsol PS one 3D muncul, tombol OPEN ditekan,
+   tutup CD terbuka, disc game masuk, tutup ditutup, tombol POWER ditekan,
+   lampu hijau menyala, layar hitam, lalu game jalan (sekitar 4 detik).
+   * Tekan tombol apa saja / klik untuk langsung masuk game.
+   * Matikan di Pengaturan > "Animasi Boot PS1".
+   * Gambar disc per game, urutan pencarian:
+       1. Tab > "Pilih Gambar Disc (Animasi Boot)..."
+       2. ZMB\discs\PS1\<nama rom>.png, atau <nama rom>-disc.png di
+          sebelah rom, atau folder "discs" di dalam folder rom
+       3. "Unduh Media Otomatis" (ScreenScraper, jenis support-2D)
+       4. Kalau tidak ada: disc dibuat otomatis dari cover game
+   * Model 3D: "SONY PlayStation One" oleh Vladimir_Sofyanov (Sketchfab),
+     lisensi CC-BY 4.0. Rincian di assets\ps1_console_CREDITS.txt.
+
 
 C6. FITUR BARU v2.5
 ---------------------------------------------------------------------
