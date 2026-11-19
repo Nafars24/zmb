@@ -107,10 +107,47 @@ namespace ZMB
         void DrawOverlayCase(DrawingContext dc, XmbItem it, CaseStyle cs, Rect r)
         {
             CaseOverlay ov = cs.Overlay;
-            Rect win = ov.CaseWindow(r);
+            // Auto-fit: tinggi case menyesuaikan rasio cover supaya cover tampil utuh tanpa terpotong.
+            // Lebar dan alas case tetap (posisi di rak tidak bergeser), case memanjang/memendek ke atas.
+            Rect fit = r;
+            ImageSource img = BoxImage(it);
+            BitmapSource bs = img as BitmapSource;
+            if (bs != null && !it.BoxIsIcon && bs.PixelWidth > 0 && bs.PixelHeight > 0)
+            {
+                Rect w0 = ov.CaseWindow(r);
+                double coverAspect = (double)bs.PixelWidth / bs.PixelHeight;
+                double wantH = w0.Width / coverAspect;
+                double extra = wantH - w0.Height;
+                double maxGrow = r.Height * 0.35, maxShrink = r.Height * 0.25;
+                if (extra > maxGrow) extra = maxGrow;
+                if (extra < -maxShrink) extra = -maxShrink;
+                fit = new Rect(r.X, r.Y - extra, r.Width, r.Height + extra);
+            }
+            double top = r.Height * ov.CY0, bottom = r.Height * (1 - ov.CY1); // tinggi bingkai atas/bawah asli
+            Rect win = new Rect(fit.X + fit.Width * ov.CX0, fit.Y + top, fit.Width * (ov.CX1 - ov.CX0), Math.Max(1, fit.Height - top - bottom));
             dc.DrawRectangle(SolidOf(Rgb(12, 12, 14)), null, win);
             DrawCoverArea(dc, it, cs, win);
-            dc.DrawImage(ov.CaseImg, r);
+            DrawOverlay3Slice(dc, ov.CaseImg, fit, ov.CY0, ov.CY1, top, bottom);
+        }
+
+        // Gambar lapisan plastik dengan bagian atas & bawah tetap, bagian tengah saja yang diregangkan
+        static void DrawOverlay3Slice(DrawingContext dc, ImageSource img, Rect d, double f0, double f1, double topH, double botH)
+        {
+            double midH = Math.Max(1, d.Height - topH - botH);
+            DrawImageBand(dc, img, new Rect(d.X, d.Y, d.Width, topH + 0.5), 0, f0, topH);
+            DrawImageBand(dc, img, new Rect(d.X, d.Y + topH, d.Width, midH + 0.5), f0, f1, midH);
+            DrawImageBand(dc, img, new Rect(d.X, d.Bottom - botH, d.Width, botH), f1, 1, botH);
+        }
+
+        // Pita sumber [s0, s1] (pecahan tinggi gambar) digambar ke rect tujuan dengan tinggi h
+        static void DrawImageBand(DrawingContext dc, ImageSource img, Rect dest, double s0, double s1, double h)
+        {
+            if (s1 - s0 <= 1e-6 || h <= 0) return;
+            double fullH = h / (s1 - s0);
+            Rect full = new Rect(dest.X, dest.Y - s0 * fullH, dest.Width, fullH);
+            dc.PushClip(new RectangleGeometry(dest));
+            dc.DrawImage(img, full);
+            dc.Pop();
         }
 
         void DrawOverlaySpine(DrawingContext dc, XmbItem it, CaseOverlay ov, Rect r)
