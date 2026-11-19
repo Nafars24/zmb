@@ -1,5 +1,5 @@
 @echo off
-setlocal
+setlocal enabledelayedexpansion
 cd /d "%~dp0"
 title Build ZMB
 echo ==================================================
@@ -17,11 +17,15 @@ if not exist "%FW%\csc.exe" (
     exit /b 1
 )
 
+set "RES="
+for %%f in (assets\*.png) do set "RES=!RES! /resource:%%f,ZMB.%%~nxf"
+
 "%FW%\csc.exe" /nologo /target:winexe /optimize+ /platform:anycpu ^
   /out:ZMB.exe ^
   /win32icon:assets\zmb.ico ^
   /win32manifest:assets\app.manifest ^
   /nowarn:168,219,414,649,618,252 ^
+  !RES! ^
   /lib:"%FW%" /lib:"%FW%\WPF" ^
   /r:System.dll /r:System.Core.dll /r:System.Drawing.dll /r:System.Windows.Forms.dll /r:System.Xml.dll ^
   /r:System.Web.Extensions.dll /r:System.IO.Compression.dll /r:System.Xaml.dll /r:WindowsBase.dll /r:PresentationCore.dll /r:PresentationFramework.dll ^

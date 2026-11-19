@@ -21,12 +21,12 @@ namespace ZMB
         public GameEntry G;
         public string Name, Platform, Path, AppId, PlatShort;
         public int SsSystem;
-        public bool NeedCover, NeedBg, NeedVideo, NeedLogo, NeedBox;
+        public bool NeedCover, NeedBg, NeedVideo, NeedLogo, NeedBox, NeedSpine;
     }
 
     public class ScrapeResult
     {
-        public string Cover, Background, Video, Logo, Box;
+        public string Cover, Background, Video, Logo, Box, Spine;
         public List<string> Errors = new List<string>();
     }
 
@@ -332,6 +332,7 @@ namespace ZMB
                 }
                 if (j.NeedBg && res.Background == null) SsGet(jeu, new string[] { "fanart", "ss" }, region, "backgrounds", ".jpg", j, ref res.Background);
                 if (j.NeedLogo && res.Logo == null) SsGet(jeu, new string[] { "wheel-hd", "wheel" }, region, "logos", ".png", j, ref res.Logo);
+                if (j.NeedSpine && res.Spine == null) SsGet(jeu, new string[] { "box-2D-side" }, region, "spines", ".png", j, ref res.Spine);
                 if (c.Videos && j.NeedVideo && res.Video == null) SsGet(jeu, new string[] { "video-normalized", "video" }, region, "trailers", ".mp4", j, ref res.Video);
             }
             catch (Exception ex) { res.Errors.Add("ScreenScraper: " + ex.Message); }

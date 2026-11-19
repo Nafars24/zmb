@@ -160,6 +160,18 @@ Ganti mode: tekan F2, atau Pengaturan > Mode Tampilan.
    jalankan "Unduh Media Otomatis" (sekarang juga mengunduh box art
    portrait), atau Tab > "Pilih Box Art (Coverflow)...".
  * Latar game, trailer, musik, dan trofi tetap jalan di mode ini.
+ * PS1 (v2.8): jewel case asli dengan plastik bening dan engsel hitam,
+   game lain di rak tampil sebagai punggung case (spine) PS1.
+   Spine bisa diganti sendiri, urutan pencariannya:
+     1. Tab > "Pilih Gambar Spine (Coverflow)..." (per game)
+     2. File di folder ZMB\spines\PS1\<nama file rom>.png/.jpg
+     3. File di sebelah rom: <nama rom>-spine.png, atau folder
+        "spines" di dalam folder rom
+     4. "Unduh Media Otomatis" (ScreenScraper, jenis box-2D-side)
+     5. Kalau tidak ada: spine hitam otomatis ala PS1 (judul vertikal)
+   Gambar spine boleh tegak atau mendatar, ZMB memutarnya sendiri.
+   Lapisan plastik ada di assets\ps1_case.png dan assets\ps1_spine.png;
+   boleh diganti dengan PNG transparan lain berukuran serupa.
 
 
 C6. FITUR BARU v2.5

@@ -25,6 +25,7 @@ namespace ZMB
         public string NpCommId = "";
         public string Logo = "";
         public string BoxArt = "";
+        public string Spine = "";
         public string ThemeMusic = "";
         public string Desc = "";
         public string Developer = "";

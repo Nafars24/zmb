@@ -297,6 +297,27 @@ namespace ZMB
             return null;
         }
 
+        // Gambar punggung case (spine) untuk rak Coverflow
+        public static string FindSpine(GameEntry g)
+        {
+            if (!string.IsNullOrEmpty(g.Spine) && File.Exists(g.Spine)) return g.Spine;
+            if (g.Platform == "WIN" || g.Platform == "STEAM") return null;
+            string key = Path.GetFileNameWithoutExtension(g.Path);
+            if (key.Equals("EBOOT", StringComparison.OrdinalIgnoreCase) || (g.Platform == "PS3" && Ps3Meta.IsIso(g.Path))) key = GameScanner.SafeName(g.Name);
+            List<string> dirs = new List<string>();
+            dirs.Add(Path.Combine(Path.Combine(Config.BaseDir, "spines"), g.Platform));
+            try
+            {
+                string rd = Path.GetDirectoryName(g.Path);
+                dirs.Add(Path.Combine(rd, "spines"));
+                dirs.Add(Path.Combine(rd, "spine"));
+                string f0 = FirstExisting(new string[] { rd }, new string[] { key + "-spine", key + "_spine", key + " spine" }, ImgExt);
+                if (f0 != null) return f0;
+            }
+            catch { }
+            return FirstExisting(dirs, new string[] { key, GameScanner.SafeName(g.Name) }, ImgExt);
+        }
+
         // Box art portrait untuk mode Coverflow (null kalau tidak ada)
         public static string FindBoxArt(GameEntry g, PlatformCfg p)
         {

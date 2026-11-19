@@ -315,7 +315,7 @@ namespace ZMB
             help.Children = BuildHelpItems;
             l.Add(help);
 
-            XmbItem about = MakeItem("Tentang ZMB", "Versi 2.7.2  \u2022  Data disimpan di zmb_config.xml (Enter: buka folder)", "\uE946", delegate { ShowInExplorer(Config.FilePath); });
+            XmbItem about = MakeItem("Tentang ZMB", "Versi 2.8  \u2022  Data disimpan di zmb_config.xml (Enter: buka folder)", "\uE946", delegate { ShowInExplorer(Config.FilePath); });
             l.Add(about);
             return l;
         }
@@ -699,6 +699,16 @@ namespace ZMB
                 if (!string.IsNullOrEmpty(n)) { g.Name = n.Trim(); cfg.EnsureStored(g); SaveAndRefresh(); }
             }));
             o.Add(new OptionItem("Pilih Gambar Cover...", delegate { PickCover(g); }));
+            if (g.Platform != "WIN" && g.Platform != "STEAM")
+            {
+                o.Add(new OptionItem("Pilih Gambar Spine (Coverflow)...", delegate
+                {
+                    string f = Dialogs.PickFile(Owner32, "Pilih gambar punggung case (spine) untuk " + g.Name, "Gambar|*.jpg;*.jpeg;*.png;*.bmp", null);
+                    if (f != null) { g.Spine = f; cfg.EnsureStored(g); SaveAndRefresh(); ShowToast("Spine diganti"); }
+                }));
+                if (!string.IsNullOrEmpty(g.Spine))
+                    o.Add(new OptionItem("Hapus Spine Kustom", delegate { ForgetImage("spine:" + g.Spine); g.Spine = ""; SaveAndRefresh(); }));
+            }
             o.Add(new OptionItem("Pilih Box Art (Coverflow)...", delegate
             {
                 string f = Dialogs.PickFile(Owner32, "Pilih box art portrait untuk " + g.Name, "Gambar|*.jpg;*.jpeg;*.png;*.bmp", null);

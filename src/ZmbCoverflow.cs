@@ -19,6 +19,7 @@ namespace ZMB
         public bool DarkText = false;
         public string Label = "";
         public double SpineRatio = 0.075; // tebal punggung case / tinggi case
+        public bool Ps1 = false;          // jewel case PS1 dengan lapisan plastik asli
 
         public CaseStyle(int kind, double aspect, Color body, Color band, string label)
         {
@@ -56,7 +57,11 @@ namespace ZMB
                 {
                     case "WIN": cs = new CaseStyle(CaseStyle.DVD, 0.71, Rgb(14, 14, 16), Rgb(22, 22, 26), "PC"); break;
                     case "STEAM": cs = new CaseStyle(CaseStyle.DVD, 0.71, Rgb(16, 24, 36), Rgb(27, 40, 56), "PC  |  Steam"); break;
-                    case "PS1": cs = new CaseStyle(CaseStyle.JEWEL, 1.08, Rgb(18, 18, 20), Rgb(0, 0, 0), ""); break;
+                    case "PS1":
+                        cs = new CaseStyle(CaseStyle.JEWEL, 1.101, Rgb(18, 18, 20), Rgb(0, 0, 0), "");
+                        cs.Ps1 = true;
+                        cs.SpineRatio = 0.103;
+                        break;
                     case "PS2": cs = new CaseStyle(CaseStyle.DVD, 0.71, Rgb(10, 10, 14), Rgb(6, 6, 8), "PlayStation 2"); break;
                     case "PS3": cs = new CaseStyle(CaseStyle.BLURAY, 0.79, Rgb(12, 16, 26), Rgb(22, 26, 36), "PS3"); break;
                     case "PSP": cs = new CaseStyle(CaseStyle.DVD, 0.58, Rgb(12, 12, 14), Rgb(18, 18, 22), "PSP"); break;
@@ -155,6 +160,7 @@ namespace ZMB
 
         void DrawCase(DrawingContext dc, XmbItem it, CaseStyle cs, Rect r)
         {
+            if (cs.Ps1 && Ps1CaseImg() != null) { DrawPs1Case(dc, it, cs, r); return; }
             double rad = r.Width * 0.03;
             switch (cs.Kind)
             {
@@ -259,6 +265,7 @@ namespace ZMB
 
         void DrawSpine(DrawingContext dc, XmbItem it, CaseStyle cs, Rect r)
         {
+            if (cs.Ps1 && Ps1SpineImg() != null) { DrawPs1Spine(dc, it, r); return; }
             if (brSpineShade == null)
             {
                 LinearGradientBrush sh = new LinearGradientBrush();

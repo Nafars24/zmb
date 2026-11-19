@@ -394,6 +394,7 @@ namespace ZMB
         void RefreshAll()
         {
             RefreshItemsOnly();
+            spinePathCache.Clear();
             focusKey = null; // paksa latar dihitung ulang
         }
 

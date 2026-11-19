@@ -234,6 +234,10 @@ namespace ZMB
             if (File.Exists(ico)) args.Append("/win32icon:\"" + ico + "\" ");
             if (File.Exists(man)) args.Append("/win32manifest:\"" + man + "\" ");
             args.Append("/nowarn:168,219,414,649,618,252 ");
+            string assetDir = Path.Combine(srcRoot, "assets");
+            if (Directory.Exists(assetDir))
+                foreach (string png in Directory.GetFiles(assetDir, "*.png"))
+                    args.Append("/resource:\"" + png + "\",ZMB." + Path.GetFileName(png) + " ");
             args.Append("/lib:\"" + fw.TrimEnd('\\') + "\" /lib:\"" + Path.Combine(fw, "WPF") + "\" ");
             foreach (string r in new string[] { "System.dll", "System.Core.dll", "System.Drawing.dll", "System.Windows.Forms.dll", "System.Xml.dll",
                 "System.Web.Extensions.dll", "System.IO.Compression.dll", "System.Xaml.dll", "WindowsBase.dll", "PresentationCore.dll", "PresentationFramework.dll" })
