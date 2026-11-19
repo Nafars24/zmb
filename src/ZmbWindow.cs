@@ -514,7 +514,9 @@ namespace ZMB
             bool focused = IsActive && WindowState != WindowState.Minimized;
             if (focused)
             {
-                foreach (XKey k in Gamepad.Poll()) HandleKey(k);
+                List<XKey> padKeys = Gamepad.Poll();
+                if (padKeys.Count > 0) promptKeyboard = false;
+                foreach (XKey k in padKeys) HandleKey(k);
             }
 
             double a = 1 - Math.Exp(-dt * 14);
@@ -791,6 +793,7 @@ namespace ZMB
                 RefreshAll(); ShowToast("Daftar diperbarui");
                 e.Handled = true; return;
             }
+            promptKeyboard = true;
             if (e.IsRepeat && (bootActive || bootLayer != null)) { e.Handled = true; return; }
             XKey k = MapKey(key);
             if (k != XKey.None) { HandleKey(k); e.Handled = true; }
@@ -819,6 +822,7 @@ namespace ZMB
 
         void OnMouseDownZmb(object sender, MouseButtonEventArgs e)
         {
+            promptKeyboard = true;
             if (e.ChangedButton == MouseButton.Left) HandleKey(mode == Mode.Photo ? XKey.Right : XKey.Ok);
             else if (e.ChangedButton == MouseButton.Right) HandleKey(mode == Mode.Video ? XKey.Back : XKey.Options);
             else if (e.ChangedButton == MouseButton.XButton1 || e.ChangedButton == MouseButton.Middle) HandleKey(XKey.Back);

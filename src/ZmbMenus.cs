@@ -317,7 +317,7 @@ namespace ZMB
             help.Children = BuildHelpItems;
             l.Add(help);
 
-            XmbItem about = MakeItem("Tentang ZMB", "Versi 2.10.1  \u2022  Model 3D PS one: Vladimir_Sofyanov (Sketchfab, CC-BY 4.0)  \u2022  Enter: buka folder data", "\uE946", delegate { ShowInExplorer(Config.FilePath); });
+            XmbItem about = MakeItem("Tentang ZMB", "Versi 2.11  \u2022  Model 3D PS one: Vladimir_Sofyanov (Sketchfab, CC-BY 4.0)  \u2022  Enter: buka folder data", "\uE946", delegate { ShowInExplorer(Config.FilePath); });
             l.Add(about);
             return l;
         }
@@ -326,8 +326,8 @@ namespace ZMB
         {
             List<XmbItem> l = new List<XmbItem>();
             l.Add(MakeItem("Navigasi", "Panah / WASD / D-Pad / Stik kiri / Scroll mouse", "\uE759", null));
-            l.Add(MakeItem("Pilih", "Enter / X / Tombol A / Klik kiri", "\uE73E", null));
-            l.Add(MakeItem("Kembali", "Esc / Backspace / Tombol B / Klik kanan di video", "\uE72B", null));
+            l.Add(MakeItem("Pilih", "Enter / Tombol A (Xbox) / Silang (PlayStation) / Klik kiri", "\uE73E", null));
+            l.Add(MakeItem("Kembali", "Esc / Backspace / Tombol B (Xbox) / Bulat (PlayStation) / Klik kanan di video", "\uE72B", null));
             l.Add(MakeItem("Menu Opsi (Segitiga)", "Tab / T / Tombol Y / Klik kanan", "\uE712", null));
             l.Add(MakeItem("Musik: Putar/Jeda", "Spasi / Tombol START / Tombol media", "\uE768", null));
             l.Add(MakeItem("Musik: Lagu Sebelum/Berikut", "[ dan ]  /  LB dan RB", "\uE893", null));

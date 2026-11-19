@@ -539,18 +539,15 @@ namespace ZMB
         void DrawCoverflowHints(DrawingContext dc, double W, double y, double fade)
         {
             double s = S;
-            bool pad = Gamepad.AnyConnected;
-            string[] keys = pad ? new string[] { "A", "B", "X", "Y", "\u2195", "LB RB" } : new string[] { "Enter", "Esc", "I", "Tab", "\u2191\u2193", "[ ]" };
+            bool pad = PadPrompts;
+            string[] keys = { "ok", "back", "sel", "opt", "updown", "bumpers" };
             string[] labels = { "Pilih", "Kembali", "Detail", "Opsi", stack.Count > 0 ? "Atas: Kembali" : "Kategori", "Lagu" };
-            Color[] cols = pad
-                ? new Color[] { Rgb(90, 200, 90), Rgb(230, 70, 60), Rgb(60, 120, 230), Rgb(240, 200, 40), Rgb(120, 124, 136), Rgb(120, 124, 136) }
-                : new Color[] { Rgb(80, 84, 96), Rgb(80, 84, 96), Rgb(80, 84, 96), Rgb(80, 84, 96), Rgb(80, 84, 96), Rgb(80, 84, 96) };
             double fs = 17 * s, kh = 28 * s;
             double total = 0;
             double[] kw = new double[keys.Length], lw = new double[keys.Length];
             for (int i = 0; i < keys.Length; i++)
             {
-                kw[i] = Math.Max(kh, FT(keys[i], fs, 2, false, 0).Width + 14 * s);
+                kw[i] = PromptWidth(keys[i], fs, kh, pad);
                 lw[i] = FT(labels[i], fs, 0, false, 0).Width;
                 total += kw[i] + 8 * s + lw[i] + (i < keys.Length - 1 ? 46 * s : 0);
             }
@@ -559,11 +556,7 @@ namespace ZMB
             for (int i = 0; i < keys.Length; i++)
             {
                 Rect kr = new Rect(x, y - kh / 2, kw[i], kh);
-                dc.DrawRoundedRectangle(BrushA(BadgeBrush(cols[i]), 0.92 * fade), null, kr, pad && keys[i].Length == 1 ? kh / 2 : 5 * s, pad && keys[i].Length == 1 ? kh / 2 : 5 * s);
-                FormattedText kf = FT(keys[i], fs, 2, false, 0);
-                kf.SetForegroundBrush(WhiteA(fade));
-                dc.DrawText(kf, new Point(kr.X + (kw[i] - kf.Width) / 2, kr.Y + (kh - kf.Height) / 2));
-                kf.SetForegroundBrush(brWhite);
+                DrawPrompt(dc, keys[i], kr, fs, fade, pad);
                 x += kw[i] + 8 * s;
                 Txt(dc, labels[i], fs, 0, x, y - th / 2, 0.85 * fade, 0, 0, false);
                 x += lw[i] + 46 * s;

@@ -140,11 +140,102 @@ namespace ZMB
         static int api = 0; // 0 = belum dicek, 1 = 1_4, 2 = 9_1_0, -1 = tidak ada
         static bool[] connected = new bool[4];
         static DateTime lastScan = DateTime.MinValue;
-        static ushort prevButtons = 0;
+        static ushort prevButtons = 0, prevSony = 0, prevXbox = 0;
+        public static DateTime LastPressAt = DateTime.MinValue;
         static Dictionary<XKey, DateTime> holdStart = new Dictionary<XKey, DateTime>();
         static Dictionary<XKey, DateTime> lastRepeat = new Dictionary<XKey, DateTime>();
         public static bool AnyConnected = false;
         public static ushort CurrentButtons = 0;
+        // Jenis stik untuk ikon tombol di layar: 1 = Xbox (A B X Y), 2 = PlayStation (silang, bulat, kotak, segitiga)
+        public const int StyleXbox = 1, StyleSony = 2;
+        public static int Style = StyleXbox;
+        public static bool XboxConnected, SonyConnected;
+
+        // ---- Stik Sony (DualShock 4 / DualSense) lewat winmm, tanpa DS4Windows ----
+        [StructLayout(LayoutKind.Sequential)]
+        struct JOYINFOEX
+        {
+            public int dwSize, dwFlags, dwXpos, dwYpos, dwZpos, dwRpos, dwUpos, dwVpos, dwButtons, dwButtonNumber, dwPOV, dwReserved1, dwReserved2;
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        struct JOYCAPS
+        {
+            public ushort wMid, wPid;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)] public string szPname;
+            public uint wXmin, wXmax, wYmin, wYmax, wZmin, wZmax, wNumButtons, wPeriodMin, wPeriodMax,
+                wRmin, wRmax, wUmin, wUmax, wVmin, wVmax, wCaps, wMaxAxes, wNumAxes, wMaxButtons;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)] public string szRegKey;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)] public string szOEMVxD;
+        }
+
+        [DllImport("winmm.dll")] static extern int joyGetPosEx(int id, ref JOYINFOEX ji);
+        [DllImport("winmm.dll", EntryPoint = "joyGetDevCapsW", CharSet = CharSet.Unicode)] static extern int joyGetDevCaps(IntPtr id, ref JOYCAPS caps, int size);
+
+        const int SonyVid = 0x054C;
+        static List<int> sonyIds = new List<int>();
+        static DateTime lastSonyScan = DateTime.MinValue;
+        static bool winmmOk = true;
+
+        static void ScanSony()
+        {
+            sonyIds.Clear();
+            for (int i = 0; i < 16; i++)
+            {
+                JOYINFOEX ji = new JOYINFOEX();
+                ji.dwSize = Marshal.SizeOf(typeof(JOYINFOEX));
+                ji.dwFlags = 0xFF;
+                if (joyGetPosEx(i, ref ji) != 0) continue;
+                JOYCAPS c = new JOYCAPS();
+                if (joyGetDevCaps(new IntPtr(i), ref c, Marshal.SizeOf(typeof(JOYCAPS))) != 0) continue;
+                if (c.wMid == SonyVid) sonyIds.Add(i);
+            }
+        }
+
+        // Tombol Sony dipetakan ke susunan bit XInput: silang=A, bulat=B, kotak=X, segitiga=Y
+        static ushort ReadSony()
+        {
+            if (!winmmOk) return 0;
+            ushort b = 0;
+            try
+            {
+                if ((DateTime.Now - lastSonyScan).TotalSeconds > 3) { lastSonyScan = DateTime.Now; ScanSony(); }
+                foreach (int id in sonyIds.ToArray())
+                {
+                    JOYINFOEX ji = new JOYINFOEX();
+                    ji.dwSize = Marshal.SizeOf(typeof(JOYINFOEX));
+                    ji.dwFlags = 0xFF;
+                    if (joyGetPosEx(id, ref ji) != 0) { sonyIds.Remove(id); continue; }
+                    int bt = ji.dwButtons;
+                    if ((bt & 0x0001) != 0) b |= X;      // kotak
+                    if ((bt & 0x0002) != 0) b |= A;      // silang
+                    if ((bt & 0x0004) != 0) b |= B;      // bulat
+                    if ((bt & 0x0008) != 0) b |= Y;      // segitiga
+                    if ((bt & 0x0010) != 0) b |= LB;     // L1
+                    if ((bt & 0x0020) != 0) b |= RB;     // R1
+                    if ((bt & 0x0040) != 0) b |= 0x0400; // L2
+                    if ((bt & 0x0080) != 0) b |= 0x0800; // R2
+                    if ((bt & 0x0100) != 0) b |= BACK;   // Share / Create
+                    if ((bt & 0x0200) != 0) b |= START;  // Options
+                    if ((bt & 0x2000) != 0) b |= BACK;   // touchpad
+                    int pov = ji.dwPOV;
+                    if (pov >= 0 && pov < 36000)
+                    {
+                        if (pov >= 31500 || pov <= 4500) b |= UP;
+                        if (pov >= 4500 && pov <= 13500) b |= RIGHT;
+                        if (pov >= 13500 && pov <= 22500) b |= DOWN;
+                        if (pov >= 22500 && pov <= 31500) b |= LEFT;
+                    }
+                    if (ji.dwYpos < 12000) b |= UP;
+                    if (ji.dwYpos > 53500) b |= DOWN;
+                    if (ji.dwXpos < 12000) b |= LEFT;
+                    if (ji.dwXpos > 53500) b |= RIGHT;
+                }
+            }
+            catch { winmmOk = false; }
+            SonyConnected = sonyIds.Count > 0;
+            return b;
+        }
 
         static int GetState(int i, ref XINPUT_STATE s)
         {
@@ -169,17 +260,18 @@ namespace ZMB
         public static List<XKey> Poll()
         {
             List<XKey> result = new List<XKey>();
-            if (api == -1) return result;
             ushort buttons = 0;
+            ushort sony = ReadSony();
             bool rescan = (DateTime.Now - lastScan).TotalSeconds > 2;
             if (rescan) lastScan = DateTime.Now;
             AnyConnected = false;
             for (int i = 0; i < 4; i++)
             {
                 if (!connected[i] && !rescan) continue;
+                if (api == -1) break;
                 XINPUT_STATE s = new XINPUT_STATE();
                 int r;
-                try { r = GetState(i, ref s); } catch { api = -1; return result; }
+                try { r = GetState(i, ref s); } catch { api = -1; break; }
                 connected[i] = (r == 0);
                 if (r != 0) continue;
                 AnyConnected = true;
@@ -192,6 +284,17 @@ namespace ZMB
                 if (s.Gamepad.bRightTrigger > 100) b |= 0x0800; // RT
                 buttons |= b;
             }
+            XboxConnected = AnyConnected;
+            AnyConnected = XboxConnected || SonyConnected;
+            // ikon tombol mengikuti stik yang terakhir ditekan (atau satu-satunya yang tercolok)
+            ushort xbox = buttons;
+            if ((sony & ~prevSony) != 0) Style = StyleSony;
+            else if ((xbox & ~prevXbox) != 0) Style = StyleXbox;
+            else if (SonyConnected && !XboxConnected) Style = StyleSony;
+            else if (XboxConnected && !SonyConnected) Style = StyleXbox;
+            prevSony = sony; prevXbox = xbox;
+            buttons |= sony;
+            if ((buttons & ~prevButtons) != 0) LastPressAt = DateTime.Now;
             CurrentButtons = buttons;
             CheckRepeat(result, buttons, UP, XKey.Up);
             CheckRepeat(result, buttons, DOWN, XKey.Down);

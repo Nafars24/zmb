@@ -350,3 +350,13 @@ H. MASALAH UMUM
      Game dengan "exclusive fullscreen" bisa menutupinya; ganti ke
      borderless di pengaturan emulator/game kalau popup tidak terlihat.
    * Matikan di Pengaturan > "Notifikasi Trofi Saat Main".
+
+ STIK / CONTROLLER (v2.11)
+   * Stik Xbox (dan stik lain yang XInput): ikon tombol A B X Y.
+   * Stik PlayStation (DualShock 4 / DualSense) langsung terbaca lewat USB
+     atau Bluetooth, tanpa DS4Windows: ikon silang, bulat, kotak, segitiga.
+       Silang = Pilih, Bulat = Kembali, Segitiga = Opsi, Kotak = Detail,
+       L1/R1 = lagu sebelum/berikut, L2/R2 = loncat halaman,
+       Share + Options = kembali ke ZMB saat main.
+   * Ikon di layar ikut stik yang terakhir ditekan, dan kembali ke ikon
+     keyboard begitu keyboard/mouse dipakai.

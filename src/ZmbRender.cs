@@ -707,22 +707,16 @@ namespace ZMB
             double fs = 17 * s;
             double th = TextH(fs);
             double y = H - 64 * s;
-            bool pad = Gamepad.AnyConnected;
-            string[] keys = pad ? new string[] { "Y", "B", "A" } : new string[] { "Tab", "Esc", "Enter" };
+            bool pad = PadPrompts;
+            string[] keys = { "opt", "back", "ok" };
             string[] labels = { "Opsi", "Kembali", "Pilih" };
-            Color[] cols = pad
-                ? new Color[] { Color.FromRgb(240, 200, 40), Color.FromRgb(230, 70, 60), Color.FromRgb(90, 200, 90) }
-                : new Color[] { Color.FromRgb(80, 84, 96), Color.FromRgb(80, 84, 96), Color.FromRgb(80, 84, 96) };
             for (int i = 0; i < 3; i++)
             {
                 double lw = Txt(dc, labels[i], fs, 0, x, y, 0.85, 0, 2, true);
                 x -= lw + 8 * s;
-                FormattedText kf = FT(keys[i], fs, 2, false, 0);
-                double kh = 28 * s, kw = Math.Max(kh, kf.Width + 12 * s);
+                double kh = 28 * s, kw = PromptWidth(keys[i], fs, kh, pad);
                 x -= kw;
-                Rect kr = new Rect(x, y + (th - kh) / 2, kw, kh);
-                dc.DrawRoundedRectangle(BrushA(BadgeBrush(cols[i]), 0.92), null, kr, pad ? kh / 2 : 5 * s, pad ? kh / 2 : 5 * s);
-                dc.DrawText(kf, new Point(kr.X + (kw - kf.Width) / 2, kr.Y + (kh - kf.Height) / 2));
+                DrawPrompt(dc, keys[i], new Rect(x, y + (th - kh) / 2, kw, kh), fs, 1, pad);
                 x -= 26 * s;
             }
         }
