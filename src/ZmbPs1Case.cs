@@ -23,10 +23,10 @@ namespace ZMB
             0.100, 0.970, 0.020, 0.978, 0.150, 0.862, 0.022, 0.978);
         public static readonly CaseOverlay Ps3 = new CaseOverlay("ps3", "PS3", 0.900, 0.1123,
             0.0523, 0.9486, 0.1182, 0.9579, 0.183, 0.822, 0.111, 0.953);
-        public static readonly CaseOverlay Ps2 = new CaseOverlay("ps2", "PS2", 0.7242, 0.0828,
-            0.0289, 0.9551, 0.0267, 0.9740, 0.1862, 0.8138, 0.0394, 0.9640);
-        public static readonly CaseOverlay Gcn = new CaseOverlay("gcn", "Wii", 0.6856, 0.0887,
-            0.0289, 0.9483, 0.0248, 0.9766, 0.1429, 0.8442, 0.0369, 0.9724);
+        public static readonly CaseOverlay Ps2 = new CaseOverlay("ps2", "PS2", 0.7242, 0.0793,
+            0.0289, 0.9551, 0.0267, 0.9740, 0.0539, 0.9581, 0.0351, 0.9725);
+        public static readonly CaseOverlay Gcn = new CaseOverlay("gcn", "Wii", 0.6856, 0.0864,
+            0.0289, 0.9483, 0.0248, 0.9766, 0.0217, 0.9837, 0.0455, 0.9704);
 
         // case dengan lapisan plastik untuk platform ini (null kalau tidak ada / gambar tidak ditemukan)
         public static CaseOverlay For(string platform)
