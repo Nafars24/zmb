@@ -1,0 +1,10 @@
+Model 3D Xbox 360 (classic-xbox-360-white-edition.zip, GLB)
+
+Sumber: file yang diberikan pemilik ZMB. Nama pembuat dan lisensi tidak
+disertakan di dalam arsip; lengkapi bagian ini dengan tautan sumber dan
+lisensinya.
+
+Perubahan untuk ZMB: dikonversi ke format mesh ZMB, diputar dan diskalakan,
+bagian laci/slot dipisah agar bisa dianimasikan, lampu (Ring of Light / slot
+biru) ditambahkan, tekstur dirapikan dan diperkecil.
+Xbox 360 adalah merek dagang Microsoft. ZMB tidak berafiliasi dengan Microsoft.

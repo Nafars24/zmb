@@ -84,6 +84,8 @@ namespace ZMB
             if (string.Equals(g.Platform, "PS2", StringComparison.OrdinalIgnoreCase)) return "ps2";
             if (string.Equals(g.Platform, "PSP", StringComparison.OrdinalIgnoreCase)) return "psp";
             if (string.Equals(g.Platform, "SWITCH", StringComparison.OrdinalIgnoreCase)) return "switch";
+            if (string.Equals(g.Platform, "X360", StringComparison.OrdinalIgnoreCase)) return "x360";
+            if (string.Equals(g.Platform, "GCN", StringComparison.OrdinalIgnoreCase) || string.Equals(g.Platform, "WII", StringComparison.OrdinalIgnoreCase)) return "wii";
             return null;
         }
 
@@ -124,7 +126,7 @@ namespace ZMB
         void PreloadBootModel()
         {
             if (!cfg.Ps1BootAnim) return;
-            System.Threading.ThreadPool.QueueUserWorkItem(delegate { ConsoleModel("ps1"); ConsoleModel("ps2"); ConsoleModel("ps3"); ConsoleModel("psp"); ConsoleModel("switch"); });
+            System.Threading.ThreadPool.QueueUserWorkItem(delegate { ConsoleModel("ps1"); ConsoleModel("ps2"); ConsoleModel("ps3"); ConsoleModel("psp"); ConsoleModel("switch"); ConsoleModel("x360"); ConsoleModel("wii"); });
         }
 
         static BootModel LoadConsoleModel(string baseName)
@@ -268,11 +270,13 @@ namespace ZMB
         {
             bootKind = BootKindFor(g) ?? "ps1";
             BootModel bm = ConsoleModel(bootKind);
-            bool ps3 = bootKind == "ps3", ps2 = bootKind == "ps2", psp = bootKind == "psp", sw = bootKind == "switch";
+            bool ps3 = bootKind == "ps3", ps2 = bootKind == "ps2", psp = bootKind == "psp", sw = bootKind == "switch", x360 = bootKind == "x360", wii = bootKind == "wii";
             if (ps3) { bootCamPos = new Point3D(5.0, 2.25, 2.6); bootCamTarget = new Point3D(0.25, 0.0, 0.15); }
             else if (ps2) { bootCamPos = new Point3D(4.6, 2.3, 2.4); bootCamTarget = new Point3D(0.55, 0.0, -0.25); }
             else if (psp) { bootCamPos = new Point3D(0.9, 0.6, 3.2); bootCamTarget = new Point3D(0, 0, -0.1); }
             else if (sw) { bootCamPos = SwCamClose; bootCamTarget = SwTgtClose; }
+            else if (x360) { bootCamPos = new Point3D(5.0, 2.3, 2.6); bootCamTarget = new Point3D(0.3, 0.2, 0.2); }
+            else if (wii) { bootCamPos = new Point3D(5.0, 2.6, 3.6); bootCamTarget = new Point3D(0.45, 0.95, 0.0); }
             else { bootCamPos = new Point3D(4.2, 3.4, 2.85); bootCamTarget = new Point3D(0, 0.35, 0); }
             bootTrayT = new TranslateTransform3D();
             bootGame = g; bootAdmin = forceAdmin; bootResume = launchResume;
@@ -307,8 +311,13 @@ namespace ZMB
                 Material mat = mats.Count > 0 ? mats[ti] : new DiffuseMaterial(Brushes.Gray);
                 GeometryModel3D gm = new GeometryModel3D(kv.Value, mat);
                 gm.BackMaterial = mat;
-                if (ps3 || ps2 || psp || sw)
+                if (ps3 || ps2 || psp || sw || x360 || wii)
                 {
+                    if (x360)
+                    {
+                        if (kv.Key == XTrayFront || kv.Key == XTrayBody) gm.Transform = bootTrayT;
+                        else if (kv.Key == XEject) { bootOpenT = new TranslateTransform3D(); gm.Transform = bootOpenT; }
+                    }
                     if (sw && kv.Key == SwFlap)
                     {
                         if (bootDoorRot == null) bootDoorRot = new AxisAngleRotation3D(new Vector3D(1, 0, 0), 0);
@@ -376,14 +385,14 @@ namespace ZMB
             dTop.Children.Add(new DiffuseMaterial(discBrush));
             dTop.Children.Add(new SpecularMaterial(SolidOf(Color.FromArgb(140, 255, 255, 255)), 60));
             MaterialGroup dBot = new MaterialGroup(); // sisi data: PS1 hitam mengilap, Blu-ray perak kebiruan
-            dBot.Children.Add(new DiffuseMaterial(SolidOf(ps3 ? Rgb(150, 160, 185) : ps2 ? Rgb(60, 80, 165) : Rgb(16, 16, 20))));
+            dBot.Children.Add(new DiffuseMaterial(SolidOf(ps3 ? Rgb(150, 160, 185) : ps2 ? Rgb(60, 80, 165) : (x360 || wii) ? Rgb(185, 190, 200) : Rgb(16, 16, 20))));
             dBot.Children.Add(new SpecularMaterial(SolidOf(Color.FromArgb(200, 170, 150, 255)), 40));
             if (psp) { dBot = new MaterialGroup(); dBot.Children.Add(new DiffuseMaterial(SolidOf(Rgb(120, 122, 130)))); }
             if (sw) dBot = dTop; // kotak cartridge: semua sisi memakai tekstur yang sama
-            GeometryModel3D disc = new GeometryModel3D(psp ? UmdMesh() : sw ? CartMesh() : DiscMesh(ps3 || ps2 ? 0.6 : 0.72), dTop);
+            GeometryModel3D disc = new GeometryModel3D(psp ? UmdMesh() : sw ? CartMesh() : DiscMesh(ps3 || ps2 || x360 || wii ? 0.6 : 0.72), dTop);
             disc.BackMaterial = dBot;
             bootDiscSpin = new AxisAngleRotation3D(new Vector3D(0, 1, 0), 0);
-            bootDiscTilt = new AxisAngleRotation3D(new Vector3D(0, 0, 1), 0);
+            bootDiscTilt = new AxisAngleRotation3D(wii ? new Vector3D(1, 0, 0) : new Vector3D(0, 0, 1), 0); // Wii: disc berdiri (slot vertikal)
             bootDiscT = new TranslateTransform3D(0, 100, 0);
             Transform3DGroup dt = new Transform3DGroup();
             dt.Children.Add(new RotateTransform3D(bootDiscSpin));
@@ -483,7 +492,9 @@ namespace ZMB
             bootScale.ScaleX = sc; bootScale.ScaleY = sc; bootScale.ScaleZ = sc;
             bootYaw.Angle = -26 + 22 * EaseInOut(t / 4.3);
 
-            if (bootKind == "switch") UpdateBootSwitch(t);
+            if (bootKind == "x360") UpdateBootX360(t);
+            else if (bootKind == "wii") UpdateBootWii(t);
+            else if (bootKind == "switch") UpdateBootSwitch(t);
             else if (bootKind == "psp") UpdateBootPsp(t);
             else if (bootKind == "ps3") UpdateBootPs3(t);
             else if (bootKind == "ps2") UpdateBootPs2(t);
@@ -555,6 +566,72 @@ namespace ZMB
             bootPowerT.OffsetX = -0.012 * Pulse(t, 3.05, 3.3);
             if (t >= 3.15 && !bootSndPower) { bootSndPower = true; Sfx.Ok(); }
             if (bootLedImg != null) bootLedImg.Opacity = Smooth(Seg(t, 3.18, 3.45));
+        }
+
+        // ===== Xbox 360: tombol eject, laci keluar, disc diletakkan, laci masuk, Ring of Light menyala hijau =====
+        const int XTrayFront = 10, XEject = 11, XTrayBody = 14;
+        const double XTrayOut = 1.30;
+        static readonly Point3D XDiscSeat = new Point3D(0.47, 0.575, 0.525);
+        static readonly Point3D XDiscStart = new Point3D(2.8, 1.9, -1.8);
+
+        void UpdateBootX360(double t)
+        {
+            bootOpenT.OffsetX = -0.02 * Pulse(t, 0.55, 0.8);
+            if (t >= 0.62 && !bootSndOpen) { bootSndOpen = true; Sfx.Tick(); }
+            double tray = t < 2.35 ? XTrayOut * EaseOut3(Seg(t, 0.75, 1.45)) : XTrayOut * (1 - EaseInOut(Seg(t, 2.35, 3.0)));
+            bootTrayT.OffsetX = tray;
+            if (t >= 3.0 && !bootSndClose) { bootSndClose = true; Sfx.Back(); }
+
+            if (t < 1.2) bootDiscT.OffsetY = 100;
+            else
+            {
+                double u = EaseInOut(Seg(t, 1.2, 2.2));
+                Point3D a = XDiscStart;
+                Point3D e = new Point3D(XDiscSeat.X + XTrayOut, XDiscSeat.Y, XDiscSeat.Z);
+                bootDiscT.OffsetX = t >= 2.35 ? XDiscSeat.X + tray : Bez(a.X, a.X * 0.6 + e.X * 0.4, e.X, e.X, u);
+                bootDiscT.OffsetY = Bez(a.Y, a.Y * 0.6 + e.Y * 0.4 + 0.4, e.Y + 0.4, e.Y, u);
+                bootDiscT.OffsetZ = Bez(a.Z, a.Z * 0.6 + e.Z * 0.4, e.Z, e.Z, u);
+                bootDiscTilt.Angle = 42 * (1 - Smooth(Seg(t, 1.2, 2.15)));
+                bootDiscSpin.Angle = -360 * EaseOut3(Seg(t, 1.2, 2.4));
+            }
+            if (t >= 3.15 && !bootSndPower) { bootSndPower = true; Sfx.Ok(); }
+            // Ring of Light: berkedip sekali lalu menyala
+            if (bootLedImg != null) bootLedImg.Opacity = Smooth(Seg(t, 3.15, 3.3)) * (1 - 0.6 * Pulse(t, 3.3, 3.55));
+        }
+
+        // ===== Wii: disc berdiri melayang ke slot, ditarik masuk, slot menyala biru =====
+        static readonly Point3D WiiDiscSeat = new Point3D(0.38, 1.18, -0.0915);
+        static readonly Point3D WiiDiscFront = new Point3D(1.70, 1.18, -0.0915);
+        static readonly Point3D WiiDiscStart = new Point3D(2.8, 2.9, 1.6);
+
+        void UpdateBootWii(double t)
+        {
+            if (t < 1.0) bootDiscT.OffsetY = 100;
+            else if (t < 2.0)
+            {
+                double u = EaseInOut(Seg(t, 1.0, 1.95));
+                Point3D a = WiiDiscStart, f = WiiDiscFront;
+                bootDiscT.OffsetX = Bez(a.X, a.X * 0.7 + f.X * 0.3, f.X + 0.5, f.X, u);
+                bootDiscT.OffsetY = Bez(a.Y, a.Y * 0.7 + f.Y * 0.3 + 0.3, f.Y + 0.1, f.Y, u);
+                bootDiscT.OffsetZ = Bez(a.Z, a.Z * 0.7 + f.Z * 0.3, f.Z, f.Z, u);
+                bootDiscTilt.Angle = 90 - 50 * (1 - Smooth(Seg(t, 1.0, 1.9)));
+                bootDiscSpin.Angle = -300 * EaseOut3(Seg(t, 1.0, 2.0));
+            }
+            else
+            {
+                double u = Seg(t, 2.05, 2.75);
+                u = u * u * (3 - 2 * u);
+                bootDiscT.OffsetX = WiiDiscFront.X + (WiiDiscSeat.X - WiiDiscFront.X) * u;
+                bootDiscT.OffsetY = WiiDiscFront.Y;
+                bootDiscT.OffsetZ = WiiDiscFront.Z;
+                bootDiscTilt.Angle = 90;
+                bootDiscSpin.Angle = -300;
+            }
+            if (t >= 2.08 && !bootSndOpen) { bootSndOpen = true; Sfx.Tick(); }
+            if (t >= 2.75 && !bootSndClose) { bootSndClose = true; Sfx.Back(); }
+            if (t >= 3.0 && !bootSndPower) { bootSndPower = true; Sfx.Ok(); }
+            // slot biru: menyala, berdenyut sekali
+            if (bootLedImg != null) bootLedImg.Opacity = Smooth(Seg(t, 2.1, 2.4)) * (0.55 + 0.45 * Smooth(Seg(t, 3.0, 3.3)));
         }
 
         // ===== Nintendo Switch: tutup slot game card terbuka, cartridge masuk, kamera mundur ke layar yang menyala =====

@@ -1,0 +1,10 @@
+Model 3D Nintendo Wii (nintendo-wii.zip, Blender 2.79)
+
+Sumber: file yang diberikan pemilik ZMB. Nama pembuat dan lisensi tidak
+disertakan di dalam arsip; lengkapi bagian ini dengan tautan sumber dan
+lisensinya.
+
+Perubahan untuk ZMB: dikonversi ke format mesh ZMB, diputar dan diskalakan,
+bagian laci/slot dipisah agar bisa dianimasikan, lampu (Ring of Light / slot
+biru) ditambahkan, tekstur dirapikan dan diperkecil.
+Wii adalah merek dagang Nintendo. ZMB tidak berafiliasi dengan Nintendo.

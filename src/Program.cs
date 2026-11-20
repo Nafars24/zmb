@@ -3,7 +3,7 @@ using System.Threading;
 
 [assembly: System.Reflection.AssemblyTitle("ZMB")]
 [assembly: System.Reflection.AssemblyProduct("ZMB")]
-[assembly: System.Reflection.AssemblyVersion("2.21.1.0")]
+[assembly: System.Reflection.AssemblyVersion("2.22.0.0")]
 
 namespace ZMB
 {

@@ -439,3 +439,12 @@ H. MASALAH UMUM
      2. ZMB\discs\SWITCH\<nama file game>.png (atau <nama game>-disc.png di sebelah file game)
      3. Unduh Media Otomatis (ScreenScraper, gambar cartridge)
      4. Kalau tidak ada: cartridge abu gelap dengan label dari cover game
+
+ ANIMASI BOOT XBOX 360 & WII (v2.22)
+   Xbox 360 : tombol eject ditekan, laci keluar, disc game diletakkan,
+              laci masuk, Ring of Light menyala hijau.
+   Wii      : disc game (berdiri) melayang ke slot, ditarik masuk,
+              slot menyala biru. Dipakai untuk platform GameCube / Wii.
+   Desain disc per game sama seperti PlayStation:
+     Tab > "Pilih Gambar Disc (Animasi Boot)...", folder ZMB\discs\<PLATFORM>\,
+     atau Unduh Media Otomatis. Kalau tidak ada, dibuat dari cover game.
