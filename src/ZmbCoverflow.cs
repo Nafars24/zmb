@@ -82,6 +82,8 @@ namespace ZMB
                     case "VITA": cs = new CaseStyle(CaseStyle.DVD, 0.78, Rgb(20, 40, 90), Rgb(28, 62, 140), "PS Vita"); break;
                     case "NDS": cs = new CaseStyle(CaseStyle.DVD, 0.88, Rgb(222, 223, 228), Rgb(236, 237, 241), "Nintendo DS"); cs.DarkText = true; break;
                     case "3DS": cs = new CaseStyle(CaseStyle.DVD, 0.88, Rgb(232, 232, 236), Rgb(190, 28, 40), "Nintendo 3DS"); break;
+                    case "SWITCH": cs = new CaseStyle(CaseStyle.DVD, 0.62, Rgb(26, 26, 30), Rgb(230, 0, 18), "NINTENDO SWITCH"); break;
+                    case "X360": cs = new CaseStyle(CaseStyle.DVD, 0.71, Rgb(24, 26, 24), Rgb(16, 124, 16), "XBOX 360"); break;
                     case "GCN":
                         if (CaseOverlay.For("GCN") != null) cs = OverlayStyle(CaseStyle.DVD, CaseOverlay.Gcn, Rgb(235, 235, 238), Rgb(210, 210, 214));
                         else cs = new CaseStyle(CaseStyle.DVD, 0.71, Rgb(12, 12, 16), Rgb(76, 54, 150), "GameCube / Wii");

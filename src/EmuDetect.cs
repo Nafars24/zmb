@@ -40,6 +40,12 @@ namespace ZMB
             new Def("Mesen", new[] { "mesen" }, new[] { "NES", "SNES" }, "\"{rom}\" --fullscreen"),
             new Def("MAME", new[] { "mame" }, new[] { "ARC" }, "-rompath \"{romdir}\" {romname}"),
             new Def("Kega Fusion", new[] { "fusion" }, new[] { "MD" }, "-fullscreen \"{rom}\""),
+            new Def("Ryujinx", new[] { "ryujinx" }, new[] { "SWITCH" }, "--fullscreen \"{rom}\""),
+            new Def("Eden", new[] { "eden" }, new[] { "SWITCH" }, "-f -g \"{rom}\""),
+            new Def("Citron", new[] { "citron" }, new[] { "SWITCH" }, "-f -g \"{rom}\""),
+            new Def("Sudachi", new[] { "sudachi" }, new[] { "SWITCH" }, "-f -g \"{rom}\""),
+            new Def("yuzu", new[] { "yuzu" }, new[] { "SWITCH" }, "-f -g \"{rom}\""),
+            new Def("Xenia", new[] { "xenia_canary", "xenia" }, new[] { "X360" }, "--fullscreen \"{rom}\""),
             new Def("RetroArch", new[] { "retroarch" }, new string[0], "")
         };
 

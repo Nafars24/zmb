@@ -396,3 +396,12 @@ H. MASALAH UMUM
      Enter/A = buka, Esc/B = kembali (ke beranda kalau di level atas).
    * Masuk ke daftar game (mis. PlayStation 1) = rak coverflow seperti biasa.
    * Mode XMB (ala PS3) tidak berubah. Ganti mode: F2 atau Pengaturan.
+
+ NINTENDO SWITCH & XBOX 360 (v2.18)
+   * Platform baru di daftar Game (otomatis ditambahkan ke konfigurasi lama):
+       Nintendo Switch : .nsp .xci .nca .nro  - Ryujinx / Eden / Citron / Sudachi / yuzu
+       Xbox 360        : .iso .xex .zar       - Xenia / Xenia Canary
+   * Deteksi Emulator Otomatis mengenali emulator di atas dan mengisi argumennya
+     (Ryujinx: --fullscreen "{rom}", turunan yuzu: -f -g "{rom}", Xenia: --fullscreen "{rom}").
+   * Game Switch butuh prod.keys & firmware yang dipasang di emulatornya.
+   * Unduh media otomatis (ScreenScraper) juga jalan untuk kedua platform.

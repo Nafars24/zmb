@@ -27,6 +27,10 @@ namespace ZMB
             new[] { "cemu", "-f" },
             new[] { "ryujinx", "--fullscreen" },
             new[] { "xenia", "--fullscreen" },
+            new[] { "eden", "-f" },
+            new[] { "citron", "-f" },
+            new[] { "sudachi", "-f" },
+            new[] { "yuzu", "-f" },
         };
 
         public static string AddFlag(string emulatorPath, string args)

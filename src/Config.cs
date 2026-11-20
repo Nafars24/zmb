@@ -187,6 +187,8 @@ namespace ZMB
             l.Add(new PlatformCfg("Nintendo DS", "NDS", "nds;zip", "#7A7A7A", "melonDS / DeSmuME"));
             l.Add(new PlatformCfg("Nintendo 3DS", "3DS", "3ds;cci;cxi;app", "#C0392B", "Azahar / Lime3DS"));
             l.Add(new PlatformCfg("GameCube / Wii", "GCN", "iso;gcm;rvz;wbfs;ciso;gcz", "#5A3E9A", "Dolphin"));
+            l.Add(new PlatformCfg("Nintendo Switch", "SWITCH", "nsp;xci;nca;nro", "#E60012", "Ryujinx / Eden / Citron / Sudachi"));
+            l.Add(new PlatformCfg("Xbox 360", "X360", "iso;xex;zar", "#107C10", "Xenia / Xenia Canary"));
             l.Add(new PlatformCfg("Sega Genesis", "MD", "md;gen;bin;smd;zip", "#111111", "Kega Fusion / RetroArch"));
             l.Add(new PlatformCfg("Arcade (MAME)", "ARC", "zip;7z", "#D35400", "MAME / FBNeo (argumen: {romname})"));
             return l;
@@ -207,6 +209,19 @@ namespace ZMB
             if (Volume > 100) Volume = 100;
             if (SlideSeconds < 2) SlideSeconds = 5;
             if (string.IsNullOrEmpty(UpdateRepo)) UpdateRepo = "Nafars24/zmb";
+            // platform baru di versi terbaru: tambahkan ke konfigurasi lama (setelah platform sebelumnya di daftar bawaan)
+            List<PlatformCfg> defs = DefaultPlatforms();
+            for (int di = 0; di < defs.Count; di++)
+            {
+                if (Platforms.Any(x => x.Short == defs[di].Short)) continue;
+                int at = Platforms.Count;
+                for (int pj = di - 1; pj >= 0; pj--)
+                {
+                    int found = Platforms.FindIndex(x => x.Short == defs[pj].Short);
+                    if (found >= 0) { at = found + 1; break; }
+                }
+                Platforms.Insert(at, defs[di]);
+            }
             // RPCS3 sekarang bisa membuka .iso: tambahkan ekstensi iso untuk konfigurasi lama
             foreach (PlatformCfg p in Platforms)
                 if (p.Short == "PS3" && !p.ExtList().Contains(".iso"))
