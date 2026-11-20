@@ -564,7 +564,7 @@ namespace ZMB
         static readonly Point3D SwCardAbove = new Point3D(0.579, 0.62, 0.002);
         static readonly Point3D SwCardStart = new Point3D(0.82, 1.15, 0.45);
         static readonly Point3D SwCamClose = new Point3D(0.95, 0.75, 0.75), SwTgtClose = new Point3D(0.55, 0.42, 0.0);
-        static readonly Point3D SwCamFront = new Point3D(0.35, 0.35, 2.5), SwTgtFront = new Point3D(0, 0, 0);
+        static readonly Point3D SwCamFront = new Point3D(0.4, 0.38, 3.15), SwTgtFront = new Point3D(0, 0, 0);
 
         void UpdateBootSwitch(double t)
         {
