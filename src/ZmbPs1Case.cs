@@ -27,6 +27,10 @@ namespace ZMB
             0.0289, 0.9551, 0.0267, 0.9740, 0.0539, 0.9581, 0.0351, 0.9725);
         public static readonly CaseOverlay Psp = new CaseOverlay("psp", "PSP", 0.5941, 0.0832,
             0.0365, 0.9494, 0.0280, 0.9727, 0.0568, 0.9489, 0.0435, 0.9669);
+        public static readonly CaseOverlay X360 = new CaseOverlay("x360", "XBOX 360", 0.7234, 0.0725,
+            0.0340, 0.9494, 0.0394, 0.9627, 0.0577, 0.9423, 0.0302, 0.9716);
+        public static readonly CaseOverlay Switch = new CaseOverlay("switch", "SWITCH", 0.62, 0.0703,
+            0.0397, 0.9410, 0.0394, 0.9627, 0.0464, 0.9338, 0.0307, 0.9693);
         public static readonly CaseOverlay Gcn = new CaseOverlay("gcn", "Wii", 0.6856, 0.0864,
             0.0289, 0.9483, 0.0248, 0.9766, 0.0217, 0.9837, 0.0455, 0.9704);
 
@@ -34,7 +38,7 @@ namespace ZMB
         public static CaseOverlay For(string platform)
         {
             CaseOverlay o = null;
-            switch (platform) { case "PS1": o = Ps1; break; case "PS2": o = Ps2; break; case "PS3": o = Ps3; break; case "GCN": o = Gcn; break; case "PSP": o = Psp; break; }
+            switch (platform) { case "PS1": o = Ps1; break; case "PS2": o = Ps2; break; case "PS3": o = Ps3; break; case "GCN": o = Gcn; break; case "PSP": o = Psp; break; case "X360": o = X360; break; case "SWITCH": o = Switch; break; }
             return (o != null && o.Ready) ? o : null;
         }
 
@@ -200,15 +204,17 @@ namespace ZMB
         // Spine otomatis ala PS1: hitam, label platform di atas, judul vertikal, tanda warna di bawah
         void DrawAutoSpine(DrawingContext dc, XmbItem it, Rect win, string label)
         {
-            bool light = label == "Wii"; // spine Wii putih dengan teks gelap
+            bool light = label == "Wii" || label == "XBOX 360"; // spine putih dengan teks gelap
+            bool red = label == "SWITCH";                         // spine Switch merah dengan teks putih
             Brush ink = light ? SolidOf(Rgb(30, 30, 34)) : brWhite;
             LinearGradientBrush bg = light ? new LinearGradientBrush(Rgb(246, 246, 248), Rgb(226, 226, 230), 0)
+                                   : red ? new LinearGradientBrush(Rgb(222, 18, 24), Rgb(196, 6, 12), 0)
                                            : new LinearGradientBrush(Rgb(22, 22, 26), Rgb(8, 8, 10), 0);
             bg.Freeze();
             dc.DrawRectangle(bg, null, win);
             double w = win.Width;
             double topH = Math.Min(win.Height * 0.14, w * 1.5);
-            dc.DrawRectangle(SolidOf(light ? Rgb(232, 232, 236) : Rgb(36, 36, 41)), null, new Rect(win.X, win.Y, w, topH));
+            dc.DrawRectangle(SolidOf(light ? (label == "XBOX 360" ? Rgb(120, 190, 40) : Rgb(232, 232, 236)) : red ? Rgb(206, 10, 16) : Rgb(36, 36, 41)), null, new Rect(win.X, win.Y, w, topH));
             dc.DrawRectangle(light ? BlackA(0.15) : WhiteA(0.25), null, new Rect(win.X, win.Y + topH, w, Math.Max(0.6, w * 0.02)));
 
             FormattedText lt = FT(label, Math.Max(5, w * 0.32), 2, false, topH * 0.8);

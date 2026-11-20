@@ -405,3 +405,5 @@ H. MASALAH UMUM
      (Ryujinx: --fullscreen "{rom}", turunan yuzu: -f -g "{rom}", Xenia: --fullscreen "{rom}").
    * Game Switch butuh prod.keys & firmware yang dipasang di emulatornya.
    * Unduh media otomatis (ScreenScraper) juga jalan untuk kedua platform.
+   * Coverflow: case merah + spine merah (Switch), case hijau + spine putih
+     bertutup hijau (Xbox 360). Spine kustom di ZMB\spines\SWITCH\ dan ZMB\spines\X360\.
