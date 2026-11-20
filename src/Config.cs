@@ -63,6 +63,7 @@ namespace ZMB
         public int SsSystem = -1;
         public string ResumeArgs = "";
         public string SaveDirs = "";
+        public string Icon = "";          // ikon kustom (PNG/ICO/JPG)
 
         public PlatformCfg() { }
         public PlatformCfg(string name, string shrt, string ext, string color, string hint)

@@ -306,6 +306,7 @@ namespace ZMB
                 ImageSource box = BoxImage(it);
                 if (box != null && !it.BoxIsIcon) return box;
             }
+            if (it.Kind == "platform") return null; // ikon platform digambar di tengah ubin berwarna
             if (it.ImageKey != null) return GetImage(it.ImageKey, it.ImageLoader);
             return null;
         }
@@ -428,7 +429,13 @@ namespace ZMB
                 tb.Freeze();
                 dc.DrawRectangle(BrushA(tb, a), null, r);
                 double icon = Math.Min(r.Width, r.Height) * (t.Hero ? 0.32 : 0.36);
-                if (t.Item != null && t.Item.Badge != null)
+                ImageSource pic = t.Item != null && t.Item.Kind == "platform" && t.Item.ImageKey != null ? GetImage(t.Item.ImageKey, t.Item.ImageLoader) : null;
+                if (pic != null)
+                {
+                    double isz = Math.Min(r.Width, r.Height) * 0.55;
+                    DrawIconImage(dc, pic, new Rect(r.X + (r.Width - isz) / 2, r.Y + r.Height * 0.42 - isz / 2, isz, isz), a);
+                }
+                else if (t.Item != null && t.Item.Badge != null)
                 {
                     FormattedText bf = FT(t.Item.Badge, r.Height * 0.26, 2, false, r.Width - 20 * s);
                     bf.SetForegroundBrush(WhiteA(a));

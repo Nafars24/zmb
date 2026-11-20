@@ -407,3 +407,10 @@ H. MASALAH UMUM
    * Unduh media otomatis (ScreenScraper) juga jalan untuk kedua platform.
    * Coverflow: case merah + spine merah (Switch), case hijau + spine putih
      bertutup hijau (Xbox 360). Spine kustom di ZMB\spines\SWITCH\ dan ZMB\spines\X360\.
+
+ IKON PLATFORM KUSTOM (v2.18.3)
+   * Tab di platform > "Pilih Ikon Platform..." (PNG transparan paling bagus).
+   * Atau taruh file di ZMB\icons\<SINGKATAN>.png, mis. icons\PS1.png,
+     icons\PS2.png, icons\SWITCH.png, icons\X360.png (juga .ico/.jpg).
+   * "Kembalikan Ikon Bawaan" untuk kembali ke ikon ZMB.
+   * Ikon dipakai di XMB dan di ubin mode Aurora.

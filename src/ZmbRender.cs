@@ -629,9 +629,21 @@ namespace ZMB
             Rect r = new Rect(cx - tw / 2, cy - th / 2, tw, th);
             ImageSource img = it.ImageKey != null ? GetImage(it.ImageKey, it.ImageLoader) : null;
             if (it.Dim) a *= 0.4;
+            if (img != null && it.Kind == "platform") { DrawIconImage(dc, img, r, a); return; }
             if (img != null) { DrawImageFit(dc, img, r, a); return; }
             if (it.Badge != null) { DrawBadge(dc, it.Badge, it.BadgeColor, r, a); return; }
             Glyph(dc, it.Glyph, it.Title, cx, cy, th * 0.6, a);
+        }
+
+        // ikon kustom: pas di dalam kotak, tanpa bingkai
+        void DrawIconImage(DrawingContext dc, ImageSource img, Rect r, double a)
+        {
+            BitmapSource bs = img as BitmapSource;
+            double iw = bs != null ? bs.PixelWidth : img.Width, ih = bs != null ? bs.PixelHeight : img.Height;
+            if (iw <= 0 || ih <= 0) return;
+            double sc = Math.Min(r.Width / iw, r.Height / ih);
+            double w = iw * sc, h = ih * sc;
+            DrawImageA(dc, img, new Rect(r.X + (r.Width - w) / 2, r.Y + (r.Height - h) / 2, w, h), a);
         }
 
         void DrawImageFit(DrawingContext dc, ImageSource img, Rect r, double a)

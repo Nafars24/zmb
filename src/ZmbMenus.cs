@@ -318,7 +318,7 @@ namespace ZMB
             help.Children = BuildHelpItems;
             l.Add(help);
 
-            XmbItem about = MakeItem("Tentang ZMB", "Versi 2.18.2  \u2022  Model 3D PS one: Vladimir_Sofyanov (Sketchfab, CC-BY 4.0)  \u2022  Enter: buka folder data", "\uE946", delegate { ShowInExplorer(Config.FilePath); });
+            XmbItem about = MakeItem("Tentang ZMB", "Versi 2.18.3  \u2022  Model 3D PS one: Vladimir_Sofyanov (Sketchfab, CC-BY 4.0)  \u2022  Enter: buka folder data", "\uE946", delegate { ShowInExplorer(Config.FilePath); });
             l.Add(about);
             return l;
         }
@@ -538,6 +538,7 @@ namespace ZMB
                 XmbItem it = MakeItem(p.Name, "", null, null);
                 it.Badge = p.Short;
                 it.BadgeColor = ParseColor(p.Color);
+                ApplyPlatformIcon(it, p);
                 it.DynSub = delegate
                 {
                     if (string.IsNullOrEmpty(pp.Emulator)) return "Emulator belum diatur  \u2022  saran: " + pp.Hint;
@@ -872,11 +873,42 @@ namespace ZMB
             return l;
         }
 
+        // Ikon kustom platform: pilihan sendiri, atau file ZMB\icons\<SINGKATAN>.png/.ico/.jpg
+        static string PlatformIconPath(PlatformCfg p)
+        {
+            if (p == null) return null;
+            if (!string.IsNullOrEmpty(p.Icon) && File.Exists(p.Icon)) return p.Icon;
+            string dir = Path.Combine(Config.BaseDir, "icons");
+            foreach (string ext in new[] { ".png", ".ico", ".jpg", ".jpeg" })
+            {
+                string f = Path.Combine(dir, p.Short + ext);
+                if (File.Exists(f)) return f;
+            }
+            return null;
+        }
+
+        void ApplyPlatformIcon(XmbItem it, PlatformCfg p)
+        {
+            string f = PlatformIconPath(p);
+            if (f == null) return;
+            string key = "picon:" + f + "|" + File.GetLastWriteTimeUtc(f).Ticks;
+            it.ImageKey = key;
+            it.ImageLoader = delegate { return ImgConv.LoadFile(f, 256); };
+            it.Kind = "platform";
+        }
+
         List<OptionItem> PlatformOptions(PlatformCfg p)
         {
             List<OptionItem> o = new List<OptionItem>();
             o.Add(new OptionItem("Pilih Emulator (.exe)..." + (string.IsNullOrEmpty(p.Emulator) ? "" : "  [" + Path.GetFileName(p.Emulator) + "]"), delegate { PickEmulator(p); }));
             o.Add(new OptionItem("Pilih Folder Game...", delegate { PickRomFolder(p); }));
+            o.Add(new OptionItem("Pilih Ikon Platform...", delegate
+            {
+                string f = Dialogs.PickFile(Owner32, "Pilih ikon untuk " + p.Name + " (PNG transparan paling bagus)", "Gambar|*.png;*.ico;*.jpg;*.jpeg;*.bmp", null);
+                if (f != null) { p.Icon = f; SaveAndRefresh(); ShowToast("Ikon " + p.Short + " diganti"); }
+            }));
+            if (!string.IsNullOrEmpty(p.Icon))
+                o.Add(new OptionItem("Kembalikan Ikon Bawaan", delegate { p.Icon = ""; SaveAndRefresh(); ShowToast("Ikon bawaan dipakai lagi"); }));
             o.Add(new OptionItem("Argumen Emulator: " + p.Args, delegate
             {
                 string a = Dialogs.Input(Owner32, "Argumen Emulator " + p.Name,
@@ -973,6 +1005,7 @@ namespace ZMB
                 XmbItem it = MakeItem(p.Name, "", null, null);
                 it.Badge = p.Short;
                 it.BadgeColor = ParseColor(p.Color);
+                ApplyPlatformIcon(it, p);
                 it.DynSub = delegate
                 {
                     return (pp.Hidden ? "[Disembunyikan]  " : "") +
