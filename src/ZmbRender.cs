@@ -599,7 +599,7 @@ namespace ZMB
                 double scale = fs / fsTS;
                 FormattedText ftT = FT(it.Title, fsTS, 0, false, textW);
                 double tH = ftT.Height * scale;
-                string sub = isSel ? it.Sub : null;
+                string sub = isSel && !it.HideSub ? it.Sub : null;
                 bool showSub = isSel && selF > 0.5 && !string.IsNullOrEmpty(sub);
                 double ty = showSub ? y - tH * 0.85 : y - tH * 0.5;
 

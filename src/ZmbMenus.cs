@@ -318,7 +318,7 @@ namespace ZMB
             help.Children = BuildHelpItems;
             l.Add(help);
 
-            XmbItem about = MakeItem("Tentang ZMB", "Versi 2.18  \u2022  Model 3D PS one: Vladimir_Sofyanov (Sketchfab, CC-BY 4.0)  \u2022  Enter: buka folder data", "\uE946", delegate { ShowInExplorer(Config.FilePath); });
+            XmbItem about = MakeItem("Tentang ZMB", "Versi 2.18.1  \u2022  Model 3D PS one: Vladimir_Sofyanov (Sketchfab, CC-BY 4.0)  \u2022  Enter: buka folder data", "\uE946", delegate { ShowInExplorer(Config.FilePath); });
             l.Add(about);
             return l;
         }
@@ -552,6 +552,7 @@ namespace ZMB
             XmbItem manage = MakeItem("Kelola Platform & Emulator", "Tambah, sembunyikan, atur emulator", "\uE713", null);
             manage.Children = BuildPlatformManager;
             l.Add(manage);
+            foreach (XmbItem gi in l) gi.HideSub = true; // daftar platform tampil bersih tanpa keterangan
             return l;
         }
 
@@ -636,6 +637,7 @@ namespace ZMB
 
             it.Activate = delegate { Launch(g, false); };
             it.Options = delegate { return GameOptions(g); };
+            it.HideSub = true; // judul game saja, tanpa "PS1 \u2022 Terakhir: ..."
             return it;
         }
 

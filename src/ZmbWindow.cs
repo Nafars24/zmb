@@ -50,6 +50,7 @@ namespace ZMB
         public string BoxKey;        // gambar untuk mode Coverflow
         public Func<ImageSource> BoxLoader;
         public bool BoxIsIcon;
+        public bool HideSub;        // jangan tampilkan keterangan di bawah judul
 
         public string Sub
         {
