@@ -414,3 +414,12 @@ H. MASALAH UMUM
      icons\PS2.png, icons\SWITCH.png, icons\X360.png (juga .ico/.jpg).
    * "Kembalikan Ikon Bawaan" untuk kembali ke ikon ZMB.
    * Ikon dipakai di XMB dan di ubin mode Aurora.
+
+ PENGATURAN BARU (v2.19)
+   Pengaturan sekarang dikelompokkan (tidak ada yang dihapus):
+     Tampilan, Suara & Musik, Latar & Trailer Game, Saat Main Game,
+     Game & Emulator, Folder Media, Sistem.
+   Digabung: "Efek Gelombang" + "Gaya Gelombang" -> "Gelombang" (Klasik/Garis/Mati),
+             "Trailer di Latar" + "Suara Trailer" -> "Trailer di Latar"
+             (Aktif dengan suara / tanpa suara / Mati).
+   Splash screen baru beranimasi: garis cahaya, cincin, logo ZMB berkilau.

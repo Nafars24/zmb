@@ -434,14 +434,139 @@ namespace ZMB
             }
         }
 
+        // ===================== SPLASH SCREEN =====================
+        ImageSource splashLogo;
+        bool splashTried;
+        double[] splashSeeds;
+
+        static double SpClamp(double v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+        static double SpOutBack(double u) { u = SpClamp(u); const double c1 = 1.5, c3 = c1 + 1; double v = u - 1; return 1 + c3 * v * v * v + c1 * v * v; }
+        static double SpOut3(double u) { u = 1 - SpClamp(u); return 1 - u * u * u; }
+        static double SpSmooth(double u) { u = SpClamp(u); return u * u * (3 - 2 * u); }
+
+        // Splash beranimasi (0 - 2.6 detik): garis cahaya berkumpul ke tengah, gelombang cincin,
+        // logo ZMB memantul masuk dengan kilau, huruf Z M B muncul satu per satu, lalu semuanya membesar dan memudar ke menu.
         void DrawBoot(DrawingContext dc, double W, double H, double bt)
         {
-            double black = Math.Max(0, 1 - bt / 1.4);
-            if (black > 0) { dc.DrawRectangle(BlackA(black), null, new Rect(0, 0, W, H)); }
-            double ta = bt < 0.6 ? 0 : bt < 1.4 ? (bt - 0.6) / 0.8 : bt < 2.0 ? 1 : Math.Max(0, 1 - (bt - 2.0) / 0.6);
-            double sz = 92 * S;
-            Txt(dc, "Z M B", sz, 1, W / 2, H * 0.42, ta * 0.95, 0, 1, false);
-            Txt(dc, "Selamat datang, " + Environment.UserName, 26 * S, 0, W / 2, H * 0.42 + TextH(sz) + 4 * S, ta * 0.6, 0, 1, false);
+            if (!splashTried) { splashTried = true; splashLogo = LoadAsset("zmb_logo.png"); }
+            if (splashSeeds == null)
+            {
+                Random rnd = new Random(7);
+                splashSeeds = new double[48 * 3];
+                for (int i = 0; i < splashSeeds.Length; i++) splashSeeds[i] = rnd.NextDouble();
+            }
+            double s = S;
+            double cx = W / 2, cy = H * 0.44;
+            double exit = SpSmooth((bt - 1.9) / 0.7);          // 1.9 - 2.6: keluar
+            double bgA = 1 - exit;
+
+            // latar gelap dengan cahaya biru di tengah
+            dc.DrawRectangle(BlackA(bgA), null, new Rect(0, 0, W, H));
+            double glow = SpOut3(bt / 1.2) * (1 - exit * 0.6);
+            if (glow > 0.01)
+            {
+                RadialGradientBrush rg = new RadialGradientBrush();
+                rg.GradientStops.Add(new GradientStop(Color.FromArgb((byte)(150 * glow * bgA), 20, 110, 230), 0));
+                rg.GradientStops.Add(new GradientStop(Color.FromArgb((byte)(50 * glow * bgA), 10, 60, 160), 0.45));
+                rg.GradientStops.Add(new GradientStop(Color.FromArgb(0, 0, 0, 0), 1));
+                rg.Freeze();
+                double gr = H * (0.35 + 0.25 * glow);
+                dc.DrawEllipse(rg, null, new Point(cx, cy), gr * 1.6, gr);
+            }
+
+            // garis cahaya dari tepi menuju logo (0 - 0.75 detik)
+            double conv = SpClamp(bt / 0.75);
+            if (conv < 1)
+            {
+                for (int i = 0; i < 48; i++)
+                {
+                    double ang = splashSeeds[i * 3] * Math.PI * 2;
+                    double delay = splashSeeds[i * 3 + 1] * 0.35;
+                    double u = SpClamp((bt - delay) / 0.45);
+                    if (u <= 0 || u >= 1) continue;
+                    double far = Math.Max(W, H) * (0.55 + 0.25 * splashSeeds[i * 3 + 2]);
+                    double d0 = far * (1 - SpOut3(u)), d1 = d0 + far * 0.18 * (1 - u);
+                    Point p0 = new Point(cx + Math.Cos(ang) * d0, cy + Math.Sin(ang) * d0 * 0.75);
+                    Point p1 = new Point(cx + Math.Cos(ang) * d1, cy + Math.Sin(ang) * d1 * 0.75);
+                    double la = Math.Sin(Math.PI * u) * 0.8;
+                    LinearGradientBrush lb = new LinearGradientBrush(Color.FromArgb((byte)(255 * la), 170, 220, 255), Color.FromArgb(0, 40, 140, 255), new Point(0, 0), new Point(1, 0));
+                    lb.MappingMode = BrushMappingMode.Absolute; lb.StartPoint = p0; lb.EndPoint = p1;
+                    dc.DrawLine(new Pen(lb, 2.2 * s), p0, p1);
+                }
+            }
+
+            // cincin gelombang saat logo mendarat
+            double ring = SpClamp((bt - 0.55) / 0.9);
+            if (ring > 0 && ring < 1)
+            {
+                double rr = H * 0.12 + H * 0.55 * SpOut3(ring);
+                double ra = (1 - ring) * 0.55 * bgA;
+                dc.DrawEllipse(null, new Pen(Brush3(140, 200, 255, ra), (6 - 4 * ring) * s), new Point(cx, cy), rr * 1.25, rr);
+            }
+
+            // logo
+            double li = SpClamp((bt - 0.45) / 0.6);
+            if (li > 0 && splashLogo != null)
+            {
+                double sc = (0.35 + 0.65 * SpOutBack(li)) * (1 + 0.18 * exit);
+                double la = SpClamp(li * 2.2) * (1 - exit);
+                double ls = 230 * s * sc;
+                Rect lr = new Rect(cx - ls / 2, cy - ls / 2, ls, ls);
+                double rot = -10 * (1 - SpOut3(li));
+                dc.PushTransform(new RotateTransform(rot, cx, cy));
+                // bayangan cahaya di belakang logo
+                RadialGradientBrush halo = new RadialGradientBrush(Color.FromArgb((byte)(110 * la), 60, 160, 255), Color.FromArgb(0, 60, 160, 255));
+                halo.Freeze();
+                dc.DrawEllipse(halo, null, new Point(cx, cy), ls * 0.8, ls * 0.8);
+                DrawImageA(dc, splashLogo, lr, la);
+                // kilau menyapu logo (1.0 - 1.45 detik), mengikuti bentuk logo
+                double sw = SpClamp((bt - 1.0) / 0.45);
+                if (sw > 0 && sw < 1)
+                {
+                    ImageBrush mask = new ImageBrush(splashLogo);
+                    mask.ViewportUnits = BrushMappingMode.Absolute; mask.Viewport = lr;
+                    dc.PushOpacityMask(mask);
+                    double bx = lr.X - ls * 0.6 + (ls * 2.2) * sw;
+                    LinearGradientBrush band = new LinearGradientBrush();
+                    band.MappingMode = BrushMappingMode.Absolute;
+                    band.StartPoint = new Point(bx - ls * 0.25, lr.Y); band.EndPoint = new Point(bx + ls * 0.25, lr.Bottom);
+                    band.GradientStops.Add(new GradientStop(Color.FromArgb(0, 255, 255, 255), 0));
+                    band.GradientStops.Add(new GradientStop(Color.FromArgb((byte)(200 * la), 255, 255, 255), 0.5));
+                    band.GradientStops.Add(new GradientStop(Color.FromArgb(0, 255, 255, 255), 1));
+                    dc.DrawRectangle(band, null, lr);
+                    dc.Pop();
+                }
+                dc.Pop();
+            }
+
+            // huruf Z M B muncul satu per satu, jarak huruf merapat
+            string[] letters = { "Z", "M", "B" };
+            double fs = 64 * s * (1 + 0.1 * exit);
+            double ty = cy + 150 * s;
+            double spread = 26 * s + 40 * s * (1 - SpOut3((bt - 1.0) / 0.7));
+            double totalW = 0;
+            double[] lw = new double[3];
+            for (int i = 0; i < 3; i++) { lw[i] = FT(letters[i], fs, 1, false, 0).Width; totalW += lw[i]; }
+            totalW += spread * 2;
+            double lx = cx - totalW / 2;
+            for (int i = 0; i < 3; i++)
+            {
+                double u = SpClamp((bt - 1.0 - i * 0.12) / 0.4);
+                double a = SpOut3(u) * (1 - exit);
+                double dy = (1 - SpOut3(u)) * 30 * s;
+                if (a > 0.01) Txt(dc, letters[i], fs, 1, lx, ty + dy, a, 0, 0, false);
+                lx += lw[i] + spread;
+            }
+            double wa = SpSmooth((bt - 1.45) / 0.4) * (1 - exit);
+            if (wa > 0.01)
+                Txt(dc, "Selamat datang, " + Environment.UserName, 24 * s, 0, cx, ty + TextH(fs) + 12 * s, wa * 0.7, 0, 1, false);
+        }
+
+        Brush Brush3(byte r, byte g, byte b, double a)
+        {
+            SolidColorBrush br = new SolidColorBrush(Color.FromArgb((byte)(255 * SpClamp(a)), r, g, b));
+            br.Freeze();
+            return br;
         }
 
         void DrawClock(DrawingContext dc, double W, double H, double alpha, double now)

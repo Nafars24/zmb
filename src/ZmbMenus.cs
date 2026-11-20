@@ -115,7 +115,53 @@ namespace ZMB
             return it;
         }
 
+        // Pengaturan dikelompokkan supaya tidak memanjang ke bawah; isi tiap grup diambil dari daftar lengkap
+        static readonly string[][] SettingGroups = {
+            new[] { "Tampilan", "\uE790", "Mode, tema, latar, gelombang, partikel, ukuran, layar penuh",
+                    "Mode Tampilan", "Paket Tema", "Tema Warna", "Latar Belakang", "Gelombang", "Partikel", "Ukuran Tampilan", "Layar Penuh", "Jam 24 Jam", "Animasi Pembuka", "Screensaver" },
+            new[] { "Suara & Musik", "\uE767", "Efek suara, volume, musik tema game",
+                    "Efek Suara Menu", "Volume Musik & Video", "Musik Tema Game", "Jeda Musik Saat Game Jalan" },
+            new[] { "Latar & Trailer Game", "\uE714", "Gambar latar dan trailer saat game dipilih",
+                    "Latar Gambar Game", "Trailer di Latar", "Trailer Online (Steam)", "Jeda Sebelum Trailer" },
+            new[] { "Saat Main Game", "\uE7FC", "Layar penuh, animasi boot konsol, notifikasi trofi",
+                    "Auto Layar Penuh (Emulator)", "Animasi Boot Konsol", "Notifikasi Trofi Saat Main", "Minimize Saat Game Jalan", "Tombol Home Keyboard" },
+            new[] { "Game & Emulator", "\uE7FC", "Platform, emulator, Steam, media otomatis, akun trofi, pemeriksa ROM",
+                    "Emulator & Platform", "Tampilkan Game Steam", "Unduh Media Otomatis", "Akun Trofi & Achievement", "Pemeriksa ROM" },
+            new[] { "Folder Media", "\uEC4F", "Folder musik, video, foto, durasi slideshow",
+                    "Folder Musik", "Folder Video", "Folder Foto", "Durasi Slideshow" },
+            new[] { "Sistem", "\uE713", "Update, jalan saat Windows menyala, bantuan, tentang",
+                    "Update ZMB", "Jalan Saat Windows Menyala", "Kontrol & Bantuan", "Tentang ZMB" },
+        };
+
         List<XmbItem> BuildSettingsItems()
+        {
+            List<XmbItem> l = new List<XmbItem>();
+            HashSet<string> grouped = new HashSet<string>();
+            foreach (string[] g in SettingGroups)
+            {
+                string[] grp = g;
+                for (int k = 3; k < grp.Length; k++) grouped.Add(grp[k]);
+                XmbItem gi = MakeItem(grp[0], grp[2], grp[1], null);
+                gi.Children = delegate
+                {
+                    List<XmbItem> all = BuildSettingsFlat();
+                    List<XmbItem> sub = new List<XmbItem>();
+                    for (int k = 3; k < grp.Length; k++)
+                    {
+                        XmbItem f = all.FirstOrDefault(x => x.Title == grp[k]);
+                        if (f != null) sub.Add(f);
+                    }
+                    return sub;
+                };
+                l.Add(gi);
+            }
+            // menu yang belum masuk grup tetap tampil di bawah (supaya tidak ada yang hilang)
+            foreach (XmbItem x in BuildSettingsFlat())
+                if (!grouped.Contains(x.Title)) l.Add(x);
+            return l;
+        }
+
+        List<XmbItem> BuildSettingsFlat()
         {
             List<XmbItem> l = new List<XmbItem>();
 
@@ -162,7 +208,6 @@ namespace ZMB
             bgi.Activate = delegate { OpenOptions("Latar Belakang", bgi.Options()); };
             l.Add(bgi);
 
-            l.Add(Toggle("Efek Gelombang", "Animasi gelombang ala PS3", "\uE706", delegate { return cfg.ShowWaves; }, delegate (bool v) { cfg.ShowWaves = v; }));
             l.Add(Toggle("Efek Suara Menu", "", "\uE767", delegate { return cfg.Sounds; }, delegate (bool v) { cfg.Sounds = v; Sfx.Enabled = v; }));
 
             XmbItem vol = MakeItem("Volume Musik & Video", "", "\uE767", null);
@@ -203,8 +248,18 @@ namespace ZMB
             l.Add(Toggle("Jeda Musik Saat Game Jalan", "", "\uE769", delegate { return cfg.PauseMusicOnLaunch; }, delegate (bool v) { cfg.PauseMusicOnLaunch = v; }));
             l.Add(Toggle("Tampilkan Game Steam", "Deteksi otomatis library Steam", "\uE7FC", delegate { return cfg.ShowSteam; }, delegate (bool v) { cfg.ShowSteam = v; RefreshAll(); }));
             l.Add(Toggle("Latar Gambar Game", "Tampilkan gambar game di belakang menu saat dipilih", "\uE91B", delegate { return cfg.GameBackground; }, delegate (bool v) { cfg.GameBackground = v; focusKey = null; }));
-            l.Add(Toggle("Trailer di Latar", "Putar trailer game di belakang menu (seperti PS3)", "\uE714", delegate { return cfg.Trailers; }, delegate (bool v) { cfg.Trailers = v; StopTrailer(true); focusKey = null; }));
-            l.Add(Toggle("Suara Trailer", "Musik otomatis dikecilkan saat trailer bersuara", "\uE767", delegate { return cfg.TrailerSound; }, delegate (bool v) { cfg.TrailerSound = v; StopTrailer(true); focusKey = null; }));
+            XmbItem trl = MakeItem("Trailer di Latar", "", "\uE714", null);
+            trl.DynSub = delegate { return !cfg.Trailers ? "Mati" : cfg.TrailerSound ? "Aktif, dengan suara (musik dikecilkan)" : "Aktif, tanpa suara"; };
+            trl.Options = delegate
+            {
+                List<OptionItem> o = new List<OptionItem>();
+                o.Add(new OptionItem("Aktif, dengan suara", delegate { cfg.Trailers = true; cfg.TrailerSound = true; cfg.Save(); }, cfg.Trailers && cfg.TrailerSound));
+                o.Add(new OptionItem("Aktif, tanpa suara", delegate { cfg.Trailers = true; cfg.TrailerSound = false; cfg.Save(); }, cfg.Trailers && !cfg.TrailerSound));
+                o.Add(new OptionItem("Mati", delegate { cfg.Trailers = false; StopTrailer(true); cfg.Save(); }, !cfg.Trailers));
+                return o;
+            };
+            trl.Activate = delegate { OpenOptions("Trailer di Latar", trl.Options()); };
+            l.Add(trl);
             l.Add(Toggle("Trailer Online (Steam)", "Ambil trailer game Steam dari internet jika tidak ada file lokal", "\uE774", delegate { return cfg.OnlineTrailers; }, delegate (bool v) { cfg.OnlineTrailers = v; }));
             XmbItem tdel = MakeItem("Jeda Sebelum Trailer", "", "\uE916", null);
             tdel.DynSub = delegate { return cfg.TrailerDelay.ToString("0.0") + " detik setelah game dipilih"; };
@@ -253,7 +308,7 @@ namespace ZMB
             tp.Activate = delegate { OpenOptions("Paket Tema", tp.Options()); };
             l.Add(tp);
 
-            XmbItem ws = MakeItem("Gaya Gelombang", "", "\uE706", null);
+            XmbItem ws = MakeItem("Gelombang", "", "\uE706", null);
             ws.DynSub = delegate { return !cfg.ShowWaves ? "Mati" : cfg.WaveStyle == 1 ? "Garis tipis" : "Klasik PS3"; };
             ws.Options = delegate
             {
@@ -263,7 +318,7 @@ namespace ZMB
                 o.Add(new OptionItem("Mati", delegate { cfg.ShowWaves = false; cfg.Save(); }, !cfg.ShowWaves));
                 return o;
             };
-            ws.Activate = delegate { OpenOptions("Gaya Gelombang", ws.Options()); };
+            ws.Activate = delegate { OpenOptions("Gelombang", ws.Options()); };
             l.Add(ws);
 
             XmbItem pt = MakeItem("Partikel", "", "\uE9CA", null);
@@ -318,7 +373,7 @@ namespace ZMB
             help.Children = BuildHelpItems;
             l.Add(help);
 
-            XmbItem about = MakeItem("Tentang ZMB", "Versi 2.18.3  \u2022  Model 3D PS one: Vladimir_Sofyanov (Sketchfab, CC-BY 4.0)  \u2022  Enter: buka folder data", "\uE946", delegate { ShowInExplorer(Config.FilePath); });
+            XmbItem about = MakeItem("Tentang ZMB", "Versi 2.19  \u2022  Model 3D PS one: Vladimir_Sofyanov (Sketchfab, CC-BY 4.0)  \u2022  Enter: buka folder data", "\uE946", delegate { ShowInExplorer(Config.FilePath); });
             l.Add(about);
             return l;
         }
