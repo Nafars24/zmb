@@ -377,7 +377,7 @@ namespace ZMB
 
             l.Add(Toggle(Lang.T("Auto Layar Penuh (Emulator)"), Lang.T("Game konsol selalu dibuka layar penuh: argumen fullscreen emulator, atau jendela dipaksa borderless menutup layar"), "\uE7FC", delegate { return cfg.AutoFullscreen; }, delegate (bool v) { cfg.AutoFullscreen = v; }));
             l.Add(Toggle(Lang.T("Notifikasi Trofi Saat Main"), Lang.T("Popup trofi ala PlayStation di kanan bawah layar, di atas game yang sedang jalan"), "\uE7FC", delegate { return cfg.TrophyOverlay; }, delegate (bool v) { cfg.TrophyOverlay = v; if (!v) StopAchvPolling(); }));
-            l.Add(Toggle(Lang.T("Animasi Boot Konsol"), Lang.T("Konsol 3D PS1/PS2/PS3/PSP memasukkan disc/UMD game lalu menyala sebelum game jalan"), "\uE7FC", delegate { return cfg.Ps1BootAnim; }, delegate (bool v) { cfg.Ps1BootAnim = v; }));
+            l.Add(Toggle(Lang.T("Animasi Boot Konsol"), Lang.T("Konsol 3D PS1/PS2/PS3/PSP/Switch memasukkan disc/UMD/cartridge game lalu menyala sebelum game jalan"), "\uE7FC", delegate { return cfg.Ps1BootAnim; }, delegate (bool v) { cfg.Ps1BootAnim = v; }));
             l.Add(Toggle(Lang.T("Musik Tema Game"), Lang.T("Putar musik tema saat game dipilih (file di folder music)"), "\uE8D6", delegate { return cfg.ThemeMusicOn; }, delegate (bool v) { cfg.ThemeMusicOn = v; if (!v) StopThemeMusic(); focusKey = null; }));
             l.Add(Toggle(Lang.T("Tombol Home Keyboard"), Lang.T("Ctrl+Shift+Home membuka Menu Home dari dalam game"), "\uE80F", delegate { return cfg.HomeHotkey; }, delegate (bool v) { cfg.HomeHotkey = v; ShowToast(Lang.T("Berlaku setelah ZMB dibuka ulang")); }));
 
@@ -798,11 +798,12 @@ namespace ZMB
                 }));
                 if (!string.IsNullOrEmpty(g.Spine))
                     o.Add(new OptionItem(Lang.T("Hapus Spine Kustom"), delegate { ForgetImage("spine:" + g.Spine); g.Spine = ""; SaveAndRefresh(); }));
-                if (g.Platform == "PS1" || g.Platform == "PS2" || g.Platform == "PS3" || g.Platform == "PSP")
+                if (g.Platform == "PS1" || g.Platform == "PS2" || g.Platform == "PS3" || g.Platform == "PSP" || g.Platform == "SWITCH")
                 {
-                    o.Add(new OptionItem(Lang.T("Pilih Gambar Disc (Animasi Boot)..."), delegate
+                    bool cart = g.Platform == "SWITCH";
+                    o.Add(new OptionItem(cart ? Lang.T("Pilih Gambar Cartridge (Animasi Boot)...") : Lang.T("Pilih Gambar Disc (Animasi Boot)..."), delegate
                     {
-                        string f = Dialogs.PickFile(Owner32, Lang.T("Pilih gambar disc untuk ") + g.Name, Lang.T("Gambar|*.jpg;*.jpeg;*.png;*.bmp"), null);
+                        string f = Dialogs.PickFile(Owner32, (cart ? Lang.T("Pilih gambar cartridge untuk ") : Lang.T("Pilih gambar disc untuk ")) + g.Name, Lang.T("Gambar|*.jpg;*.jpeg;*.png;*.bmp"), null);
                         if (f != null) { g.Disc = f; cfg.EnsureStored(g); cfg.Save(); ShowToast(Lang.T("Disc diganti")); }
                     }));
                     if (!string.IsNullOrEmpty(g.Disc))

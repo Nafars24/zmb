@@ -805,6 +805,9 @@ namespace ZMB
             { "Bahasa / Language", "Language / Bahasa" },
             { "beranda", "home" },
             { "Gelombang ", "Waves " },
+            { "Pilih Gambar Cartridge (Animasi Boot)...", "Choose Cartridge Image (Boot Animation)..." },
+            { "Pilih gambar cartridge untuk ", "Choose a cartridge image for " },
+            { "Konsol 3D PS1/PS2/PS3/PSP/Switch memasukkan disc/UMD/cartridge game lalu menyala sebelum game jalan", "3D PS1/PS2/PS3/PSP/Switch console loads the game disc/UMD/cartridge and powers on before the game starts" },
             { "  \u2022  Model 3D PS one: Vladimir_Sofyanov (Sketchfab, CC-BY 4.0)  \u2022  Enter: buka folder data", "  \u2022  PS one 3D model: Vladimir_Sofyanov (Sketchfab, CC-BY 4.0)  \u2022  Enter: open data folder" },
             { "Restart ZMB now to switch to English?", "Restart ZMB now to switch to English?" },
         };

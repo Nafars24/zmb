@@ -1,0 +1,10 @@
+Model 3D Nintendo Switch (assets/switch_console.bin + switch_console_*.jpg)
+
+Sumber: file nintendo-switch.zip yang diberikan pemilik ZMB (Blender 2.79).
+Nama pembuat dan lisensi tidak disertakan di dalam arsip; lengkapi bagian
+ini dengan tautan sumber dan lisensinya.
+
+Perubahan untuk ZMB: dibaca langsung dari file .blend, dikonversi ke format
+mesh ZMB, diskalakan, tutup slot game card dipisah agar bisa dianimasikan,
+layar diberi gambar menyala, tekstur diperkecil (2048/1024 px).
+Nintendo Switch adalah merek dagang Nintendo. ZMB tidak berafiliasi dengan Nintendo.

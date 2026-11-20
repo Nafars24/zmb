@@ -83,6 +83,7 @@ namespace ZMB
             if (string.Equals(g.Platform, "PS3", StringComparison.OrdinalIgnoreCase)) return "ps3";
             if (string.Equals(g.Platform, "PS2", StringComparison.OrdinalIgnoreCase)) return "ps2";
             if (string.Equals(g.Platform, "PSP", StringComparison.OrdinalIgnoreCase)) return "psp";
+            if (string.Equals(g.Platform, "SWITCH", StringComparison.OrdinalIgnoreCase)) return "switch";
             return null;
         }
 
@@ -123,7 +124,7 @@ namespace ZMB
         void PreloadBootModel()
         {
             if (!cfg.Ps1BootAnim) return;
-            System.Threading.ThreadPool.QueueUserWorkItem(delegate { ConsoleModel("ps1"); ConsoleModel("ps2"); ConsoleModel("ps3"); ConsoleModel("psp"); });
+            System.Threading.ThreadPool.QueueUserWorkItem(delegate { ConsoleModel("ps1"); ConsoleModel("ps2"); ConsoleModel("ps3"); ConsoleModel("psp"); ConsoleModel("switch"); });
         }
 
         static BootModel LoadConsoleModel(string baseName)
@@ -267,10 +268,11 @@ namespace ZMB
         {
             bootKind = BootKindFor(g) ?? "ps1";
             BootModel bm = ConsoleModel(bootKind);
-            bool ps3 = bootKind == "ps3", ps2 = bootKind == "ps2", psp = bootKind == "psp";
+            bool ps3 = bootKind == "ps3", ps2 = bootKind == "ps2", psp = bootKind == "psp", sw = bootKind == "switch";
             if (ps3) { bootCamPos = new Point3D(5.0, 2.25, 2.6); bootCamTarget = new Point3D(0.25, 0.0, 0.15); }
             else if (ps2) { bootCamPos = new Point3D(4.6, 2.3, 2.4); bootCamTarget = new Point3D(0.55, 0.0, -0.25); }
             else if (psp) { bootCamPos = new Point3D(0.9, 0.6, 3.2); bootCamTarget = new Point3D(0, 0, -0.1); }
+            else if (sw) { bootCamPos = SwCamClose; bootCamTarget = SwTgtClose; }
             else { bootCamPos = new Point3D(4.2, 3.4, 2.85); bootCamTarget = new Point3D(0, 0.35, 0); }
             bootTrayT = new TranslateTransform3D();
             bootGame = g; bootAdmin = forceAdmin; bootResume = launchResume;
@@ -305,8 +307,13 @@ namespace ZMB
                 Material mat = mats.Count > 0 ? mats[ti] : new DiffuseMaterial(Brushes.Gray);
                 GeometryModel3D gm = new GeometryModel3D(kv.Value, mat);
                 gm.BackMaterial = mat;
-                if (ps3 || ps2 || psp)
+                if (ps3 || ps2 || psp || sw)
                 {
+                    if (sw && kv.Key == SwFlap)
+                    {
+                        if (bootDoorRot == null) bootDoorRot = new AxisAngleRotation3D(new Vector3D(1, 0, 0), 0);
+                        gm.Transform = new RotateTransform3D(bootDoorRot, 0, SwHingeY, SwHingeZ);
+                    }
                     if (psp)
                     {
                         if (kv.Key == PspDoor || kv.Key == PspDoorLogo)
@@ -327,6 +334,7 @@ namespace ZMB
                     {
                         ImageSource ledTex = bm.LedTex;
                         if (psp) { ImageSource scr = PspScreenArt(g); if (scr != null) ledTex = scr; }
+                        if (sw) { ImageSource scr = ScreenArt(g, 0, 1); if (scr != null) ledTex = scr; }
                         bootLedImg = new ImageBrush(ledTex);
                         bootLedImg.ViewportUnits = BrushMappingMode.Absolute;
                         bootLedImg.Viewport = new Rect(0, 0, 1, 1);
@@ -360,7 +368,7 @@ namespace ZMB
             if (bootLedBrush == null) bootLedBrush = new SolidColorBrush(Colors.Transparent);
 
             // disc game
-            ImageBrush discBrush = new ImageBrush(psp ? UmdArt(g) : DiscArt(g));
+            ImageBrush discBrush = new ImageBrush(psp ? UmdArt(g) : sw ? CartArt(g) : DiscArt(g));
             discBrush.ViewportUnits = BrushMappingMode.Absolute;
             discBrush.Viewport = new Rect(0, 0, 1, 1);
             discBrush.Freeze();
@@ -371,7 +379,8 @@ namespace ZMB
             dBot.Children.Add(new DiffuseMaterial(SolidOf(ps3 ? Rgb(150, 160, 185) : ps2 ? Rgb(60, 80, 165) : Rgb(16, 16, 20))));
             dBot.Children.Add(new SpecularMaterial(SolidOf(Color.FromArgb(200, 170, 150, 255)), 40));
             if (psp) { dBot = new MaterialGroup(); dBot.Children.Add(new DiffuseMaterial(SolidOf(Rgb(120, 122, 130)))); }
-            GeometryModel3D disc = new GeometryModel3D(psp ? UmdMesh() : DiscMesh(ps3 || ps2 ? 0.6 : 0.72), dTop);
+            if (sw) dBot = dTop; // kotak cartridge: semua sisi memakai tekstur yang sama
+            GeometryModel3D disc = new GeometryModel3D(psp ? UmdMesh() : sw ? CartMesh() : DiscMesh(ps3 || ps2 ? 0.6 : 0.72), dTop);
             disc.BackMaterial = dBot;
             bootDiscSpin = new AxisAngleRotation3D(new Vector3D(0, 1, 0), 0);
             bootDiscTilt = new AxisAngleRotation3D(new Vector3D(0, 0, 1), 0);
@@ -474,13 +483,14 @@ namespace ZMB
             bootScale.ScaleX = sc; bootScale.ScaleY = sc; bootScale.ScaleZ = sc;
             bootYaw.Angle = -26 + 22 * EaseInOut(t / 4.3);
 
-            if (bootKind == "psp") UpdateBootPsp(t);
+            if (bootKind == "switch") UpdateBootSwitch(t);
+            else if (bootKind == "psp") UpdateBootPsp(t);
             else if (bootKind == "ps3") UpdateBootPs3(t);
             else if (bootKind == "ps2") UpdateBootPs2(t);
             else UpdateBootPs1(t);
 
             // 5. kamera mendekat, layar memudar ke hitam
-            double te = bootKind == "psp" ? t - 0.6 : t; // PSP sedikit lebih panjang (berputar ke depan)
+            double te = bootKind == "psp" || bootKind == "switch" ? t - 0.6 : t; // PSP/Switch sedikit lebih panjang
             double push = EaseInOut(Seg(te, 3.35, 4.3));
             Point3D cp = bootCamPos + (bootCamTarget - bootCamPos) * (0.30 * push);
             bootCam.Position = cp;
@@ -547,6 +557,128 @@ namespace ZMB
             if (bootLedImg != null) bootLedImg.Opacity = Smooth(Seg(t, 3.18, 3.45));
         }
 
+        // ===== Nintendo Switch: tutup slot game card terbuka, cartridge masuk, kamera mundur ke layar yang menyala =====
+        const int SwFlap = 10;
+        const double SwHingeY = 0.4577, SwHingeZ = -0.0342;
+        static readonly Point3D SwCardSeat = new Point3D(0.579, 0.30, 0.002);
+        static readonly Point3D SwCardAbove = new Point3D(0.579, 0.62, 0.002);
+        static readonly Point3D SwCardStart = new Point3D(0.82, 1.15, 0.45);
+        static readonly Point3D SwCamClose = new Point3D(0.95, 0.75, 0.75), SwTgtClose = new Point3D(0.55, 0.42, 0.0);
+        static readonly Point3D SwCamFront = new Point3D(0.35, 0.35, 2.5), SwTgtFront = new Point3D(0, 0, 0);
+
+        void UpdateBootSwitch(double t)
+        {
+            bootYaw.Angle = 0;
+            double cu = EaseInOut(Seg(t, 2.9, 3.7));
+            bootCamPos = SwCamClose + (SwCamFront - SwCamClose) * cu;
+            bootCamTarget = SwTgtClose + (SwTgtFront - SwTgtClose) * cu;
+
+            if (t >= 0.6 && !bootSndOpen) { bootSndOpen = true; Sfx.Tick(); }
+            double flap = t < 2.55 ? -100 * EaseOutBack(Seg(t, 0.6, 1.2)) : -100 * (1 - EaseInOut(Seg(t, 2.55, 2.95)));
+            if (bootDoorRot != null) bootDoorRot.Angle = flap;
+            if (t >= 2.95 && !bootSndClose) { bootSndClose = true; Sfx.Back(); }
+
+            if (t < 1.0) bootDiscT.OffsetY = 100;
+            else if (t < 2.05)
+            {
+                double u = EaseInOut(Seg(t, 1.0, 2.0));
+                Point3D a = SwCardStart, e = SwCardAbove;
+                bootDiscT.OffsetX = Bez(a.X, a.X * 0.4 + e.X * 0.6, e.X, e.X, u);
+                bootDiscT.OffsetY = Bez(a.Y, a.Y * 0.4 + e.Y * 0.6 + 0.1, e.Y + 0.12, e.Y, u);
+                bootDiscT.OffsetZ = Bez(a.Z, a.Z * 0.4 + e.Z * 0.6, e.Z, e.Z, u);
+                bootDiscTilt.Angle = -35 * (1 - Smooth(Seg(t, 1.0, 1.95)));
+                bootDiscSpin.Angle = 0;
+            }
+            else
+            {
+                double u = Seg(t, 2.1, 2.5);
+                u = u * u;
+                bootDiscT.OffsetX = SwCardSeat.X;
+                bootDiscT.OffsetY = SwCardAbove.Y + (SwCardSeat.Y - SwCardAbove.Y) * u;
+                bootDiscT.OffsetZ = SwCardSeat.Z;
+                bootDiscTilt.Angle = 0;
+            }
+            if (t >= 3.5 && !bootSndPower) { bootSndPower = true; Sfx.Ok(); }
+            if (bootLedImg != null) bootLedImg.Opacity = Smooth(Seg(t, 3.55, 3.9)); // layar menyala
+        }
+
+        // Cartridge Switch: kotak tipis, muka depan & belakang memakai gambar cartridge, sisi abu gelap
+        static MeshGeometry3D cartMesh;
+        static MeshGeometry3D CartMesh()
+        {
+            if (cartMesh != null) return cartMesh;
+            const double x = 0.085, y = 0.125, z = 0.015, e = 0.02;
+            Point3D[] pts = {
+                new Point3D(-x, -y, z), new Point3D(x, -y, z), new Point3D(x, y, z), new Point3D(-x, y, z),     // depan
+                new Point3D(x, -y, -z), new Point3D(-x, -y, -z), new Point3D(-x, y, -z), new Point3D(x, y, -z), // belakang
+            };
+            Point[] fuv = { new Point(0, 1), new Point(1, 1), new Point(1, 0), new Point(0, 0) };
+            Point[] buv = { new Point(0, 1), new Point(1, 1), new Point(1, 0), new Point(0, 0) };
+            MeshGeometry3D m = new MeshGeometry3D();
+            Point3DCollection P = new Point3DCollection(); Vector3DCollection N = new Vector3DCollection(); PointCollection U = new PointCollection(); Int32Collection I = new Int32Collection();
+            Action<Point3D, Point3D, Point3D, Point3D, Vector3D, Point[]> quad = delegate (Point3D a, Point3D b, Point3D c, Point3D d, Vector3D n, Point[] uv)
+            {
+                int k = P.Count;
+                P.Add(a); P.Add(b); P.Add(c); P.Add(d);
+                for (int i = 0; i < 4; i++) { N.Add(n); U.Add(uv[i]); }
+                I.Add(k); I.Add(k + 1); I.Add(k + 2); I.Add(k); I.Add(k + 2); I.Add(k + 3);
+            };
+            Point[] side = { new Point(e, e), new Point(e, e), new Point(e, e), new Point(e, e) };
+            quad(pts[0], pts[1], pts[2], pts[3], new Vector3D(0, 0, 1), fuv);
+            quad(pts[4], pts[5], pts[6], pts[7], new Vector3D(0, 0, -1), buv);
+            quad(pts[5], pts[0], pts[3], pts[6], new Vector3D(-1, 0, 0), side);
+            quad(pts[1], pts[4], pts[7], pts[2], new Vector3D(1, 0, 0), side);
+            quad(pts[3], pts[2], pts[7], pts[6], new Vector3D(0, 1, 0), side);
+            quad(pts[5], pts[4], pts[1], pts[0], new Vector3D(0, -1, 0), side);
+            m.Positions = P; m.Normals = N; m.TextureCoordinates = U; m.TriangleIndices = I;
+            m.Freeze();
+            cartMesh = m;
+            return m;
+        }
+
+        // Gambar cartridge: gambar pilihan kamu / ScreenScraper (support-2D) dipasang utuh; kalau tidak ada,
+        // dibuat cartridge abu gelap dengan label dari cover game
+        ImageSource CartArt(GameEntry g)
+        {
+            string f = null;
+            try { f = GameScanner.FindDisc(g); } catch { }
+            ImageSource art = null;
+            bool custom = false;
+            if (f != null) { try { art = ImgConv.LoadFile(f, 768); custom = art != null; } catch { } }
+            if (art == null)
+            {
+                try
+                {
+                    string cv = GameScanner.FindCover(cfg.FindPlatform(g.Platform), g.Path, g.Cover);
+                    if (cv != null) art = ImgConv.LoadFile(cv, 768);
+                }
+                catch { }
+            }
+            const int W = 340, H = 500;
+            DrawingVisual dv = new DrawingVisual();
+            using (DrawingContext dc = dv.RenderOpen())
+            {
+                dc.DrawRectangle(SolidOf(Rgb(46, 47, 52)), null, new Rect(0, 0, W, H));
+                if (custom) DrawIconImage(dc, art, new Rect(0, 0, W, H), 1.0);
+                else
+                {
+                    // cangkang: bagian atas bertakik, label besar di tengah
+                    dc.DrawRectangle(SolidOf(Rgb(58, 59, 64)), null, new Rect(0, 0, W, 46));
+                    for (int i = 0; i < 5; i++) dc.DrawRectangle(SolidOf(Rgb(38, 39, 43)), null, new Rect(40 + i * 56, 14, 36, 18));
+                    Rect lab = new Rect(26, 70, W - 52, H - 100);
+                    dc.DrawRectangle(SolidOf(Rgb(220, 30, 36)), null, new Rect(lab.X, lab.Y, lab.Width, 34));
+                    Rect pic = new Rect(lab.X, lab.Y + 34, lab.Width, lab.Height - 34);
+                    if (art != null) { dc.PushClip(new RectangleGeometry(pic)); DrawImageFill(dc, art, pic, 1.0); dc.Pop(); }
+                    else dc.DrawRectangle(SolidOf(Rgb(230, 230, 234)), null, pic);
+                    dc.DrawRectangle(null, new Pen(SolidOf(Rgb(30, 30, 34)), 3), lab);
+                }
+            }
+            RenderTargetBitmap rtb = new RenderTargetBitmap(W, H, 96, 96, PixelFormats.Pbgra32);
+            rtb.Render(dv);
+            rtb.Freeze();
+            return rtb;
+        }
+
         void UpdateBootPsp(double t)
         {
             // mulai dari sisi belakang, lalu berputar ke depan setelah pintu tertutup
@@ -575,7 +707,10 @@ namespace ZMB
         }
 
         // Layar PSP menyala memakai background game (atau cover kalau tidak ada background)
-        ImageSource PspScreenArt(GameEntry g)
+        ImageSource PspScreenArt(GameEntry g) { return ScreenArt(g, 0.439, 0.561); }
+
+        // Layar menyala dengan background game; pita tekstur (v0, tinggi) yang dipakai UV layar
+        ImageSource ScreenArt(GameEntry g, double v0, double vh)
         {
             try
             {
@@ -594,7 +729,7 @@ namespace ZMB
                 using (DrawingContext dc = dv.RenderOpen())
                 {
                     dc.DrawRectangle(Brushes.Black, null, new Rect(0, 0, N, N));
-                    Rect scr = new Rect(0, N * 0.439, N, N * 0.561);
+                    Rect scr = new Rect(0, N * v0, N, N * vh);
                     dc.PushClip(new RectangleGeometry(scr));
                     DrawImageFill(dc, img, scr, 1.0);
                     dc.Pop();

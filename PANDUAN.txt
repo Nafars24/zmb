@@ -429,3 +429,13 @@ H. MASALAH UMUM
    ZMB menawarkan buka ulang supaya bahasa baru dipakai.
    Settings > System > "Language / Bahasa": English or Bahasa Indonesia.
    ZMB offers to restart so the new language takes effect.
+
+ ANIMASI BOOT NINTENDO SWITCH (v2.21)
+   Kamera dekat ke slot game card di atas Switch, tutup slot terbuka,
+   cartridge game turun dan masuk, tutup tertutup, kamera mundur ke depan,
+   layar menyala dengan background game, lalu emulator jalan.
+   Desain cartridge per game:
+     1. Tab > "Pilih Gambar Cartridge (Animasi Boot)..."
+     2. ZMB\discs\SWITCH\<nama file game>.png (atau <nama game>-disc.png di sebelah file game)
+     3. Unduh Media Otomatis (ScreenScraper, gambar cartridge)
+     4. Kalau tidak ada: cartridge abu gelap dengan label dari cover game
