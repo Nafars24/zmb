@@ -616,6 +616,7 @@ namespace ZMB
             GetCurrent(out items, out idx);
             if (idx < 0 || idx >= items.Count) return null;
             if (stack.Count == 0 && Math.Abs(catIndex - catAnim) > 0.4) return null;
+            if (MetroActive()) return null; // dashboard ubin: tanpa latar/trailer game
             return items[idx].Game;
         }
 
@@ -886,6 +887,7 @@ namespace ZMB
             if (k == XKey.NextTrack) { if (music.Queue.Count > 0) { music.Next(); ShowMusicToast(); } return; }
             if (k == XKey.PrevTrack) { if (music.Queue.Count > 0) { music.Prev(); ShowMusicToast(); } return; }
 
+            if (cfg.ViewMode == 1 && MetroActive()) { HandleMetroKey(k); cfg.LastCategory = catIndex; return; }
             if (cfg.ViewMode == 1)
             {
                 // Coverflow: kiri/kanan = pindah game, atas/bawah = kategori (atau kembali di dalam folder)
@@ -955,6 +957,8 @@ namespace ZMB
         {
             cfg.ViewMode = cfg.ViewMode == 1 ? 0 : 1;
             cfg.Save();
+            metroPivot = 0; metroScroll = metroScrollTarget = 0; metroHomeCache = null;
+            backKey = null;
             Sfx.Ok();
             ShowToast(cfg.ViewMode == 1 ? "Mode Coverflow (ala Aurora)" : "Mode XMB (ala PS3)");
         }

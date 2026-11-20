@@ -115,7 +115,7 @@ namespace ZMB
 
         string BackKey()
         {
-            return ThemeColor().ToString() + "|" + DateTime.Now.Hour + "|" + cfg.BackgroundImage + "|" + themeBgPath;
+            return ThemeColor().ToString() + "|" + DateTime.Now.Hour + "|" + cfg.BackgroundImage + "|" + themeBgPath + "|" + cfg.ViewMode;
         }
 
         // ===================== TEKS =====================
@@ -287,6 +287,7 @@ namespace ZMB
         {
             double W = surfBack.ActualWidth, H = surfBack.ActualHeight;
             if (W < 20 || H < 20) return;
+            if (cfg.ViewMode == 1) { DrawMetroBack(dc, W, H); return; }
             int hour = DateTime.Now.Hour;
             Color c = ThemeColor();
             double night = (hour >= 19 || hour < 5) ? 0.38 : (hour >= 17 || hour < 7) ? 0.18 : 0;
@@ -341,8 +342,9 @@ namespace ZMB
             {
                 dc.DrawRectangle(BrushA(brDimLeft, vis), null, new Rect(0, 0, W, H));
             }
-            if (cfg.ShowWaves) DrawWaves(dc, W, H, now, 1 - 0.85 * vis);
-            if (SnowActive()) DrawSnow(dc, W, H, now, 1 - 0.6 * vis);
+            bool aurora = cfg.ViewMode == 1;   // mode Aurora: latar gradasi abu tanpa gelombang/partikel
+            if (cfg.ShowWaves && !aurora) DrawWaves(dc, W, H, now, 1 - 0.85 * vis);
+            if (SnowActive() && !aurora) DrawSnow(dc, W, H, now, 1 - 0.6 * vis);
 
             double bootT = booting ? now - bootStart : 99;
             if (bootT < 2.6)
@@ -355,6 +357,13 @@ namespace ZMB
             DrawClock(dc, W, H, fade, now);
             if (cfg.ViewMode == 1)
             {
+                if (MetroActive())
+                {
+                    DrawMetro(dc, W, H, fade, now);
+                    DrawNowPlaying(dc, W, H, 96 * S);
+                    DrawScrapeStatus(dc, W, H - 160 * S);
+                    return;
+                }
                 DrawCoverflow(dc, W, H, fade, now);
                 DrawNowPlaying(dc, W, H, 96 * S);
                 DrawScrapeStatus(dc, W, H - 160 * S);

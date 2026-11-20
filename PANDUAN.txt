@@ -386,3 +386,13 @@ H. MASALAH UMUM
      menjadikannya borderless dan menutup seluruh monitor.
    * Game PC (Windows/Steam) tidak diubah.
    * Matikan di Pengaturan > "Auto Layar Penuh (Emulator)".
+
+ MODE AURORA = DASHBOARD XBOX 360 (v2.17)
+   * Latar gradasi abu (tanpa gelombang/partikel), tab di atas:
+     beranda, game, video, musik, foto, pengaturan, pengguna.
+   * Beranda: ubin besar game terakhir dimainkan (langsung main), game lain
+     yang baru dimainkan, Favorit, Terakhir Dimainkan, dan pintasan menu.
+   * Panah = pindah ubin; mentok kiri/kanan atau PgUp/PgDn (L2/R2) = ganti tab.
+     Enter/A = buka, Esc/B = kembali (ke beranda kalau di level atas).
+   * Masuk ke daftar game (mis. PlayStation 1) = rak coverflow seperti biasa.
+   * Mode XMB (ala PS3) tidak berubah. Ganti mode: F2 atau Pengaturan.

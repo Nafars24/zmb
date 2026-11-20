@@ -120,7 +120,7 @@ namespace ZMB
             List<XmbItem> l = new List<XmbItem>();
 
             XmbItem vm = MakeItem("Mode Tampilan", "", "\uE8A9", null);
-            vm.DynSub = delegate { return (cfg.ViewMode == 1 ? "Coverflow (ala Aurora Xbox 360)" : "XMB (ala PS3)") + "  \u2022  F2 untuk ganti cepat"; };
+            vm.DynSub = delegate { return (cfg.ViewMode == 1 ? "Aurora (dashboard Xbox 360 + rak coverflow)" : "XMB (ala PS3)") + "  \u2022  F2 untuk ganti cepat"; };
             vm.Options = delegate
             {
                 List<OptionItem> o = new List<OptionItem>();
@@ -318,7 +318,7 @@ namespace ZMB
             help.Children = BuildHelpItems;
             l.Add(help);
 
-            XmbItem about = MakeItem("Tentang ZMB", "Versi 2.16.1  \u2022  Model 3D PS one: Vladimir_Sofyanov (Sketchfab, CC-BY 4.0)  \u2022  Enter: buka folder data", "\uE946", delegate { ShowInExplorer(Config.FilePath); });
+            XmbItem about = MakeItem("Tentang ZMB", "Versi 2.17  \u2022  Model 3D PS one: Vladimir_Sofyanov (Sketchfab, CC-BY 4.0)  \u2022  Enter: buka folder data", "\uE946", delegate { ShowInExplorer(Config.FilePath); });
             l.Add(about);
             return l;
         }
