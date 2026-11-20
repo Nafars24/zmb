@@ -343,7 +343,7 @@ namespace ZMB
                     {
                         ImageSource ledTex = bm.LedTex;
                         if (psp) { ImageSource scr = PspScreenArt(g); if (scr != null) ledTex = scr; }
-                        if (sw) { ImageSource scr = ScreenArt(g, 0, 1); if (scr != null) ledTex = scr; }
+                        if (sw) { ImageSource scr = ScreenArt(g, 0, 1, SwScreenAspect); if (scr != null) ledTex = scr; }
                         bootLedImg = new ImageBrush(ledTex);
                         bootLedImg.ViewportUnits = BrushMappingMode.Absolute;
                         bootLedImg.Viewport = new Rect(0, 0, 1, 1);
@@ -784,10 +784,12 @@ namespace ZMB
         }
 
         // Layar PSP menyala memakai background game (atau cover kalau tidak ada background)
-        ImageSource PspScreenArt(GameEntry g) { return ScreenArt(g, 0.439, 0.561); }
+        ImageSource PspScreenArt(GameEntry g) { return ScreenArt(g, 0.439, 0.561, 0); }
+
+        const double SwScreenAspect = 1.274 / 0.768; // layar Switch di model (lebar/tinggi), UV 0..1 penuh
 
         // Layar menyala dengan background game; pita tekstur (v0, tinggi) yang dipakai UV layar
-        ImageSource ScreenArt(GameEntry g, double v0, double vh)
+        ImageSource ScreenArt(GameEntry g, double v0, double vh, double aspect)
         {
             try
             {
@@ -801,17 +803,20 @@ namespace ZMB
                 ImageSource img = ImgConv.LoadFile(f, 1280);
                 if (img == null) return null;
                 // UV layar memakai pita bawah tekstur (v 0.439 - 1.0), lebar penuh, tidak tercermin
+                // aspect > 0: tekstur dibuat seukuran bentuk layar supaya gambar tidak gepeng saat direntang ke UV 0..1
                 const int N = 1024;
+                int TW = N, TH = N;
+                if (aspect > 0) { TW = 1280; TH = (int)Math.Round(1280 / aspect); }
                 DrawingVisual dv = new DrawingVisual();
                 using (DrawingContext dc = dv.RenderOpen())
                 {
-                    dc.DrawRectangle(Brushes.Black, null, new Rect(0, 0, N, N));
-                    Rect scr = new Rect(0, N * v0, N, N * vh);
+                    dc.DrawRectangle(Brushes.Black, null, new Rect(0, 0, TW, TH));
+                    Rect scr = new Rect(0, TH * v0, TW, TH * vh);
                     dc.PushClip(new RectangleGeometry(scr));
                     DrawImageFill(dc, img, scr, 1.0);
                     dc.Pop();
                 }
-                RenderTargetBitmap rtb = new RenderTargetBitmap(N, N, 96, 96, PixelFormats.Pbgra32);
+                RenderTargetBitmap rtb = new RenderTargetBitmap(TW, TH, 96, 96, PixelFormats.Pbgra32);
                 rtb.Render(dv);
                 rtb.Freeze();
                 return rtb;
