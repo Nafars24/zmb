@@ -75,7 +75,10 @@ namespace ZMB
                         }
                         else cs = new CaseStyle(CaseStyle.BLURAY, 0.79, Rgb(12, 16, 26), Rgb(22, 26, 36), "PS3");
                         break;
-                    case "PSP": cs = new CaseStyle(CaseStyle.DVD, 0.58, Rgb(12, 12, 14), Rgb(18, 18, 22), "PSP"); break;
+                    case "PSP":
+                        if (CaseOverlay.For("PSP") != null) cs = OverlayStyle(CaseStyle.DVD, CaseOverlay.Psp, Rgb(12, 12, 14), Rgb(18, 18, 22));
+                        else cs = new CaseStyle(CaseStyle.DVD, 0.58, Rgb(12, 12, 14), Rgb(18, 18, 22), "PSP");
+                        break;
                     case "VITA": cs = new CaseStyle(CaseStyle.DVD, 0.78, Rgb(20, 40, 90), Rgb(28, 62, 140), "PS Vita"); break;
                     case "NDS": cs = new CaseStyle(CaseStyle.DVD, 0.88, Rgb(222, 223, 228), Rgb(236, 237, 241), "Nintendo DS"); cs.DarkText = true; break;
                     case "3DS": cs = new CaseStyle(CaseStyle.DVD, 0.88, Rgb(232, 232, 236), Rgb(190, 28, 40), "Nintendo 3DS"); break;

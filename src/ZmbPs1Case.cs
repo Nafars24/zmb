@@ -25,6 +25,8 @@ namespace ZMB
             0.0523, 0.9486, 0.1182, 0.9579, 0.183, 0.822, 0.111, 0.953);
         public static readonly CaseOverlay Ps2 = new CaseOverlay("ps2", "PS2", 0.7242, 0.0793,
             0.0289, 0.9551, 0.0267, 0.9740, 0.0539, 0.9581, 0.0351, 0.9725);
+        public static readonly CaseOverlay Psp = new CaseOverlay("psp", "PSP", 0.5941, 0.0832,
+            0.0365, 0.9494, 0.0280, 0.9727, 0.0568, 0.9489, 0.0435, 0.9669);
         public static readonly CaseOverlay Gcn = new CaseOverlay("gcn", "Wii", 0.6856, 0.0864,
             0.0289, 0.9483, 0.0248, 0.9766, 0.0217, 0.9837, 0.0455, 0.9704);
 
@@ -32,7 +34,7 @@ namespace ZMB
         public static CaseOverlay For(string platform)
         {
             CaseOverlay o = null;
-            switch (platform) { case "PS1": o = Ps1; break; case "PS2": o = Ps2; break; case "PS3": o = Ps3; break; case "GCN": o = Gcn; break; }
+            switch (platform) { case "PS1": o = Ps1; break; case "PS2": o = Ps2; break; case "PS3": o = Ps3; break; case "GCN": o = Gcn; break; case "PSP": o = Psp; break; }
             return (o != null && o.Ready) ? o : null;
         }
 

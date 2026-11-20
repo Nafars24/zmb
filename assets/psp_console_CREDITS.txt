@@ -1,0 +1,12 @@
+Model 3D PSP (assets/psp_console.bin + psp_console_*.jpg)
+
+Sumber: file sony-playstation-portable.zip yang diberikan pemilik ZMB
+(Blender/OBJ). Nama pembuat dan lisensi tidak disertakan di dalam arsip;
+lengkapi bagian ini dengan tautan sumber dan lisensinya.
+
+Perubahan untuk ZMB: dikonversi dari OBJ ke format mesh ZMB, diskalakan,
+pintu UMD dan tombol power dipisah agar bisa dianimasikan, ruang UMD dan
+gambar layar menyala ditambahkan, tekstur albedo digabung dengan ambient
+occlusion dan diperkecil. Normal, roughness dan metallic tidak dipakai.
+PlayStation dan PSP adalah merek dagang Sony Interactive Entertainment.
+ZMB tidak berafiliasi dengan Sony.
