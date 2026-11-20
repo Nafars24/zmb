@@ -448,3 +448,15 @@ H. MASALAH UMUM
    Desain disc per game sama seperti PlayStation:
      Tab > "Pilih Gambar Disc (Animasi Boot)...", folder ZMB\discs\<PLATFORM>\,
      atau Unduh Media Otomatis. Kalau tidak ada, dibuat dari cover game.
+
+ NINTENDO SWITCH 2 (v2.23)
+   Platform baru "Nintendo Switch 2" (emulator Lichii, lichii.exe).
+   Argumen bawaan: -f -g "{rom}". Pakai case merah dan animasi cartridge Switch.
+
+ MEDIA KUSTOM DISALIN KE FOLDER ZMB (v2.23)
+   Gambar/file yang kamu pilih lewat menu (cover, box art, spine, disc/cartridge,
+   latar, logo, ikon platform, foto profil, latar menu, musik tema, trailer)
+   sekarang disalin ke ZMB\media\... Setelah dipilih, file aslinya boleh dihapus.
+   Saat ZMB dibuka, media lama yang masih menunjuk ke luar folder ZMB ikut disalin
+   otomatis (kalau file aslinya masih ada). Musik/video dari folder Musik/Video
+   pustaka kamu tidak disalin.

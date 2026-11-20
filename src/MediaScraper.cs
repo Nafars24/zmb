@@ -53,7 +53,7 @@ namespace ZMB
                 case "GCN": return 13;
                 case "MD": return 1;
                 case "ARC": return 75;
-                case "SWITCH": return 225;
+                case "SWITCH": case "SWITCH2": return 225;
                 case "X360": return 33;
             }
             return 0;

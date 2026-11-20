@@ -40,6 +40,7 @@ namespace ZMB
             new Def("Mesen", new[] { "mesen" }, new[] { "NES", "SNES" }, "\"{rom}\" --fullscreen"),
             new Def("MAME", new[] { "mame" }, new[] { "ARC" }, "-rompath \"{romdir}\" {romname}"),
             new Def("Kega Fusion", new[] { "fusion" }, new[] { "MD" }, "-fullscreen \"{rom}\""),
+            new Def("Lichii", new[] { "lichii" }, new[] { "SWITCH2" }, "-f -g \"{rom}\""),
             new Def("Ryujinx", new[] { "ryujinx" }, new[] { "SWITCH" }, "--fullscreen \"{rom}\""),
             new Def("Eden", new[] { "eden" }, new[] { "SWITCH" }, "-f -g \"{rom}\""),
             new Def("Citron", new[] { "citron" }, new[] { "SWITCH" }, "-f -g \"{rom}\""),
@@ -64,7 +65,7 @@ namespace ZMB
         };
 
         static readonly string[] SkipDirs = { "windows", "$recycle.bin", "system volume information", "programdata", "recovery", "perflogs", "msocache", "windowsapps", "node_modules", ".git", "appdata" };
-        static readonly string[] BadWords = { "unins", "update", "crash", "setup", "install", "helper", "vc_redist", "dxsetup" };
+        static readonly string[] BadWords = { "unins", "update", "crash", "setup", "install", "helper", "vc_redist", "dxsetup", "-cli" };
 
         static Def Match(string exePath)
         {

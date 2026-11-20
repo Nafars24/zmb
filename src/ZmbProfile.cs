@@ -137,7 +137,7 @@ namespace ZMB
                 o.Add(new OptionItem(Lang.T("Ganti Foto Profil..."), delegate
                 {
                     string f = Dialogs.PickFile(Owner32, Lang.T("Pilih foto profil"), Lang.T("Gambar|*.jpg;*.jpeg;*.png;*.bmp"), cfg.PhotoFolder);
-                    if (f != null) { cfg.AvatarPath = f; cfg.Save(); ForgetImage("avatar:" + f); }
+                    if (f != null) { string old = cfg.AvatarPath; cfg.AvatarPath = MediaStore.Import(f, "profile", null, "avatar"); MediaStore.Discard(old, cfg.AvatarPath); cfg.Save(); ForgetImage("avatar:" + cfg.AvatarPath); }
                 }));
                 o.Add(new OptionItem(Lang.T("Hapus Foto Profil"), delegate { cfg.AvatarPath = ""; cfg.Save(); }));
                 o.Add(new OptionItem(Lang.T("Hapus Riwayat Sesi Main"), delegate

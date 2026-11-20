@@ -78,6 +78,89 @@ namespace ZMB
         }
     }
 
+    // ===== Media pilihan pengguna disalin ke folder ZMB\media agar file aslinya boleh dihapus =====
+    public static class MediaStore
+    {
+        public static string Root { get { return System.IO.Path.Combine(Config.BaseDir, "media"); } }
+
+        static bool Under(string f, string dir)
+        {
+            if (string.IsNullOrEmpty(f) || string.IsNullOrEmpty(dir)) return false;
+            try
+            {
+                string a = System.IO.Path.GetFullPath(f).TrimEnd('\\') + "\\";
+                string b = System.IO.Path.GetFullPath(dir).TrimEnd('\\') + "\\";
+                return a.StartsWith(b, StringComparison.OrdinalIgnoreCase);
+            }
+            catch { return false; }
+        }
+
+        public static bool IsOwned(string f) { return Under(f, Config.BaseDir); }
+
+        // Salin src ke ZMB\media\<kind>\<sub>\<nama>_<acak>.ext lalu kembalikan path barunya.
+        // File yang sudah ada di folder ZMB, URL, atau file yang hilang dikembalikan apa adanya.
+        public static string Import(string src, string kind, string sub, string name)
+        {
+            if (string.IsNullOrEmpty(src) || src.Contains("://") || IsOwned(src) || !File.Exists(src)) return src;
+            try
+            {
+                string dir = System.IO.Path.Combine(Root, kind);
+                if (!string.IsNullOrEmpty(sub)) dir = System.IO.Path.Combine(dir, Safe(sub));
+                Directory.CreateDirectory(dir);
+                string baseName = Safe(string.IsNullOrEmpty(name) ? System.IO.Path.GetFileNameWithoutExtension(src) : name);
+                if (baseName.Length > 60) baseName = baseName.Substring(0, 60);
+                string dest = System.IO.Path.Combine(dir, baseName + "_" + DateTime.Now.Ticks.ToString("x").Substring(6) + System.IO.Path.GetExtension(src).ToLowerInvariant());
+                File.Copy(src, dest, true);
+                return dest;
+            }
+            catch { return src; }
+        }
+
+        // hapus salinan lama di ZMB\media yang sudah diganti
+        public static void Discard(string old, string now)
+        {
+            if (string.IsNullOrEmpty(old) || string.Equals(old, now, StringComparison.OrdinalIgnoreCase) || !Under(old, Root)) return;
+            try { File.Delete(old); } catch { }
+        }
+
+        static string Safe(string s)
+        {
+            string r = string.Join("_", s.Split(System.IO.Path.GetInvalidFileNameChars())).Trim();
+            return r.Length == 0 ? "media" : r;
+        }
+
+        // Sekali jalan saat start: salin media lama yang masih menunjuk ke luar folder ZMB
+        // (musik/video dari folder Musik/Video pustaka kamu dibiarkan)
+        public static bool MigrateAll(Config c)
+        {
+            bool changed = false;
+            Func<string, string, string, string, string> imp = delegate (string f, string kind, string sub, string name)
+            {
+                if (string.IsNullOrEmpty(f) || IsOwned(f) || f.Contains("://")) return f;
+                string n = Import(f, kind, sub, name);
+                if (n != f) changed = true;
+                return n;
+            };
+            Func<string, bool> lib = delegate (string f) { return Under(f, c.MusicFolder) || Under(f, c.VideoFolder); };
+            foreach (GameEntry g in c.AllKnown())
+            {
+                string sub = string.IsNullOrEmpty(g.Platform) ? "MISC" : g.Platform;
+                g.Cover = imp(g.Cover, "cover", sub, g.Name);
+                g.BoxArt = imp(g.BoxArt, "boxart", sub, g.Name);
+                g.Spine = imp(g.Spine, "spine", sub, g.Name);
+                g.Disc = imp(g.Disc, "disc", sub, g.Name);
+                g.Background = imp(g.Background, "background", sub, g.Name);
+                g.Logo = imp(g.Logo, "logo", sub, g.Name);
+                if (!lib(g.ThemeMusic)) g.ThemeMusic = imp(g.ThemeMusic, "music", sub, g.Name);
+                if (!lib(g.Trailer)) g.Trailer = imp(g.Trailer, "trailer", sub, g.Name);
+            }
+            foreach (PlatformCfg p in c.Platforms) p.Icon = imp(p.Icon, "icon", "platform", p.Short);
+            c.BackgroundImage = imp(c.BackgroundImage, "background", "ZMB", "latar");
+            c.AvatarPath = imp(c.AvatarPath, "profile", null, "avatar");
+            return changed;
+        }
+    }
+
     public class Config
     {
         public List<GameEntry> WindowsGames = new List<GameEntry>();
@@ -158,6 +241,7 @@ namespace ZMB
             }
             if (c == null) c = new Config();
             c.EnsureDefaults();
+            try { if (MediaStore.MigrateAll(c)) c.Save(); } catch { }
             return c;
         }
 
@@ -190,6 +274,7 @@ namespace ZMB
             l.Add(new PlatformCfg("Nintendo 3DS", "3DS", "3ds;cci;cxi;app", "#C0392B", "Azahar / Lime3DS"));
             l.Add(new PlatformCfg("GameCube / Wii", "GCN", "iso;gcm;rvz;wbfs;ciso;gcz", "#5A3E9A", "Dolphin"));
             l.Add(new PlatformCfg("Nintendo Switch", "SWITCH", "nsp;xci;nca;nro", "#E60012", "Ryujinx / Eden / Citron / Sudachi"));
+            l.Add(new PlatformCfg("Nintendo Switch 2", "SWITCH2", "nsp;xci;nsz;xcz;nca", "#E60012", "Lichii"));
             l.Add(new PlatformCfg("Xbox 360", "X360", "iso;xex;zar", "#107C10", "Xenia / Xenia Canary"));
             l.Add(new PlatformCfg("Sega Genesis", "MD", "md;gen;bin;smd;zip", "#111111", "Kega Fusion / RetroArch"));
             l.Add(new PlatformCfg("Arcade (MAME)", "ARC", "zip;7z", "#D35400", Lang.T("MAME / FBNeo (argumen: {romname})")));

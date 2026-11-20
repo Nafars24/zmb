@@ -38,7 +38,7 @@ namespace ZMB
         public static CaseOverlay For(string platform)
         {
             CaseOverlay o = null;
-            switch (platform) { case "PS1": o = Ps1; break; case "PS2": o = Ps2; break; case "PS3": o = Ps3; break; case "GCN": o = Gcn; break; case "PSP": o = Psp; break; case "X360": o = X360; break; case "SWITCH": o = Switch; break; }
+            switch (platform) { case "PS1": o = Ps1; break; case "PS2": o = Ps2; break; case "PS3": o = Ps3; break; case "GCN": o = Gcn; break; case "PSP": o = Psp; break; case "X360": o = X360; break; case "SWITCH": case "SWITCH2": o = Switch; break; }
             return (o != null && o.Ready) ? o : null;
         }
 

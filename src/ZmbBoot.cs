@@ -83,7 +83,7 @@ namespace ZMB
             if (string.Equals(g.Platform, "PS3", StringComparison.OrdinalIgnoreCase)) return "ps3";
             if (string.Equals(g.Platform, "PS2", StringComparison.OrdinalIgnoreCase)) return "ps2";
             if (string.Equals(g.Platform, "PSP", StringComparison.OrdinalIgnoreCase)) return "psp";
-            if (string.Equals(g.Platform, "SWITCH", StringComparison.OrdinalIgnoreCase)) return "switch";
+            if (string.Equals(g.Platform, "SWITCH", StringComparison.OrdinalIgnoreCase) || string.Equals(g.Platform, "SWITCH2", StringComparison.OrdinalIgnoreCase)) return "switch";
             if (string.Equals(g.Platform, "X360", StringComparison.OrdinalIgnoreCase)) return "x360";
             if (string.Equals(g.Platform, "GCN", StringComparison.OrdinalIgnoreCase) || string.Equals(g.Platform, "WII", StringComparison.OrdinalIgnoreCase)) return "wii";
             return null;

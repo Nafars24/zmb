@@ -230,7 +230,7 @@ namespace ZMB
                 o.Add(new OptionItem(Lang.T("Pilih Gambar..."), delegate
                 {
                     string f = Dialogs.PickFile(Owner32, Lang.T("Pilih gambar latar"), Lang.T("Gambar|*.jpg;*.jpeg;*.png;*.bmp"), cfg.PhotoFolder);
-                    if (f != null) { cfg.BackgroundImage = f; cfg.Save(); backImg = null; backKey = ""; }
+                    if (f != null) { string old = cfg.BackgroundImage; cfg.BackgroundImage = MediaStore.Import(f, "background", "ZMB", "latar"); MediaStore.Discard(old, cfg.BackgroundImage); cfg.Save(); backImg = null; backKey = ""; }
                 }));
                 return o;
             };
@@ -748,7 +748,7 @@ namespace ZMB
             o.Add(new OptionItem(Lang.T("Pilih Musik Tema..."), delegate
             {
                 string f = Dialogs.PickFile(Owner32, Lang.T("Pilih musik tema untuk ") + g.Name, "Audio|*.mp3;*.wma;*.wav;*.m4a", cfg.MusicFolder);
-                if (f != null) { g.ThemeMusic = f; cfg.EnsureStored(g); cfg.Save(); focusKey = null; ShowToast(Lang.T("Musik tema diatur")); }
+                if (f != null) { string old = g.ThemeMusic; g.ThemeMusic = MediaStore.Import(f, "music", (string.IsNullOrEmpty(g.Platform) ? "MISC" : g.Platform), g.Name); MediaStore.Discard(old, g.ThemeMusic); cfg.EnsureStored(g); cfg.Save(); focusKey = null; ShowToast(Lang.T("Musik tema diatur")); }
             }));
             if (!string.IsNullOrEmpty(g.ThemeMusic)) o.Add(new OptionItem(Lang.T("Hapus Musik Tema"), delegate { g.ThemeMusic = ""; cfg.Save(); StopThemeMusic(); }));
             o.Add(new OptionItem(Lang.T("Lihat Trofi / Achievement"), delegate { OpenAchvFor(g); }));
@@ -794,40 +794,40 @@ namespace ZMB
                 o.Add(new OptionItem(Lang.T("Pilih Gambar Spine (Coverflow)..."), delegate
                 {
                     string f = Dialogs.PickFile(Owner32, Lang.T("Pilih gambar punggung case (spine) untuk ") + g.Name, Lang.T("Gambar|*.jpg;*.jpeg;*.png;*.bmp"), null);
-                    if (f != null) { g.Spine = f; cfg.EnsureStored(g); SaveAndRefresh(); ShowToast(Lang.T("Spine diganti")); }
+                    if (f != null) { string old = g.Spine; if (!string.IsNullOrEmpty(old)) ForgetImage("spine:" + old); g.Spine = MediaStore.Import(f, "spine", (string.IsNullOrEmpty(g.Platform) ? "MISC" : g.Platform), g.Name); MediaStore.Discard(old, g.Spine); cfg.EnsureStored(g); SaveAndRefresh(); ShowToast(Lang.T("Spine diganti")); }
                 }));
                 if (!string.IsNullOrEmpty(g.Spine))
-                    o.Add(new OptionItem(Lang.T("Hapus Spine Kustom"), delegate { ForgetImage("spine:" + g.Spine); g.Spine = ""; SaveAndRefresh(); }));
-                if (g.Platform == "PS1" || g.Platform == "PS2" || g.Platform == "PS3" || g.Platform == "PSP" || g.Platform == "SWITCH" || g.Platform == "X360" || g.Platform == "GCN" || g.Platform == "WII")
+                    o.Add(new OptionItem(Lang.T("Hapus Spine Kustom"), delegate { ForgetImage("spine:" + g.Spine); MediaStore.Discard(g.Spine, ""); g.Spine = ""; SaveAndRefresh(); }));
+                if (g.Platform == "PS1" || g.Platform == "PS2" || g.Platform == "PS3" || g.Platform == "PSP" || g.Platform == "SWITCH" || g.Platform == "SWITCH2" || g.Platform == "X360" || g.Platform == "GCN" || g.Platform == "WII")
                 {
-                    bool cart = g.Platform == "SWITCH";
+                    bool cart = g.Platform == "SWITCH" || g.Platform == "SWITCH2";
                     o.Add(new OptionItem(cart ? Lang.T("Pilih Gambar Cartridge (Animasi Boot)...") : Lang.T("Pilih Gambar Disc (Animasi Boot)..."), delegate
                     {
                         string f = Dialogs.PickFile(Owner32, (cart ? Lang.T("Pilih gambar cartridge untuk ") : Lang.T("Pilih gambar disc untuk ")) + g.Name, Lang.T("Gambar|*.jpg;*.jpeg;*.png;*.bmp"), null);
-                        if (f != null) { g.Disc = f; cfg.EnsureStored(g); cfg.Save(); ShowToast(Lang.T("Disc diganti")); }
+                        if (f != null) { string old = g.Disc; g.Disc = MediaStore.Import(f, "disc", (string.IsNullOrEmpty(g.Platform) ? "MISC" : g.Platform), g.Name); MediaStore.Discard(old, g.Disc); cfg.EnsureStored(g); cfg.Save(); ShowToast(Lang.T("Disc diganti")); }
                     }));
                     if (!string.IsNullOrEmpty(g.Disc))
-                        o.Add(new OptionItem(Lang.T("Hapus Disc Kustom"), delegate { g.Disc = ""; cfg.Save(); ShowToast(Lang.T("Disc kustom dihapus")); }));
+                        o.Add(new OptionItem(Lang.T("Hapus Disc Kustom"), delegate { MediaStore.Discard(g.Disc, ""); g.Disc = ""; cfg.Save(); ShowToast(Lang.T("Disc kustom dihapus")); }));
                 }
             }
             o.Add(new OptionItem(Lang.T("Pilih Box Art (Coverflow)..."), delegate
             {
                 string f = Dialogs.PickFile(Owner32, Lang.T("Pilih box art portrait untuk ") + g.Name, Lang.T("Gambar|*.jpg;*.jpeg;*.png;*.bmp"), null);
-                if (f != null) { g.BoxArt = f; cfg.EnsureStored(g); SaveAndRefresh(); ShowToast(Lang.T("Box art diganti")); }
+                if (f != null) { string old = g.BoxArt; g.BoxArt = MediaStore.Import(f, "boxart", (string.IsNullOrEmpty(g.Platform) ? "MISC" : g.Platform), g.Name); MediaStore.Discard(old, g.BoxArt); cfg.EnsureStored(g); SaveAndRefresh(); ShowToast(Lang.T("Box art diganti")); }
             }));
             if (!string.IsNullOrEmpty(g.Cover))
                 o.Add(new OptionItem(Lang.T("Hapus Cover Kustom"), delegate { ForgetImage("img:" + g.Cover); g.Cover = ""; SaveAndRefresh(); }));
             o.Add(new OptionItem(Lang.T("Pilih Gambar Latar..."), delegate
             {
                 string f = Dialogs.PickFile(Owner32, Lang.T("Pilih gambar latar untuk ") + g.Name + Lang.T(" (disarankan 1920x1080)"), Lang.T("Gambar|*.jpg;*.jpeg;*.png;*.bmp"), null);
-                if (f != null) { g.Background = f; cfg.EnsureStored(g); SaveAndRefresh(); ShowToast(Lang.T("Latar game diganti")); }
+                if (f != null) { string old = g.Background; g.Background = MediaStore.Import(f, "background", (string.IsNullOrEmpty(g.Platform) ? "MISC" : g.Platform), g.Name); MediaStore.Discard(old, g.Background); cfg.EnsureStored(g); SaveAndRefresh(); ShowToast(Lang.T("Latar game diganti")); }
             }));
             if (!string.IsNullOrEmpty(g.Background))
-                o.Add(new OptionItem(Lang.T("Hapus Latar Kustom"), delegate { g.Background = ""; SaveAndRefresh(); }));
+                o.Add(new OptionItem(Lang.T("Hapus Latar Kustom"), delegate { MediaStore.Discard(g.Background, ""); g.Background = ""; SaveAndRefresh(); }));
             o.Add(new OptionItem(Lang.T("Pilih Video Trailer..."), delegate
             {
                 string f = Dialogs.PickFile(Owner32, Lang.T("Pilih video trailer untuk ") + g.Name, Lang.T("Video|*.mp4;*.wmv;*.avi;*.m4v;*.mov;*.mkv|Semua file|*.*"), cfg.VideoFolder);
-                if (f != null) { g.Trailer = f; cfg.EnsureStored(g); SaveAndRefresh(); ShowToast(Lang.T("Trailer diatur")); }
+                if (f != null) { string old = g.Trailer; g.Trailer = MediaStore.Import(f, "trailer", (string.IsNullOrEmpty(g.Platform) ? "MISC" : g.Platform), g.Name); MediaStore.Discard(old, g.Trailer); cfg.EnsureStored(g); SaveAndRefresh(); ShowToast(Lang.T("Trailer diatur")); }
             }));
             o.Add(new OptionItem(Lang.T("Trailer dari Link (URL .mp4)..."), delegate
             {
@@ -990,10 +990,10 @@ namespace ZMB
             o.Add(new OptionItem(Lang.T("Pilih Ikon Platform..."), delegate
             {
                 string f = Dialogs.PickFile(Owner32, Lang.T("Pilih ikon untuk ") + p.Name + Lang.T(" (PNG transparan paling bagus)"), Lang.T("Gambar|*.png;*.ico;*.jpg;*.jpeg;*.bmp"), null);
-                if (f != null) { p.Icon = f; SaveAndRefresh(); ShowToast(Lang.T("Ikon ") + p.Short + Lang.T(" diganti")); }
+                if (f != null) { string old = p.Icon; p.Icon = MediaStore.Import(f, "icon", "platform", p.Short); MediaStore.Discard(old, p.Icon); SaveAndRefresh(); ShowToast(Lang.T("Ikon ") + p.Short + Lang.T(" diganti")); }
             }));
             if (!string.IsNullOrEmpty(p.Icon))
-                o.Add(new OptionItem(Lang.T("Kembalikan Ikon Bawaan"), delegate { p.Icon = ""; SaveAndRefresh(); ShowToast(Lang.T("Ikon bawaan dipakai lagi")); }));
+                o.Add(new OptionItem(Lang.T("Kembalikan Ikon Bawaan"), delegate { MediaStore.Discard(p.Icon, ""); p.Icon = ""; SaveAndRefresh(); ShowToast(Lang.T("Ikon bawaan dipakai lagi")); }));
             o.Add(new OptionItem(Lang.T("Argumen Emulator: ") + p.Args, delegate
             {
                 string a = Dialogs.Input(Owner32, Lang.T("Argumen Emulator ") + p.Name,

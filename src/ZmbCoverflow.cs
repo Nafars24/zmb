@@ -83,6 +83,7 @@ namespace ZMB
                     case "NDS": cs = new CaseStyle(CaseStyle.DVD, 0.88, Rgb(222, 223, 228), Rgb(236, 237, 241), "Nintendo DS"); cs.DarkText = true; break;
                     case "3DS": cs = new CaseStyle(CaseStyle.DVD, 0.88, Rgb(232, 232, 236), Rgb(190, 28, 40), "Nintendo 3DS"); break;
                     case "SWITCH":
+                    case "SWITCH2":
                         if (CaseOverlay.For("SWITCH") != null) cs = OverlayStyle(CaseStyle.DVD, CaseOverlay.Switch, Rgb(26, 26, 30), Rgb(230, 0, 18));
                         else cs = new CaseStyle(CaseStyle.DVD, 0.62, Rgb(26, 26, 30), Rgb(230, 0, 18), "NINTENDO SWITCH");
                         break;
