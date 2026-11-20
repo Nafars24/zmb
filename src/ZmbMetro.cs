@@ -26,7 +26,7 @@ namespace ZMB
         int metroPivot;              // 0 = beranda, selebihnya kategori
         double metroPivotAnim;
         int metroHomeSel;
-        double metroScroll, metroScrollTarget, metroLastT = -1;
+        double metroScroll, metroScrollTarget, metroLastT = -1, metroLeft = -1;
         List<MetroTile> metroHomeCache;
         double metroHomeBuiltAt = -10;
         Dictionary<string, string> metroBgPath = new Dictionary<string, string>();
@@ -329,8 +329,12 @@ namespace ZMB
             double gridW = cols * (tw + gap) - gap;
             double margin = 150 * s;
             bool fits = gridW <= W - margin * 2;
-            double left = fits ? Math.Round((W - gridW) / 2) : margin;
+            double leftT = fits ? Math.Round((W - gridW) / 2) : margin;
             if (fits) { metroScrollTarget = 0; }
+            // geser posisi konten dengan halus saat pindah tab (lebar grid tiap tab berbeda)
+            if (metroLeft < 0 || dt == 0) metroLeft = leftT;
+            metroLeft += (leftT - metroLeft) * ka;
+            double left = metroLeft;
 
             // ---- tab di atas ----
             double py = 150 * s, pfs = 40 * s;
