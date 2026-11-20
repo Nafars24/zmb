@@ -151,7 +151,8 @@ namespace ZMB
         {
             string key = j.Platform == "STEAM" ? (j.AppId ?? GameScanner.SafeName(j.Name)) :
                          j.Platform == "WIN" ? GameScanner.SafeName(j.Name) :
-                         System.IO.Path.GetFileNameWithoutExtension(j.Path);
+                         GameScanner.RomKey(j.Path);
+            if (key.Equals("EBOOT", StringComparison.OrdinalIgnoreCase)) key = j.Name; // PS3: semua file bernama EBOOT
             return System.IO.Path.Combine(Config.BaseDir, kind, j.Platform, GameScanner.SafeName(key) + ext);
         }
 

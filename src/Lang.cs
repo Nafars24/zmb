@@ -805,6 +805,7 @@ namespace ZMB
             { "Bahasa / Language", "Language / Bahasa" },
             { "beranda", "home" },
             { "Gelombang ", "Waves " },
+            { "Lichii (folder game: exefs\\main)", "Lichii (game folder: exefs\\main)" },
             { "Pilih Gambar Cartridge (Animasi Boot)...", "Choose Cartridge Image (Boot Animation)..." },
             { "Pilih gambar cartridge untuk ", "Choose a cartridge image for " },
             { "Konsol 3D PS1/PS2/PS3/PSP/Switch/Xbox 360/Wii memasukkan disc/UMD/cartridge game lalu menyala sebelum game jalan", "3D PS1/PS2/PS3/PSP/Switch/Xbox 360/Wii console loads the game disc/UMD/cartridge and powers on before the game starts" },

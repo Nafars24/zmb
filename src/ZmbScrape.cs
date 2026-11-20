@@ -40,7 +40,7 @@ namespace ZMB
             if (g.Platform == "WIN" || g.Platform == "STEAM") return null;
             try
             {
-                string rd = Path.GetDirectoryName(g.Path), key = Path.GetFileNameWithoutExtension(g.Path);
+                string rd = Path.GetDirectoryName(g.Path), key = GameScanner.RomKey(g.Path);
                 foreach (string sub in new string[] { "logos", "wheel", "wheels" })
                     foreach (string e in new string[] { ".png", ".jpg" })
                     {

@@ -217,6 +217,13 @@ namespace ZMB
                 res = res.Where(f => Ps3Meta.IsIso(f) ||
                     (Path.GetFileName(f).Equals("EBOOT.BIN", StringComparison.OrdinalIgnoreCase) &&
                      Path.GetFileName(Path.GetDirectoryName(f)).Equals("USRDIR", StringComparison.OrdinalIgnoreCase))).ToList();
+            // Switch 2 (Lichii): folder game hasil ekstrak, yang dijalankan exefs\main
+            if (p.Short == "SWITCH2")
+            {
+                List<string> mains = new List<string>();
+                FindExefs(p.RomFolder, 0, mains);
+                foreach (string m in mains) if (!res.Contains(m, StringComparer.OrdinalIgnoreCase)) res.Add(m);
+            }
             return res;
         }
 
@@ -348,8 +355,54 @@ namespace ZMB
             return outList;
         }
 
+        // Game Switch 2 hasil ekstrak (Lichii): <folder game>\exefs\main (tanpa ekstensi)
+        public static bool IsExefsMain(string f)
+        {
+            if (string.IsNullOrEmpty(f)) return false;
+            try
+            {
+                return Path.GetFileName(f).Equals("main", StringComparison.OrdinalIgnoreCase) &&
+                       (Path.GetFileName(Path.GetDirectoryName(f)) ?? "").Equals("exefs", StringComparison.OrdinalIgnoreCase);
+            }
+            catch { return false; }
+        }
+
+        // Nama kunci file media (cover/logo/spine/...) untuk sebuah ROM
+        public static string RomKey(string rom)
+        {
+            if (IsExefsMain(rom))
+            {
+                try { return Path.GetFileName(Path.GetDirectoryName(Path.GetDirectoryName(rom))); } catch { }
+            }
+            return Path.GetFileNameWithoutExtension(rom);
+        }
+
+        // cari <folder>\exefs\main di bawah folder ROM
+        static void FindExefs(string dir, int depth, List<string> res)
+        {
+            try
+            {
+                foreach (string d in Directory.GetDirectories(dir))
+                {
+                    if (Path.GetFileName(d).Equals("exefs", StringComparison.OrdinalIgnoreCase))
+                    {
+                        string m = Path.Combine(d, "main");
+                        if (File.Exists(m)) res.Add(m);
+                        continue;
+                    }
+                    if (depth < 4) FindExefs(d, depth + 1, res);
+                }
+            }
+            catch { }
+        }
+
         public static string RomDisplayName(PlatformCfg p, string rom)
         {
+            if (IsExefsMain(rom))
+            {
+                string k = RomKey(rom);
+                if (!string.IsNullOrEmpty(k)) return Regex.Replace(k, @"\s*\[[^\]]*\]", "").Trim();
+            }
             if (p != null && p.Short == "PS3")
             {
                 try
@@ -385,9 +438,10 @@ namespace ZMB
         {
             if (!string.IsNullOrEmpty(custom) && File.Exists(custom)) return custom;
             string[] imgExt = { ".png", ".jpg", ".jpeg" };
-            string name = Path.GetFileNameWithoutExtension(rom);
+            string name = RomKey(rom);
             List<string> dirs = new List<string>();
             string rd = Path.GetDirectoryName(rom);
+            if (IsExefsMain(rom)) rd = Path.GetDirectoryName(Path.GetDirectoryName(rd)); // folder berisi folder game
             dirs.Add(rd);
             dirs.Add(Path.Combine(rd, "covers"));
             if (p != null && !string.IsNullOrEmpty(p.RomFolder)) dirs.Add(Path.Combine(p.RomFolder, "covers"));
@@ -460,7 +514,7 @@ namespace ZMB
         static string FindSideArt(GameEntry g, string folder, string suffix)
         {
             if (g.Platform == "WIN" || g.Platform == "STEAM") return null;
-            string key = Path.GetFileNameWithoutExtension(g.Path);
+            string key = RomKey(g.Path);
             if (key.Equals("EBOOT", StringComparison.OrdinalIgnoreCase) || (g.Platform == "PS3" && Ps3Meta.IsIso(g.Path))) key = GameScanner.SafeName(g.Name);
             List<string> dirs = new List<string>();
             dirs.Add(Path.Combine(Path.Combine(Config.BaseDir, folder), g.Platform));
@@ -545,7 +599,7 @@ namespace ZMB
         {
             if (g.Platform == "STEAM") return g.Path.Substring(g.Path.LastIndexOf('/') + 1);
             if (g.Platform == "WIN") return SafeName(g.Name);
-            return Path.GetFileNameWithoutExtension(g.Path);
+            return RomKey(g.Path);
         }
 
         // Gambar latar game. crisp = true kalau gambar memang latar (tidak perlu di-blur)

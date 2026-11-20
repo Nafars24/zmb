@@ -231,7 +231,7 @@ namespace ZMB
             if (!string.IsNullOrEmpty(g.ThemeMusic) && File.Exists(g.ThemeMusic)) return g.ThemeMusic;
             string[] exts = { ".mp3", ".wma", ".wav", ".m4a" };
             string key = g.Platform == "STEAM" ? g.Path.Substring(g.Path.LastIndexOf('/') + 1) :
-                         g.Platform == "WIN" ? GameScanner.SafeName(g.Name) : Path.GetFileNameWithoutExtension(g.Path);
+                         g.Platform == "WIN" ? GameScanner.SafeName(g.Name) : GameScanner.RomKey(g.Path);
             List<string> dirs = new List<string>();
             dirs.Add(Path.Combine(Path.Combine(Config.BaseDir, "music"), g.Platform));
             try

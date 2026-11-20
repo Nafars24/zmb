@@ -452,6 +452,11 @@ H. MASALAH UMUM
  NINTENDO SWITCH 2 (v2.23)
    Platform baru "Nintendo Switch 2" (emulator Lichii, lichii.exe).
    Argumen bawaan: -f -g "{rom}". Pakai case merah dan animasi cartridge Switch.
+   Game Switch 2 berupa folder hasil ekstrak: <Nama Game>\exefs\main.
+   Atur "Folder Game" Switch 2 ke folder yang berisi folder-folder game itu;
+   ZMB mencari exefs\main di tiap folder, nama game = nama foldernya, dan
+   file main itulah yang dibuka Lichii. Cover boleh ditaruh di sebelah folder
+   game dengan nama yang sama (mis. "Mario Kart World.png").
 
  MEDIA KUSTOM DISALIN KE FOLDER ZMB (v2.23)
    Gambar/file yang kamu pilih lewat menu (cover, box art, spine, disc/cartridge,

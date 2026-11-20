@@ -274,7 +274,7 @@ namespace ZMB
             l.Add(new PlatformCfg("Nintendo 3DS", "3DS", "3ds;cci;cxi;app", "#C0392B", "Azahar / Lime3DS"));
             l.Add(new PlatformCfg("GameCube / Wii", "GCN", "iso;gcm;rvz;wbfs;ciso;gcz", "#5A3E9A", "Dolphin"));
             l.Add(new PlatformCfg("Nintendo Switch", "SWITCH", "nsp;xci;nca;nro", "#E60012", "Ryujinx / Eden / Citron / Sudachi"));
-            l.Add(new PlatformCfg("Nintendo Switch 2", "SWITCH2", "nsp;xci;nsz;xcz;nca", "#E60012", "Lichii"));
+            l.Add(new PlatformCfg("Nintendo Switch 2", "SWITCH2", "nsp;xci;nsz;xcz", "#E60012", Lang.T("Lichii (folder game: exefs\\main)")));
             l.Add(new PlatformCfg("Xbox 360", "X360", "iso;xex;zar", "#107C10", "Xenia / Xenia Canary"));
             l.Add(new PlatformCfg("Sega Genesis", "MD", "md;gen;bin;smd;zip", "#111111", "Kega Fusion / RetroArch"));
             l.Add(new PlatformCfg("Arcade (MAME)", "ARC", "zip;7z", "#D35400", Lang.T("MAME / FBNeo (argumen: {romname})")));
@@ -309,6 +309,13 @@ namespace ZMB
                 }
                 Platforms.Insert(at, defs[di]);
             }
+            // Switch 2: game berupa folder (exefs\main); .nca di dalamnya jangan dianggap game
+            foreach (PlatformCfg p in Platforms)
+                if (p.Short == "SWITCH2" && p.ExtList().Contains(".nca"))
+                {
+                    p.Extensions = string.Join(";", p.ExtList().Where(e => e != ".nca").Select(e => e.TrimStart('.')).ToArray());
+                    if (p.Hint == "Lichii") p.Hint = Lang.T("Lichii (folder game: exefs\\main)");
+                }
             // RPCS3 sekarang bisa membuka .iso: tambahkan ekstensi iso untuk konfigurasi lama
             foreach (PlatformCfg p in Platforms)
                 if (p.Short == "PS3" && !p.ExtList().Contains(".iso"))
