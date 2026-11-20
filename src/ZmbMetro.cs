@@ -319,29 +319,43 @@ namespace ZMB
             if (metroPivot >= order.Count) metroPivot = 0;
             double ka = 1 - Math.Exp(-dt * 12);
             metroPivotAnim += (metroPivot - metroPivotAnim) * ka;
-            double left = 150 * s;
+            if (Math.Abs(metroPivot - metroPivotAnim) < 0.001) metroPivotAnim = metroPivot;
+
+            // konten di tengah layar kalau muat; kalau lebih lebar, mulai dari kiri dan bisa digeser
+            List<MetroTile> tiles = MetroTiles();
+            double tw = 270 * s, th = 196 * s, gap = 10 * s, top = 250 * s;
+            int cols = 0;
+            foreach (MetroTile t0 in tiles) cols = Math.Max(cols, t0.Col + t0.W);
+            double gridW = cols * (tw + gap) - gap;
+            double margin = 150 * s;
+            bool fits = gridW <= W - margin * 2;
+            double left = fits ? Math.Round((W - gridW) / 2) : margin;
+            if (fits) { metroScrollTarget = 0; }
 
             // ---- tab di atas ----
             double py = 150 * s, pfs = 40 * s;
             if (stack.Count == 0)
             {
-                double x = left - (metroPivotAnim - Math.Floor(metroPivotAnim)) * 0;
-                // tab sebelumnya mengintip di kiri, seperti dashboard Xbox
-                double cur = left;
-                for (int p = 0; p < order.Count; p++)
+                // posisi tab berurutan; tab aktif (beranimasi) selalu tepat di tepi kiri konten,
+                // tab sebelumnya mengintip di kiri seperti dashboard Xbox
+                int n = order.Count;
+                double[] pos = new double[n];
+                double[] wid = new double[n];
+                double acc = 0, sp = 36 * s;
+                for (int p = 0; p < n; p++) { wid[p] = FT(PivotLabel(order[p]), pfs, 0, false, 0).Width; pos[p] = acc; acc += wid[p] + sp; }
+                int f0 = (int)Math.Floor(metroPivotAnim);
+                f0 = Math.Max(0, Math.Min(n - 1, f0));
+                int f1 = Math.Min(n - 1, f0 + 1);
+                double fr = metroPivotAnim - f0;
+                double anchor = pos[f0] + (pos[f1] - pos[f0]) * fr;
+                for (int p = 0; p < n; p++)
                 {
-                    double off = p - metroPivotAnim;
-                    if (off < -1.6) continue;
-                    string lab = PivotLabel(order[p]);
-                    double a = p == metroPivot ? 1 : 0.62;
-                    if (off < 0) a *= Math.Max(0, 1 + off) * 0.7;
-                    double w = FT(lab, pfs, 0, false, 0).Width;
-                    double xx;
-                    if (off < 0) xx = left + off * (w + 36 * s);
-                    else xx = cur;
-                    if (off >= 0) cur = xx + w + 36 * s;
+                    double xx = left + pos[p] - anchor;
+                    if (xx + wid[p] < 0) continue;
                     if (xx > W) break;
-                    Txt(dc, lab, pfs, 0, xx, py, a * fade, 0, 0, false);
+                    double a = p == metroPivot ? 1 : 0.62;
+                    if (xx < left - 1) a *= Math.Max(0, 1 - (left - xx) / (wid[p] + sp)) * 0.55; // tab sebelumnya memudar
+                    Txt(dc, PivotLabel(order[p]), pfs, 0, xx, py, a * fade, 0, 0, false);
                 }
             }
             else
@@ -355,14 +369,12 @@ namespace ZMB
             }
 
             // ---- ubin ----
-            List<MetroTile> tiles = MetroTiles();
             int sel = Math.Max(0, Math.Min(MetroSel(), tiles.Count - 1));
-            double tw = 270 * s, th = 196 * s, gap = 10 * s, top = 250 * s;
-            if (tiles.Count > 0)
+            if (tiles.Count > 0 && !fits)
             {
                 MetroTile st = tiles[sel];
                 double sx0 = st.Col * (tw + gap), sx1 = sx0 + st.W * tw + (st.W - 1) * gap;
-                double viewW = W - left - 140 * s;
+                double viewW = W - left - margin;
                 if (sx1 - metroScrollTarget > viewW) metroScrollTarget = sx1 - viewW;
                 if (sx0 - metroScrollTarget < 0) metroScrollTarget = Math.Max(0, sx0 - (stack.Count == 0 ? 0 : 0));
             }
@@ -378,7 +390,7 @@ namespace ZMB
             if (tiles.Count > 0) DrawTile(dc, tiles[sel], left - metroScroll + slide, top, tw, th, gap, true, ga, W);
 
             // ---- petunjuk tombol kiri bawah ----
-            DrawMetroHints(dc, W, H, fade);
+            DrawMetroHints(dc, W, H, fade, left);
         }
 
         void DrawTile(DrawingContext dc, MetroTile t, double ox, double oy, double tw, double th, double gap, bool selected, double a, double W)
@@ -425,13 +437,13 @@ namespace ZMB
             if (selected) dc.DrawRectangle(null, new Pen(WhiteA(a), 4 * s), r);
         }
 
-        void DrawMetroHints(DrawingContext dc, double W, double H, double fade)
+        void DrawMetroHints(DrawingContext dc, double W, double H, double fade, double left)
         {
             double s = S;
             bool pad = PadPrompts;
             string[] keys = { "ok", "back", "opt" };
             string[] labels = { "Pilih", "Kembali", "Opsi" };
-            double fs = 17 * s, kh = 26 * s, x = 150 * s, y = H - 78 * s;
+            double fs = 17 * s, kh = 26 * s, x = left, y = H - 78 * s;
             double th = TextH(fs);
             for (int i = 0; i < keys.Length; i++)
             {
