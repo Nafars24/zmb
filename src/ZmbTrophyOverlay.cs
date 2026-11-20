@@ -80,7 +80,7 @@ namespace ZMB
             }
             catch (Exception ex)
             {
-                Log("Overlay trofi: " + ex);
+                Log(Lang.T("Overlay trofi: ") + ex);
                 overlayPopups.Remove(p);
                 p.Overlay = false;
                 popups.Add(p);

@@ -3,18 +3,24 @@ using System.Threading;
 
 [assembly: System.Reflection.AssemblyTitle("ZMB")]
 [assembly: System.Reflection.AssemblyProduct("ZMB")]
-[assembly: System.Reflection.AssemblyVersion("2.19.0.0")]
+[assembly: System.Reflection.AssemblyVersion("2.20.0.0")]
 
 namespace ZMB
 {
     static class Program
     {
         [STAThread]
-        static void Main()
+        static void Main(string[] args)
         {
+            Lang.Init(); // bahasa dibaca dulu, sebelum teks menu dibuat
             bool created;
             using (Mutex m = new Mutex(true, "ZMB_SingleInstance_7F3A", out created))
             {
+                // dibuka ulang (mis. ganti bahasa): tunggu instance lama selesai menutup
+                if (!created && args != null && Array.IndexOf(args, "--restart") >= 0)
+                {
+                    try { created = m.WaitOne(15000); } catch (AbandonedMutexException) { created = true; }
+                }
                 if (!created) return; // sudah berjalan
                 System.Windows.Forms.Application.EnableVisualStyles();
                 AppDomain.CurrentDomain.UnhandledException += delegate (object s, UnhandledExceptionEventArgs e)

@@ -235,7 +235,7 @@ namespace ZMB
                 CloseVideo();
                 if (f != null)
                 {
-                    ShowToast("Format ini dibuka di pemutar video Windows...");
+                    ShowToast(Lang.T("Format ini dibuka di pemutar video Windows..."));
                     OpenDefault(f);
                 }
             };
@@ -379,7 +379,7 @@ namespace ZMB
             {
                 Log(ex.ToString());
                 List<XmbItem> l = new List<XmbItem>();
-                l.Add(MakeItem("Terjadi kesalahan", ex.Message, "\uE783", null));
+                l.Add(MakeItem(Lang.T("Terjadi kesalahan"), ex.Message, "\uE783", null));
                 return l;
             }
         }
@@ -391,7 +391,7 @@ namespace ZMB
             return it;
         }
 
-        XmbItem EmptyItem() { return MakeItem("Kosong", "Tidak ada item di sini", "\uE7BA", null); }
+        XmbItem EmptyItem() { return MakeItem(Lang.T("Kosong"), Lang.T("Tidak ada item di sini"), "\uE7BA", null); }
 
         void RefreshAll()
         {
@@ -792,7 +792,7 @@ namespace ZMB
             if (key == Key.F5)
             {
                 GameScanner.SteamGames(true);
-                RefreshAll(); ShowToast("Daftar diperbarui");
+                RefreshAll(); ShowToast(Lang.T("Daftar diperbarui"));
                 e.Handled = true; return;
             }
             promptKeyboard = true;
@@ -961,7 +961,7 @@ namespace ZMB
             metroPivot = 0; metroScroll = metroScrollTarget = 0; metroHomeCache = null;
             backKey = null;
             Sfx.Ok();
-            ShowToast(cfg.ViewMode == 1 ? "Mode Coverflow (ala Aurora)" : "Mode XMB (ala PS3)");
+            ShowToast(cfg.ViewMode == 1 ? Lang.T("Mode Coverflow (ala Aurora)") : Lang.T("Mode XMB (ala PS3)"));
         }
 
         void GetCurrent(out List<XmbItem> items, out int idx)
@@ -1013,8 +1013,8 @@ namespace ZMB
 
         void ShowMusicToast()
         {
-            if (!music.Playing) { ShowToast("Musik berhenti"); return; }
-            ShowToast((music.Paused ? "Dijeda: " : "Memutar: ") + music.Title());
+            if (!music.Playing) { ShowToast(Lang.T("Musik berhenti")); return; }
+            ShowToast((music.Paused ? Lang.T("Dijeda: ") : Lang.T("Memutar: ")) + music.Title());
         }
 
         // ===================== VIDEO LAYAR PENUH =====================
@@ -1043,7 +1043,7 @@ namespace ZMB
             catch (Exception ex)
             {
                 CloseVideo();
-                ShowToast("Gagal memutar video: " + ex.Message);
+                ShowToast(Lang.T("Gagal memutar video: ") + ex.Message);
             }
         }
 
@@ -1092,7 +1092,7 @@ namespace ZMB
         // ===================== FOTO =====================
         void OpenPhotos(List<string> list, int idx, bool slide)
         {
-            if (list == null || list.Count == 0) { ShowToast("Tidak ada foto"); return; }
+            if (list == null || list.Count == 0) { ShowToast(Lang.T("Tidak ada foto")); return; }
             StopTrailer(true);
             photos = list;
             photoImg = null;
@@ -1142,19 +1142,19 @@ namespace ZMB
                 case XKey.Ok:
                 case XKey.Start:
                     slideshow = !slideshow; slideAt = T;
-                    ShowToast(slideshow ? "Slideshow aktif" : "Slideshow berhenti");
+                    ShowToast(slideshow ? Lang.T("Slideshow aktif") : Lang.T("Slideshow berhenti"));
                     break;
                 case XKey.Back: Sfx.Back(); ClosePhotos(); break;
                 case XKey.Options:
                 case XKey.Select:
                     string p = photos[photoIdx];
                     List<OptionItem> l = new List<OptionItem>();
-                    l.Add(new OptionItem(slideshow ? "Hentikan Slideshow" : "Mulai Slideshow", delegate { slideshow = !slideshow; slideAt = T; }));
-                    l.Add(new OptionItem("Jadikan Latar ZMB", delegate { cfg.BackgroundImage = p; cfg.Save(); backImg = null; backKey = ""; ShowToast("Latar ZMB diganti"); }));
-                    l.Add(new OptionItem("Jadikan Wallpaper Desktop", delegate { ShowToast(ShellThumb.SetWallpaper(p) ? "Wallpaper diganti" : "Gagal mengganti wallpaper"); }));
-                    l.Add(new OptionItem("Buka dengan Aplikasi Lain", delegate { OpenDefault(p); }));
-                    l.Add(new OptionItem("Buka Lokasi File", delegate { ShowInExplorer(p); }));
-                    l.Add(new OptionItem("Kembali ke Menu", delegate { ClosePhotos(); }));
+                    l.Add(new OptionItem(slideshow ? Lang.T("Hentikan Slideshow") : Lang.T("Mulai Slideshow"), delegate { slideshow = !slideshow; slideAt = T; }));
+                    l.Add(new OptionItem(Lang.T("Jadikan Latar ZMB"), delegate { cfg.BackgroundImage = p; cfg.Save(); backImg = null; backKey = ""; ShowToast(Lang.T("Latar ZMB diganti")); }));
+                    l.Add(new OptionItem(Lang.T("Jadikan Wallpaper Desktop"), delegate { ShowToast(ShellThumb.SetWallpaper(p) ? Lang.T("Wallpaper diganti") : Lang.T("Gagal mengganti wallpaper")); }));
+                    l.Add(new OptionItem(Lang.T("Buka dengan Aplikasi Lain"), delegate { OpenDefault(p); }));
+                    l.Add(new OptionItem(Lang.T("Buka Lokasi File"), delegate { ShowInExplorer(p); }));
+                    l.Add(new OptionItem(Lang.T("Kembali ke Menu"), delegate { ClosePhotos(); }));
                     OpenOptions(Path.GetFileName(p), l);
                     break;
             }
@@ -1172,7 +1172,7 @@ namespace ZMB
                     Log("Boot anim: " + ex);
                     try { CompositionTarget.Rendering -= bootTick; EndBootLayer(); } catch { }
                     bootActive = false;
-                    ShowToast("Animasi boot gagal: " + ex.Message);
+                    ShowToast(Lang.T("Animasi boot gagal: ") + ex.Message);
                 }
             }
             LaunchNow(g, forceAdmin);
@@ -1187,7 +1187,7 @@ namespace ZMB
             if (g.Platform == "WIN" || g.Platform == "STEAM")
             {
                 bool isUrl = g.Path.Contains("://");
-                if (!isUrl && !File.Exists(g.Path)) { Sfx.Error(); ShowToast("File game tidak ditemukan: " + g.Path); return; }
+                if (!isUrl && !File.Exists(g.Path)) { Sfx.Error(); ShowToast(Lang.T("File game tidak ditemukan: ") + g.Path); return; }
                 psi = new ProcessStartInfo(g.Path);
                 psi.UseShellExecute = true;
                 if (!string.IsNullOrEmpty(g.Args)) psi.Arguments = g.Args;
@@ -1197,15 +1197,15 @@ namespace ZMB
             else
             {
                 PlatformCfg p = cfg.FindPlatform(g.Platform);
-                if (p == null) { Sfx.Error(); ShowToast("Platform tidak ditemukan"); return; }
+                if (p == null) { Sfx.Error(); ShowToast(Lang.T("Platform tidak ditemukan")); return; }
                 if (string.IsNullOrEmpty(p.Emulator) || !File.Exists(p.Emulator))
                 {
                     Sfx.Error();
-                    ShowToast("Emulator " + p.Name + " belum diatur");
+                    ShowToast("Emulator " + p.Name + Lang.T(" belum diatur"));
                     OpenOptions(p.Name, PlatformOptions(p));
                     return;
                 }
-                if (!File.Exists(g.Path)) { Sfx.Error(); ShowToast("File game tidak ditemukan"); return; }
+                if (!File.Exists(g.Path)) { Sfx.Error(); ShowToast(Lang.T("File game tidak ditemukan")); return; }
                 string argStr = GameScanner.BuildArgs(p, g.Path);
                 string resumeT = launchResume ? SaveManager.ResumeArgsFor(p) : null;
                 if (resumeT != null)
@@ -1231,11 +1231,11 @@ namespace ZMB
             try { proc = Process.Start(psi); }
             catch (Win32Exception ex)
             {
-                if (ex.NativeErrorCode == 1223) ShowToast("Dibatalkan");
-                else { Sfx.Error(); ShowToast("Gagal menjalankan: " + ex.Message); }
+                if (ex.NativeErrorCode == 1223) ShowToast(Lang.T("Dibatalkan"));
+                else { Sfx.Error(); ShowToast(Lang.T("Gagal menjalankan: ") + ex.Message); }
                 return;
             }
-            catch (Exception ex) { Sfx.Error(); ShowToast("Gagal menjalankan: " + ex.Message); return; }
+            catch (Exception ex) { Sfx.Error(); ShowToast(Lang.T("Gagal menjalankan: ") + ex.Message); return; }
 
             g.LastPlayed = DateTime.Now;
             g.PlayCount++;
@@ -1246,7 +1246,7 @@ namespace ZMB
             if (mode == Mode.Details) CloseDetails();
             cfg.EnsureStored(g);
             cfg.Save();
-            ShowToast("Menjalankan " + g.Name + " ...");
+            ShowToast(Lang.T("Menjalankan ") + g.Name + " ...");
             launchedAt = T;
 
             if (cfg.PauseMusicOnLaunch && music.Playing && !music.Paused) { music.Pause(); pausedForGame = true; }
@@ -1278,7 +1278,7 @@ namespace ZMB
                     cfg.Save();
                     BringToFrontZmb();
                     if (pausedForGame) { pausedForGame = false; music.Resume(); }
-                    ShowToast("Kamu bermain " + g.Name + " selama " + FormatPlay(secs / 60.0));
+                    ShowToast(Lang.T("Kamu bermain ") + g.Name + Lang.T(" selama ") + FormatPlay(secs / 60.0));
                     RefreshAll();
                 });
             }
@@ -1287,10 +1287,10 @@ namespace ZMB
 
         static string FormatPlay(double minutes)
         {
-            if (minutes < 1) return "kurang dari 1 menit";
+            if (minutes < 1) return Lang.T("kurang dari 1 menit");
             int m = (int)Math.Round(minutes);
-            if (m < 60) return m + " menit";
-            return (m / 60) + " jam " + (m % 60) + " menit";
+            if (m < 60) return m + Lang.T(" menit");
+            return (m / 60) + Lang.T(" jam ") + (m % 60) + Lang.T(" menit");
         }
 
         // ===================== UTILITAS =====================
@@ -1302,7 +1302,7 @@ namespace ZMB
                 psi.UseShellExecute = true;
                 Process.Start(psi);
             }
-            catch (Exception ex) { ShowToast("Gagal membuka: " + ex.Message); }
+            catch (Exception ex) { ShowToast(Lang.T("Gagal membuka: ") + ex.Message); }
         }
 
         void ShowInExplorer(string path)
@@ -1311,7 +1311,7 @@ namespace ZMB
             {
                 if (File.Exists(path)) Process.Start("explorer.exe", "/select,\"" + path + "\"");
                 else if (Directory.Exists(path)) Process.Start("explorer.exe", "\"" + path + "\"");
-                else ShowToast("Lokasi tidak ditemukan");
+                else ShowToast(Lang.T("Lokasi tidak ditemukan"));
             }
             catch { }
         }
@@ -1338,7 +1338,7 @@ namespace ZMB
                     else k.DeleteValue("ZMB", false);
                 }
             }
-            catch (Exception ex) { ShowToast("Gagal: " + ex.Message); }
+            catch (Exception ex) { ShowToast(Lang.T("Gagal: ") + ex.Message); }
         }
 
         void OnClosingZmb(object sender, CancelEventArgs e)

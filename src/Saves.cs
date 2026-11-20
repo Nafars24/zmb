@@ -100,7 +100,7 @@ namespace ZMB
             }
             // save di samping ROM (melonDS, mGBA, dll)
             if (!string.IsNullOrEmpty(p.RomFolder) && (exe.Contains("melonds") || exe.Contains("mgba") || exe.Contains("snes9x") || exe.Contains("mesen") || exe.Contains("desmume")))
-                all.Add(new SaveLoc("Save di folder ROM", p.RomFolder));
+                all.Add(new SaveLoc(Lang.T("Save di folder ROM"), p.RomFolder));
             return all.Where(l => { try { return Directory.Exists(l.Dir); } catch { return false; } }).ToList();
         }
 
@@ -116,7 +116,7 @@ namespace ZMB
         public static List<string> Files(SaveLoc loc, string filter)
         {
             List<string> res = new List<string>();
-            bool romFolder = loc.Label.StartsWith("Save di folder ROM");
+            bool romFolder = loc.Label.StartsWith(Lang.T("Save di folder ROM"));
             try
             {
                 foreach (string f in Directory.GetFiles(loc.Dir, "*", SearchOption.AllDirectories))
@@ -148,7 +148,7 @@ namespace ZMB
                 for (int i = 0; i < locs.Count; i++)
                 {
                     SaveLoc l = locs[i];
-                    bool romFolder = l.Label.StartsWith("Save di folder ROM");
+                    bool romFolder = l.Label.StartsWith(Lang.T("Save di folder ROM"));
                     string prefix = i.ToString("00") + "_" + GameScanner.SafeName(l.Label) + "/";
                     foreach (string f in Directory.GetFiles(l.Dir, "*", SearchOption.AllDirectories))
                     {
@@ -187,7 +187,7 @@ namespace ZMB
             {
                 Dictionary<string, string> map = new Dictionary<string, string>();
                 ZipArchiveEntry info = z.GetEntry("zmb_locations.txt");
-                if (info == null) throw new Exception("File cadangan tidak dikenali");
+                if (info == null) throw new Exception(Lang.T("File cadangan tidak dikenali"));
                 using (StreamReader r = new StreamReader(info.Open()))
                 {
                     string line;

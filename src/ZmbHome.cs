@@ -62,22 +62,22 @@ namespace ZMB
             string title = "Menu Home";
             if (alive && g != null)
             {
-                title = "Sedang dimainkan: " + g.Name;
-                o.Add(new OptionItem("Kembali ke Game", ReturnToGame));
-                o.Add(new OptionItem("Tutup Game", delegate { CloseRunningGame(false); }));
-                o.Add(new OptionItem("Tutup Paksa", delegate
+                title = Lang.T("Sedang dimainkan: ") + g.Name;
+                o.Add(new OptionItem(Lang.T("Kembali ke Game"), ReturnToGame));
+                o.Add(new OptionItem(Lang.T("Tutup Game"), delegate { CloseRunningGame(false); }));
+                o.Add(new OptionItem(Lang.T("Tutup Paksa"), delegate
                 {
-                    Confirm("Tutup paksa " + g.Name + "? Progres yang belum disimpan akan hilang.", delegate { CloseRunningGame(true); });
+                    Confirm(Lang.T("Tutup paksa ") + g.Name + Lang.T("? Progres yang belum disimpan akan hilang."), delegate { CloseRunningGame(true); });
                 }));
             }
             else if (g != null && T - launchedAt < 6 * 3600)
             {
-                title = "Terakhir dijalankan: " + g.Name;
-                o.Add(new OptionItem("Kembali ke Game (sembunyikan ZMB)", delegate { WindowState = WindowState.Minimized; }));
+                title = Lang.T("Terakhir dijalankan: ") + g.Name;
+                o.Add(new OptionItem(Lang.T("Kembali ke Game (sembunyikan ZMB)"), delegate { WindowState = WindowState.Minimized; }));
             }
-            o.Add(new OptionItem(music.Playing && !music.Paused ? "Jeda Musik" : "Putar Musik", delegate { music.TogglePause(); ShowMusicToast(); }));
-            o.Add(new OptionItem("Lagu Berikutnya", delegate { music.Next(); ShowMusicToast(); }));
-            o.Add(new OptionItem("Tetap di ZMB", delegate { }));
+            o.Add(new OptionItem(music.Playing && !music.Paused ? Lang.T("Jeda Musik") : Lang.T("Putar Musik"), delegate { music.TogglePause(); ShowMusicToast(); }));
+            o.Add(new OptionItem(Lang.T("Lagu Berikutnya"), delegate { music.Next(); ShowMusicToast(); }));
+            o.Add(new OptionItem(Lang.T("Tetap di ZMB"), delegate { }));
             OpenOptions(title, o);
         }
 
@@ -105,7 +105,7 @@ namespace ZMB
         void CloseRunningGame(bool force)
         {
             Process p = runningProc;
-            if (!ProcAlive(p)) { ShowToast("Game sudah tidak berjalan"); return; }
+            if (!ProcAlive(p)) { ShowToast(Lang.T("Game sudah tidak berjalan")); return; }
             string name = runningGame != null ? runningGame.Name : "game";
             if (!force)
             {
@@ -113,14 +113,14 @@ namespace ZMB
                 try { sent = p.CloseMainWindow(); } catch { sent = false; }
                 if (sent)
                 {
-                    ShowToast("Menutup " + name + " ...");
+                    ShowToast(Lang.T("Menutup ") + name + " ...");
                     DispatcherTimer t = new DispatcherTimer();
                     t.Interval = TimeSpan.FromSeconds(6);
                     t.Tick += delegate
                     {
                         t.Stop();
                         if (ProcAlive(p) && p == runningProc)
-                            Confirm(name + " belum tertutup. Tutup paksa?", delegate { CloseRunningGame(true); });
+                            Confirm(name + Lang.T(" belum tertutup. Tutup paksa?"), delegate { CloseRunningGame(true); });
                     };
                     t.Start();
                     return;
@@ -132,12 +132,12 @@ namespace ZMB
                 psi.UseShellExecute = false;
                 psi.CreateNoWindow = true;
                 Process.Start(psi);
-                ShowToast(name + " ditutup paksa");
+                ShowToast(name + Lang.T(" ditutup paksa"));
             }
             catch (Exception ex)
             {
-                try { p.Kill(); ShowToast(name + " ditutup paksa"); }
-                catch { ShowToast("Gagal menutup: " + ex.Message); }
+                try { p.Kill(); ShowToast(name + Lang.T(" ditutup paksa")); }
+                catch { ShowToast(Lang.T("Gagal menutup: ") + ex.Message); }
             }
         }
 

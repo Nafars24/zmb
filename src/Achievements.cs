@@ -174,7 +174,7 @@ namespace ZMB
         public static AchvSet Steam(string appId, string key, string steamId)
         {
             if (string.IsNullOrEmpty(key) || string.IsNullOrEmpty(steamId))
-                return AchvSet.Fail("Steam", "Steam API Key / Steam ID belum diatur (Pengaturan > Akun Trofi)");
+                return AchvSet.Fail("Steam", Lang.T("Steam API Key / Steam ID belum diatur (Pengaturan > Akun Trofi)"));
             AchvSet set = new AchvSet();
             set.Source = "Steam";
             set.Icon = SteamHeader(appId);
@@ -187,14 +187,14 @@ namespace ZMB
             catch (WebException ex)
             {
                 int code; string msg = HttpError(ex, out code);
-                if (code == 403) return AchvSet.Fail("Steam", "Ditolak Steam: cek API key, dan set 'Game details' profil ke Public");
-                if (code == 400) return AchvSet.Fail("Steam", "Game ini tidak punya achievement Steam");
-                return AchvSet.Fail("Steam", "Gagal terhubung ke Steam: " + msg);
+                if (code == 403) return AchvSet.Fail("Steam", Lang.T("Ditolak Steam: cek API key, dan set 'Game details' profil ke Public"));
+                if (code == 400) return AchvSet.Fail("Steam", Lang.T("Game ini tidak punya achievement Steam"));
+                return AchvSet.Fail("Steam", Lang.T("Gagal terhubung ke Steam: ") + msg);
             }
             object ps = P(pa, "playerstats");
             set.Title = S(ps, "gameName");
             if (S(ps, "success").ToLowerInvariant() == "false")
-                return AchvSet.Fail("Steam", S(ps, "error").Length > 0 ? S(ps, "error") : "Data achievement tidak tersedia");
+                return AchvSet.Fail("Steam", S(ps, "error").Length > 0 ? S(ps, "error") : Lang.T("Data achievement tidak tersedia"));
 
             Dictionary<string, Achv> map = new Dictionary<string, Achv>();
             int order = 0;
@@ -210,7 +210,7 @@ namespace ZMB
                 map[x.Id] = x;
                 set.Items.Add(x);
             }
-            if (set.Items.Count == 0) return AchvSet.Fail("Steam", "Game ini tidak punya achievement Steam");
+            if (set.Items.Count == 0) return AchvSet.Fail("Steam", Lang.T("Game ini tidak punya achievement Steam"));
 
             try
             {
@@ -245,7 +245,7 @@ namespace ZMB
 
         public static List<AchvGameRef> SteamOwned(string key, string steamId)
         {
-            if (string.IsNullOrEmpty(key) || string.IsNullOrEmpty(steamId)) throw new Exception("Steam API Key / Steam ID belum diatur");
+            if (string.IsNullOrEmpty(key) || string.IsNullOrEmpty(steamId)) throw new Exception(Lang.T("Steam API Key / Steam ID belum diatur"));
             object r;
             try
             {
@@ -255,13 +255,13 @@ namespace ZMB
             catch (WebException ex)
             {
                 int code; string msg = HttpError(ex, out code);
-                if (code == 401 || code == 403) throw new Exception("Ditolak Steam: cek API key & Steam ID");
-                throw new Exception("Gagal terhubung ke Steam: " + msg);
+                if (code == 401 || code == 403) throw new Exception(Lang.T("Ditolak Steam: cek API key & Steam ID"));
+                throw new Exception(Lang.T("Gagal terhubung ke Steam: ") + msg);
             }
             object resp = P(r, "response");
             object[] games = A(resp, "games");
             if (games.Length == 0 && P(resp, "game_count") == null)
-                throw new Exception("Daftar game kosong. Set 'Game details' profil Steam ke Public");
+                throw new Exception(Lang.T("Daftar game kosong. Set 'Game details' profil Steam ke Public"));
             List<KeyValuePair<long, AchvGameRef>> tmp = new List<KeyValuePair<long, AchvGameRef>>();
             foreach (object g in games)
             {
@@ -273,7 +273,7 @@ namespace ZMB
                 a.Title = S(g, "name");
                 SteamGame local = GameScanner.FindSteam(app);
                 a.Icon = (local != null && local.Icon != null) ? local.Icon : SteamHeader(app);
-                a.Sub = mins > 0 ? ("Dimainkan " + (mins >= 60 ? (mins / 60) + " jam" : mins + " menit")) : "Belum dimainkan";
+                a.Sub = mins > 0 ? (Lang.T("Dimainkan ") + (mins >= 60 ? (mins / 60) + Lang.T(" jam") : mins + Lang.T(" menit"))) : Lang.T("Belum dimainkan");
                 string sk = key, sid = steamId, ap = app;
                 a.Fetch = delegate { return Steam(ap, sk, sid); };
                 tmp.Add(new KeyValuePair<long, AchvGameRef>(mins, a));
@@ -333,14 +333,14 @@ namespace ZMB
         public static AchvSet RetroGame(int gameId, string user, string key)
         {
             if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(key))
-                return AchvSet.Fail("RetroAchievements", "Username / Web API Key RetroAchievements belum diatur");
+                return AchvSet.Fail("RetroAchievements", Lang.T("Username / Web API Key RetroAchievements belum diatur"));
             object g;
             try { g = Json(RaUrl("API_GetGameInfoAndUserProgress.php", user, key, "&g=" + gameId)); }
             catch (WebException ex)
             {
                 int code; string msg = HttpError(ex, out code);
-                if (code == 401 || code == 403) return AchvSet.Fail("RetroAchievements", "Ditolak RetroAchievements: cek username & Web API Key");
-                return AchvSet.Fail("RetroAchievements", "Gagal terhubung: " + msg);
+                if (code == 401 || code == 403) return AchvSet.Fail("RetroAchievements", Lang.T("Ditolak RetroAchievements: cek username & Web API Key"));
+                return AchvSet.Fail("RetroAchievements", Lang.T("Gagal terhubung: ") + msg);
             }
             AchvSet set = new AchvSet();
             set.Source = "RetroAchievements";
@@ -375,20 +375,20 @@ namespace ZMB
                 }
             }
             set.Items = set.Items.OrderBy(x => x.Order).ThenBy(x => x.Id).ToList();
-            if (set.Items.Count == 0) set.Error = "Game ini belum punya achievement di RetroAchievements";
+            if (set.Items.Count == 0) set.Error = Lang.T("Game ini belum punya achievement di RetroAchievements");
             return set;
         }
 
         public static List<AchvGameRef> RetroPlayed(string user, string key)
         {
-            if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(key)) throw new Exception("Username / Web API Key RetroAchievements belum diatur");
+            if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(key)) throw new Exception(Lang.T("Username / Web API Key RetroAchievements belum diatur"));
             object r;
             try { r = Json(RaUrl("API_GetUserCompletionProgress.php", user, key, "&c=500")); }
             catch (WebException ex)
             {
                 int code; string msg = HttpError(ex, out code);
-                if (code == 401 || code == 403) throw new Exception("Ditolak RetroAchievements: cek username & Web API Key");
-                throw new Exception("Gagal terhubung: " + msg);
+                if (code == 401 || code == 403) throw new Exception(Lang.T("Ditolak RetroAchievements: cek username & Web API Key"));
+                throw new Exception(Lang.T("Gagal terhubung: ") + msg);
             }
             List<AchvGameRef> list = new List<AchvGameRef>();
             foreach (object g in A(r, "Results"))
@@ -414,20 +414,20 @@ namespace ZMB
         {
             object p = Json(RaUrl("API_GetUserProfile.php", user, key, ""));
             string pts = S(p, "TotalPoints"), soft = S(p, "TotalSoftcorePoints"), tru = S(p, "TotalTruePoints");
-            return "Hardcore " + (pts.Length > 0 ? pts : "0") + " poin  \u2022  Softcore " + (soft.Length > 0 ? soft : "0") + "  \u2022  RetroPoint " + (tru.Length > 0 ? tru : "0");
+            return "Hardcore " + (pts.Length > 0 ? pts : "0") + Lang.T(" poin  \u2022  Softcore ") + (soft.Length > 0 ? soft : "0") + "  \u2022  RetroPoint " + (tru.Length > 0 ? tru : "0");
         }
 
         public static AchvSet RetroForRom(string rom, string name, int consoleId, int knownId, string user, string key)
         {
             if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(key))
-                return AchvSet.Fail("RetroAchievements", "Username / Web API Key RetroAchievements belum diatur");
+                return AchvSet.Fail("RetroAchievements", Lang.T("Username / Web API Key RetroAchievements belum diatur"));
             int id = knownId;
             if (id <= 0)
             {
                 try { id = ResolveRaId(rom, name, consoleId, key); }
-                catch (Exception ex) { return AchvSet.Fail("RetroAchievements", "Gagal mencari game: " + ex.Message); }
+                catch (Exception ex) { return AchvSet.Fail("RetroAchievements", Lang.T("Gagal mencari game: ") + ex.Message); }
             }
-            if (id <= 0) return AchvSet.Fail("RetroAchievements", "Game tidak ditemukan di RetroAchievements. Atur ID game lewat menu Opsi (Tab).");
+            if (id <= 0) return AchvSet.Fail("RetroAchievements", Lang.T("Game tidak ditemukan di RetroAchievements. Atur ID game lewat menu Opsi (Tab)."));
             return RetroGame(id, user, key);
         }
 
@@ -678,7 +678,7 @@ namespace ZMB
                 trophies = list;
                 if (first != null && first.InnerText.Trim().Length > 0) break; // punya nama -> pakai ini
             }
-            if (trophies == null) return AchvSet.Fail("RPCS3", "Data trofi tidak bisa dibaca");
+            if (trophies == null) return AchvSet.Fail("RPCS3", Lang.T("Data trofi tidak bisa dibaca"));
             Dictionary<int, DateTime> unlocked = ReadTropusr(Path.Combine(dir, "TROPUSR.DAT"));
             foreach (XmlNode t in trophies)
             {
@@ -690,7 +690,7 @@ namespace ZMB
                 x.Grade = t.Attributes["ttype"] != null ? t.Attributes["ttype"].Value.ToUpperInvariant() : "B";
                 x.Hidden = t.Attributes["hidden"] != null && t.Attributes["hidden"].Value == "yes";
                 XmlNode nm = t.SelectSingleNode("name"), dt = t.SelectSingleNode("detail");
-                x.Name = nm != null ? nm.InnerText.Trim() : ("Trofi " + id);
+                x.Name = nm != null ? nm.InnerText.Trim() : (Lang.T("Trofi ") + id);
                 x.Desc = dt != null ? dt.InnerText.Trim() : "";
                 string png = Path.Combine(dir, "TROP" + id.ToString("000") + ".PNG");
                 if (File.Exists(png)) x.Icon = png;
@@ -740,9 +740,9 @@ namespace ZMB
 
         public static AchvSet Rpcs3ForGame(string eboot, string name, string root, string npOverride)
         {
-            if (root == null) return AchvSet.Fail("RPCS3", "Folder RPCS3 belum diatur");
+            if (root == null) return AchvSet.Fail("RPCS3", Lang.T("Folder RPCS3 belum diatur"));
             List<string> dirs = Rpcs3TrophyDirs(root);
-            if (dirs.Count == 0) return AchvSet.Fail("RPCS3", "Belum ada data trofi di RPCS3. Mainkan game-nya dulu di RPCS3.");
+            if (dirs.Count == 0) return AchvSet.Fail("RPCS3", Lang.T("Belum ada data trofi di RPCS3. Mainkan game-nya dulu di RPCS3."));
             string np = string.IsNullOrEmpty(npOverride) ? FindNpCommId(eboot) : npOverride.Trim();
             if (!string.IsNullOrEmpty(np))
             {
@@ -763,7 +763,7 @@ namespace ZMB
                 }
             }
             if (best != null && bestR >= 0.6) return Rpcs3Set(best);
-            return AchvSet.Fail("RPCS3", "Trofi game ini belum ada. Mainkan dulu di RPCS3, atau atur NP Comm ID lewat menu Opsi.");
+            return AchvSet.Fail("RPCS3", Lang.T("Trofi game ini belum ada. Mainkan dulu di RPCS3, atau atur NP Comm ID lewat menu Opsi."));
         }
     }
 }

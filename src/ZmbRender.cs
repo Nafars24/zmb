@@ -11,8 +11,8 @@ namespace ZMB
     public partial class ZmbWindow
     {
         public static readonly string[] ThemeNames = {
-            "Otomatis (ganti tiap bulan)", "Biru Klasik", "Merah", "Hijau", "Ungu", "Emas", "Pink",
-            "Tosca", "Oranye", "Silver", "Hitam Pekat", "Coklat", "Biru Langit"
+            Lang.T("Otomatis (ganti tiap bulan)"), Lang.T("Biru Klasik"), Lang.T("Merah"), Lang.T("Hijau"), Lang.T("Ungu"), Lang.T("Emas"), "Pink",
+            "Tosca", Lang.T("Oranye"), "Silver", Lang.T("Hitam Pekat"), Lang.T("Coklat"), Lang.T("Biru Langit")
         };
         static readonly Color[] ThemeColors = {
             Colors.Transparent, Color.FromRgb(24, 70, 170), Color.FromRgb(165, 28, 32), Color.FromRgb(30, 128, 52),
@@ -559,7 +559,7 @@ namespace ZMB
             }
             double wa = SpSmooth((bt - 1.45) / 0.4) * (1 - exit);
             if (wa > 0.01)
-                Txt(dc, "Selamat datang, " + Environment.UserName, 24 * s, 0, cx, ty + TextH(fs) + 12 * s, wa * 0.7, 0, 1, false);
+                Txt(dc, Lang.T("Selamat datang, ") + Environment.UserName, 24 * s, 0, cx, ty + TextH(fs) + 12 * s, wa * 0.7, 0, 1, false);
         }
 
         Brush Brush3(byte r, byte g, byte b, double a)
@@ -843,7 +843,7 @@ namespace ZMB
             double prog = musicLen > 0 ? Math.Min(1, (double)musicPos / musicLen) : 0;
             dc.DrawRectangle(WhiteA(0.25), null, new Rect(x + 40 * s, y + 34 * s, bw, 4 * s));
             dc.DrawRectangle(WhiteA(0.9), null, new Rect(x + 40 * s, y + 34 * s, bw * prog, 4 * s));
-            Txt(dc, MediaExt.FormatTime(musicPos) + " / " + MediaExt.FormatTime(musicLen) + (music.Shuffle ? "   Acak" : ""), 16 * s, 0, x + 40 * s, y + 42 * s, 0.6, 0, 0, false);
+            Txt(dc, MediaExt.FormatTime(musicPos) + " / " + MediaExt.FormatTime(musicLen) + (music.Shuffle ? Lang.T("   Acak") : ""), 16 * s, 0, x + 40 * s, y + 42 * s, 0.6, 0, 0, false);
         }
 
         void DrawHints(DrawingContext dc, double W, double H)
@@ -855,7 +855,7 @@ namespace ZMB
             double y = H - 64 * s;
             bool pad = PadPrompts;
             string[] keys = { "opt", "back", "ok" };
-            string[] labels = { "Opsi", "Kembali", "Pilih" };
+            string[] labels = { Lang.T("Opsi"), Lang.T("Kembali"), Lang.T("Pilih") };
             for (int i = 0; i < 3; i++)
             {
                 double lw = Txt(dc, labels[i], fs, 0, x, y, 0.85, 0, 2, true);
@@ -926,7 +926,7 @@ namespace ZMB
             dc.DrawRectangle(null, penLine, new Rect(box.X, box.Y, box.Width, 0.1));
             dc.DrawRectangle(null, penLine, new Rect(box.X, box.Bottom, box.Width, 0.1));
             Txt(dc, confirmText, 27 * s, 0, W / 2, box.Y + box.Height * 0.28 - TextH(27 * s) / 2, 1, box.Width - 40 * s, 1, true);
-            string[] lab = { "Ya", "Tidak" };
+            string[] lab = { "Ya", Lang.T("Tidak") };
             for (int i = 0; i < 2; i++)
             {
                 Rect br = new Rect(W / 2 - 230 * s + i * 250 * s, box.Bottom - 90 * s, 210 * s, 56 * s);
@@ -972,7 +972,7 @@ namespace ZMB
             if (T - slideAt < 2.5 || !slideshow)
             {
                 string info = (photos.Count > 0 ? Path.GetFileName(photos[photoIdx]) : "") + "     " + (photoIdx + 1) + " / " + photos.Count +
-                    (slideshow ? "     [Slideshow]" : "") + "     Kiri/Kanan: Ganti   Enter: Slideshow   Tab: Opsi   Esc: Kembali";
+                    (slideshow ? "     [Slideshow]" : "") + Lang.T("     Kiri/Kanan: Ganti   Enter: Slideshow   Tab: Opsi   Esc: Kembali");
                 dc.DrawRectangle(brOsd, null, new Rect(0, H - 56 * s, W, 56 * s));
                 Txt(dc, info, 17 * s, 0, 30 * s, H - 28 * s - TextH(17 * s) / 2, 0.9, W - 60 * s, 0, false);
             }
@@ -986,12 +986,12 @@ namespace ZMB
             dc.DrawRectangle(brOsd, null, new Rect(0, H - h, W, h));
             string name = videoIdx < videoList.Count ? Path.GetFileNameWithoutExtension(videoList[videoIdx]) : "";
             int pos = VideoPosMs(), len = VideoLenMs();
-            Txt(dc, (videoPaused ? "[JEDA]  " : "") + name, 22 * s, 0, 40 * s, H - h + 14 * s, 1, W * 0.6, 0, false);
+            Txt(dc, (videoPaused ? Lang.T("[JEDA]  ") : "") + name, 22 * s, 0, 40 * s, H - h + 14 * s, 1, W * 0.6, 0, false);
             Txt(dc, MediaExt.FormatTime(pos) + " / " + MediaExt.FormatTime(len) + "     Volume " + (int)Math.Round(videoFull.Volume * 100) + "%", 18 * s, 0, W - 40 * s, H - h + 16 * s, 0.85, 0, 2, false);
             double prog = len > 0 ? Math.Min(1, (double)pos / len) : 0;
             dc.DrawRectangle(WhiteA(0.25), null, new Rect(40 * s, H - h + 54 * s, W - 80 * s, 4 * s));
             dc.DrawRectangle(brWhite, null, new Rect(40 * s, H - h + 54 * s, (W - 80 * s) * prog, 4 * s));
-            Txt(dc, "Enter: Jeda    Kiri/Kanan: -/+10 dtk    Atas/Bawah: Volume    LB/RB: Video lain    Esc: Kembali", 15 * s, 0, 40 * s, H - h + 66 * s, 0.6, W - 80 * s, 0, false);
+            Txt(dc, Lang.T("Enter: Jeda    Kiri/Kanan: -/+10 dtk    Atas/Bawah: Volume    LB/RB: Video lain    Esc: Kembali"), 15 * s, 0, 40 * s, H - h + 66 * s, 0.6, W - 80 * s, 0, false);
         }
     }
 }

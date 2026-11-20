@@ -63,7 +63,7 @@ namespace ZMB
                         asyncPending.Remove(key);
                         asyncTimes[key] = DateTime.Now;
                         if (r != null) { asyncVals[key] = r; asyncErr.Remove(key); }
-                        else asyncErr[key] = err ?? "Gagal memuat";
+                        else asyncErr[key] = err ?? Lang.T("Gagal memuat");
                         if (done != null) { try { done(r); } catch (Exception ex2) { Log(ex2.ToString()); } }
                         if (refreshUi) RefreshItemsOnly();
                     });
@@ -106,7 +106,7 @@ namespace ZMB
                 if (root == null) return null;
                 string path = g.Path, name = g.Name, np = g.NpCommId;
                 src.Key = "rpcs3:" + path;
-                src.Label = "Trofi PS3";
+                src.Label = Lang.T("Trofi PS3");
                 src.Fetch = delegate { return Achievements.Rpcs3ForGame(path, name, root, np); };
                 return src;
             }
@@ -136,9 +136,9 @@ namespace ZMB
             AchvSrc src = SourceFor(g);
             if (src == null) return "";
             AchvSet s = NavSettled ? GetAsync<AchvSet>(src.Key, src.Fetch, 10, src.Done, false) : Peek<AchvSet>(src.Key);
-            if (s == null) return NavSettled && asyncPending.Contains(src.Key) ? "  \u2022  Memuat trofi..." : "";
+            if (s == null) return NavSettled && asyncPending.Contains(src.Key) ? Lang.T("  \u2022  Memuat trofi...") : "";
             if (s.Error != null || s.Total == 0) return "";
-            return "  \u2022  Trofi " + s.Unlocked + "/" + s.Total + " (" + s.Percent + "%)";
+            return Lang.T("  \u2022  Trofi ") + s.Unlocked + "/" + s.Total + " (" + s.Percent + "%)";
         }
 
         void OpenAchvFor(GameEntry g)
@@ -147,7 +147,7 @@ namespace ZMB
             if (src == null)
             {
                 Sfx.Error();
-                ShowToast("Atur akun dulu di Pengaturan > Akun Trofi & Achievement");
+                ShowToast(Lang.T("Atur akun dulu di Pengaturan > Akun Trofi & Achievement"));
                 return;
             }
             XmbItem it = MakeItem(g.Name, src.Label, "#TROPHY", null);
@@ -171,15 +171,15 @@ namespace ZMB
         List<XmbItem> LoadingItems()
         {
             List<XmbItem> l = new List<XmbItem>();
-            l.Add(MakeItem("Memuat...", "Mengambil data trofi / achievement", "\uE895", null));
+            l.Add(MakeItem(Lang.T("Memuat..."), Lang.T("Mengambil data trofi / achievement"), "\uE895", null));
             return l;
         }
 
         List<XmbItem> ErrorItems(string msg, string key)
         {
             List<XmbItem> l = new List<XmbItem>();
-            l.Add(MakeItem("Tidak bisa memuat", msg, "\uE783", delegate { InvalidateAsync(key); RefreshItemsOnly(); }));
-            l.Add(MakeItem("Coba Lagi", "Muat ulang data", "\uE72C", delegate { InvalidateAsync(key); RefreshItemsOnly(); }));
+            l.Add(MakeItem(Lang.T("Tidak bisa memuat"), msg, "\uE783", delegate { InvalidateAsync(key); RefreshItemsOnly(); }));
+            l.Add(MakeItem(Lang.T("Coba Lagi"), Lang.T("Muat ulang data"), "\uE72C", delegate { InvalidateAsync(key); RefreshItemsOnly(); }));
             return l;
         }
 
@@ -188,7 +188,7 @@ namespace ZMB
 
         static string GradeName(string g)
         {
-            switch (g) { case "P": return "Platinum"; case "G": return "Emas"; case "S": return "Perak"; default: return "Perunggu"; }
+            switch (g) { case "P": return "Platinum"; case "G": return Lang.T("Emas"); case "S": return Lang.T("Perak"); default: return Lang.T("Perunggu"); }
         }
 
         static Color GradeColor(string g)
@@ -206,13 +206,13 @@ namespace ZMB
         string SetSummary(AchvSet s)
         {
             if (s.Source == "RPCS3")
-                return "Platinum " + s.CountGrade("P", true) + "  \u2022  Emas " + s.CountGrade("G", true) + "/" + s.CountGrade("G", false) +
-                    "  \u2022  Perak " + s.CountGrade("S", true) + "/" + s.CountGrade("S", false) + "  \u2022  Perunggu " + s.CountGrade("B", true) + "/" + s.CountGrade("B", false);
+                return "Platinum " + s.CountGrade("P", true) + Lang.T("  \u2022  Emas ") + s.CountGrade("G", true) + "/" + s.CountGrade("G", false) +
+                    Lang.T("  \u2022  Perak ") + s.CountGrade("S", true) + "/" + s.CountGrade("S", false) + Lang.T("  \u2022  Perunggu ") + s.CountGrade("B", true) + "/" + s.CountGrade("B", false);
             if (s.Source == "RetroAchievements")
             {
                 int pts = s.Items.Sum(a => a.Points), got = s.Items.Where(a => a.Unlocked).Sum(a => a.Points);
                 int hc = s.Items.Count(a => a.Hardcore);
-                return s.Extra + "  \u2022  Poin " + got + " / " + pts + (hc > 0 ? "  \u2022  Hardcore " + hc : "");
+                return s.Extra + Lang.T("  \u2022  Poin ") + got + " / " + pts + (hc > 0 ? "  \u2022  Hardcore " + hc : "");
             }
             return s.Title;
         }
@@ -220,14 +220,14 @@ namespace ZMB
         List<XmbItem> AchvItems(AchvSet s, string key)
         {
             List<XmbItem> l = new List<XmbItem>();
-            XmbItem head = MakeItem("Progres: " + s.Unlocked + " / " + s.Total + "  (" + s.Percent + "%)", SetSummary(s), "#TROPHY", null);
+            XmbItem head = MakeItem(Lang.T("Progres: ") + s.Unlocked + " / " + s.Total + "  (" + s.Percent + "%)", SetSummary(s), "#TROPHY", null);
             head.Progress = s.Total > 0 ? (double)s.Unlocked / s.Total : 0;
             head.AchSet = s;
             if (!string.IsNullOrEmpty(s.Icon)) { head.ImageKey = "ach:" + s.Icon; head.ImageLoader = IconLoader(s.Icon, 460); }
             head.Options = delegate
             {
                 List<OptionItem> o = new List<OptionItem>();
-                o.Add(new OptionItem("Muat Ulang", delegate { InvalidateAsync(key); RefreshItemsOnly(); }));
+                o.Add(new OptionItem(Lang.T("Muat Ulang"), delegate { InvalidateAsync(key); RefreshItemsOnly(); }));
                 return o;
             };
             l.Add(head);
@@ -237,14 +237,14 @@ namespace ZMB
             foreach (Achv a in ordered)
             {
                 bool secret = a.Hidden && !a.Unlocked;
-                XmbItem it = MakeItem(secret ? (s.Source == "RPCS3" ? "Trofi Tersembunyi" : "Achievement Tersembunyi") : a.Name, "", null, null);
+                XmbItem it = MakeItem(secret ? (s.Source == "RPCS3" ? Lang.T("Trofi Tersembunyi") : Lang.T("Achievement Tersembunyi")) : a.Name, "", null, null);
                 List<string> parts = new List<string>();
                 if (s.Source == "RPCS3") parts.Add(GradeName(a.Grade));
                 if (!secret && a.Desc.Length > 0) parts.Add(a.Desc);
-                if (a.Unlocked) parts.Add(a.When > DateTime.MinValue ? "Terbuka " + a.When.ToString("dd MMM yyyy, HH:mm") : "Terbuka");
-                else parts.Add("Terkunci");
-                if (a.Points > 0 && s.Source == "RetroAchievements") parts.Add(a.Points + " poin" + (a.Hardcore ? " (Hardcore)" : ""));
-                if (a.Rarity >= 0) parts.Add("Dimiliki " + a.Rarity.ToString("0.0") + "% pemain");
+                if (a.Unlocked) parts.Add(a.When > DateTime.MinValue ? Lang.T("Terbuka ") + a.When.ToString("dd MMM yyyy, HH:mm") : Lang.T("Terbuka"));
+                else parts.Add(Lang.T("Terkunci"));
+                if (a.Points > 0 && s.Source == "RetroAchievements") parts.Add(a.Points + Lang.T(" poin") + (a.Hardcore ? " (Hardcore)" : ""));
+                if (a.Rarity >= 0) parts.Add(Lang.T("Dimiliki ") + a.Rarity.ToString("0.0") + "% pemain");
                 it.Subtitle = string.Join("  \u2022  ", parts.ToArray());
 
                 string icon = a.Unlocked ? a.Icon : (a.IconLocked ?? a.Icon);
@@ -260,8 +260,8 @@ namespace ZMB
                 it.Options = delegate
                 {
                     List<OptionItem> o = new List<OptionItem>();
-                    if (aa.Unlocked) o.Add(new OptionItem("Putar Animasi Trofi", delegate { EnqueueTrophyPopup(aa, s); }));
-                    o.Add(new OptionItem("Muat Ulang", delegate { InvalidateAsync(key); RefreshItemsOnly(); }));
+                    if (aa.Unlocked) o.Add(new OptionItem(Lang.T("Putar Animasi Trofi"), delegate { EnqueueTrophyPopup(aa, s); }));
+                    o.Add(new OptionItem(Lang.T("Muat Ulang"), delegate { InvalidateAsync(key); RefreshItemsOnly(); }));
                     return o;
                 };
                 l.Add(it);
@@ -279,21 +279,21 @@ namespace ZMB
             ps3.DynSub = delegate
             {
                 string root = Achievements.Rpcs3Root(cfg);
-                if (root == null) return "Atur emulator RPCS3 di platform PS3, atau folder RPCS3 di Pengaturan";
+                if (root == null) return Lang.T("Atur emulator RPCS3 di platform PS3, atau folder RPCS3 di Pengaturan");
                 List<AchvSet> all = Peek<List<AchvSet>>("rpcs3:all");
-                if (all == null) return "Trofi lokal dari " + root;
+                if (all == null) return Lang.T("Trofi lokal dari ") + root;
                 int plat = all.Sum(x => x.CountGrade("P", true)), gold = all.Sum(x => x.CountGrade("G", true));
                 int silver = all.Sum(x => x.CountGrade("S", true)), bronze = all.Sum(x => x.CountGrade("B", true));
                 double lf;
                 int lvl = PsnLevel(plat * 180 + gold * 90 + silver * 30 + bronze * 15, out lf);
-                return "Level " + lvl + " (" + (int)(lf * 100) + "%)  \u2022  " + all.Count + " game  \u2022  Platinum " + plat + "  \u2022  Emas " + gold + "  \u2022  Perak " + silver + "  \u2022  Perunggu " + bronze;
+                return "Level " + lvl + " (" + (int)(lf * 100) + "%)  \u2022  " + all.Count + Lang.T(" game  \u2022  Platinum ") + plat + Lang.T("  \u2022  Emas ") + gold + Lang.T("  \u2022  Perak ") + silver + Lang.T("  \u2022  Perunggu ") + bronze;
             };
             ps3.Children = BuildTrophyRpcs3;
             l.Add(ps3);
 
             XmbItem st = MakeItem("Steam", "", null, null);
             st.Badge = "STEAM"; st.BadgeColor = Color.FromRgb(27, 40, 56);
-            st.DynSub = delegate { return SteamReady ? "Akun Steam: " + EffectiveSteamId() : "Atur Steam Web API Key di Pengaturan > Akun Trofi"; };
+            st.DynSub = delegate { return SteamReady ? Lang.T("Akun Steam: ") + EffectiveSteamId() : Lang.T("Atur Steam Web API Key di Pengaturan > Akun Trofi"); };
             st.Children = BuildTrophySteam;
             l.Add(st);
 
@@ -301,7 +301,7 @@ namespace ZMB
             ra.Badge = "RA"; ra.BadgeColor = Color.FromRgb(20, 90, 170);
             ra.DynSub = delegate
             {
-                if (!RaReady) return "Atur username & Web API Key di Pengaturan > Akun Trofi";
+                if (!RaReady) return Lang.T("Atur username & Web API Key di Pengaturan > Akun Trofi");
                 string u = cfg.RaUser.Trim(), k = cfg.RaApiKey.Trim();
                 string prof = NavSettled ? GetAsync<string>("ra:profile", delegate { return Achievements.RetroProfile(u, k); }, 15, null, false) : Peek<string>("ra:profile");
                 return u + (prof != null ? "  \u2022  " + prof : "");
@@ -309,7 +309,7 @@ namespace ZMB
             ra.Children = BuildTrophyRA;
             l.Add(ra);
 
-            XmbItem acc = MakeItem("Pengaturan Akun", "Steam API Key, akun RetroAchievements, folder RPCS3", "\uE713", null);
+            XmbItem acc = MakeItem(Lang.T("Pengaturan Akun"), Lang.T("Steam API Key, akun RetroAchievements, folder RPCS3"), "\uE713", null);
             acc.Children = BuildAchvAccount;
             l.Add(acc);
             return l;
@@ -333,14 +333,14 @@ namespace ZMB
             List<XmbItem> l = new List<XmbItem>();
             if (root == null)
             {
-                l.Add(MakeItem("Atur Folder RPCS3", "Pilih folder tempat rpcs3.exe berada", "\uE8B7", PickRpcs3Folder));
+                l.Add(MakeItem(Lang.T("Atur Folder RPCS3"), Lang.T("Pilih folder tempat rpcs3.exe berada"), "\uE8B7", PickRpcs3Folder));
                 return l;
             }
             List<AchvSet> all = GetAsync<List<AchvSet>>("rpcs3:all", delegate { return Achievements.Rpcs3All(root); }, 1, null, true);
             if (all == null) return LoadingItems();
             if (all.Count == 0)
             {
-                l.Add(MakeItem("Belum ada trofi", "Data trofi muncul setelah game dimainkan di RPCS3 (" + root + ")", "\uE7BA", null));
+                l.Add(MakeItem(Lang.T("Belum ada trofi"), Lang.T("Data trofi muncul setelah game dimainkan di RPCS3 (") + root + ")", "\uE7BA", null));
                 return l;
             }
             foreach (AchvSet s in all.OrderByDescending(x => x.Items.Where(a => a.Unlocked).Select(a => a.When).DefaultIfEmpty(DateTime.MinValue).Max()))
@@ -372,7 +372,7 @@ namespace ZMB
             List<XmbItem> l = new List<XmbItem>();
             if (!SteamReady)
             {
-                l.Add(MakeItem("Atur Steam Web API Key", "Buat gratis di steamcommunity.com/dev/apikey", "\uE8D7", EditSteamKey));
+                l.Add(MakeItem(Lang.T("Atur Steam Web API Key"), Lang.T("Buat gratis di steamcommunity.com/dev/apikey"), "\uE8D7", EditSteamKey));
                 return l;
             }
             string k = cfg.SteamApiKey.Trim(), sid = EffectiveSteamId();
@@ -382,7 +382,7 @@ namespace ZMB
                 string err = AsyncError("steam:owned");
                 return (err != null && !asyncPending.Contains("steam:owned")) ? ErrorItems(err, "steam:owned") : LoadingItems();
             }
-            if (games.Count == 0) { l.Add(MakeItem("Tidak ada game dengan achievement", "", "\uE7BA", null)); return l; }
+            if (games.Count == 0) { l.Add(MakeItem(Lang.T("Tidak ada game dengan achievement"), "", "\uE7BA", null)); return l; }
             foreach (AchvGameRef r in games) l.Add(RefItem(r));
             return l;
         }
@@ -392,7 +392,7 @@ namespace ZMB
             List<XmbItem> l = new List<XmbItem>();
             if (!RaReady)
             {
-                l.Add(MakeItem("Atur Akun RetroAchievements", "Username + Web API Key (retroachievements.org/settings)", "\uE77B", EditRaUser));
+                l.Add(MakeItem(Lang.T("Atur Akun RetroAchievements"), "Username + Web API Key (retroachievements.org/settings)", "\uE77B", EditRaUser));
                 return l;
             }
             string u = cfg.RaUser.Trim(), k = cfg.RaApiKey.Trim();
@@ -402,7 +402,7 @@ namespace ZMB
                 string err = AsyncError("ra:played");
                 return (err != null && !asyncPending.Contains("ra:played")) ? ErrorItems(err, "ra:played") : LoadingItems();
             }
-            if (games.Count == 0) { l.Add(MakeItem("Belum ada game yang dimainkan", "Mainkan game dengan RetroArch / emulator yang mendukung RetroAchievements", "\uE7BA", null)); return l; }
+            if (games.Count == 0) { l.Add(MakeItem(Lang.T("Belum ada game yang dimainkan"), Lang.T("Mainkan game dengan RetroArch / emulator yang mendukung RetroAchievements"), "\uE7BA", null)); return l; }
             foreach (AchvGameRef r in games) l.Add(RefItem(r));
             return l;
         }
@@ -410,7 +410,7 @@ namespace ZMB
         // ===================== AKUN =====================
         static string Mask(string s)
         {
-            if (string.IsNullOrEmpty(s)) return "Belum diatur";
+            if (string.IsNullOrEmpty(s)) return Lang.T("Belum diatur");
             s = s.Trim();
             return s.Length <= 4 ? "****" : new string('*', Math.Min(12, s.Length - 4)) + s.Substring(s.Length - 4);
         }
@@ -418,7 +418,7 @@ namespace ZMB
         void EditSteamKey()
         {
             string v = Dialogs.Input(Owner32, "Steam Web API Key",
-                "Tempel Steam Web API Key kamu.\nBuat gratis di https://steamcommunity.com/dev/apikey (domain boleh diisi: localhost).", cfg.SteamApiKey);
+                Lang.T("Tempel Steam Web API Key kamu.\nBuat gratis di https://steamcommunity.com/dev/apikey (domain boleh diisi: localhost)."), cfg.SteamApiKey);
             if (v == null) return;
             cfg.SteamApiKey = v.Trim();
             ClearAchvCache();
@@ -428,7 +428,7 @@ namespace ZMB
         void EditSteamId()
         {
             string v = Dialogs.Input(Owner32, "Steam ID",
-                "SteamID64 (17 digit, contoh 7656119...). Kosongkan untuk deteksi otomatis dari Steam di laptop ini.", cfg.SteamId);
+                Lang.T("SteamID64 (17 digit, contoh 7656119...). Kosongkan untuk deteksi otomatis dari Steam di laptop ini."), cfg.SteamId);
             if (v == null) return;
             cfg.SteamId = v.Trim();
             ClearAchvCache();
@@ -442,7 +442,7 @@ namespace ZMB
             cfg.RaUser = v.Trim();
             if (string.IsNullOrEmpty(cfg.RaApiKey))
             {
-                string k = Dialogs.Input(Owner32, "RetroAchievements", "Web API Key (ada di retroachievements.org/settings, bagian 'Keys'):", cfg.RaApiKey);
+                string k = Dialogs.Input(Owner32, "RetroAchievements", Lang.T("Web API Key (ada di retroachievements.org/settings, bagian 'Keys'):"), cfg.RaApiKey);
                 if (k != null) cfg.RaApiKey = k.Trim();
             }
             ClearAchvCache();
@@ -451,7 +451,7 @@ namespace ZMB
 
         void EditRaKey()
         {
-            string v = Dialogs.Input(Owner32, "RetroAchievements", "Web API Key (ada di retroachievements.org/settings, bagian 'Keys'):", cfg.RaApiKey);
+            string v = Dialogs.Input(Owner32, "RetroAchievements", Lang.T("Web API Key (ada di retroachievements.org/settings, bagian 'Keys'):"), cfg.RaApiKey);
             if (v == null) return;
             cfg.RaApiKey = v.Trim();
             ClearAchvCache();
@@ -460,9 +460,9 @@ namespace ZMB
 
         void PickRpcs3Folder()
         {
-            string f = Dialogs.PickFolder(Owner32, "Pilih folder RPCS3 (yang berisi rpcs3.exe dan dev_hdd0)", cfg.Rpcs3Folder);
+            string f = Dialogs.PickFolder(Owner32, Lang.T("Pilih folder RPCS3 (yang berisi rpcs3.exe dan dev_hdd0)"), cfg.Rpcs3Folder);
             if (f == null) return;
-            if (!Directory.Exists(Path.Combine(f, "dev_hdd0"))) ShowToast("Folder ini tidak punya dev_hdd0, pastikan folder RPCS3 yang benar");
+            if (!Directory.Exists(Path.Combine(f, "dev_hdd0"))) ShowToast(Lang.T("Folder ini tidak punya dev_hdd0, pastikan folder RPCS3 yang benar"));
             cfg.Rpcs3Folder = f;
             Achievements.ResetRootCache();
             ClearAchvCache();
@@ -482,10 +482,10 @@ namespace ZMB
             sk.Options = delegate
             {
                 List<OptionItem> o = new List<OptionItem>();
-                o.Add(new OptionItem("Ubah Key...", EditSteamKey));
-                o.Add(new OptionItem("Buka Halaman Pembuatan Key", delegate { OpenDefault("https://steamcommunity.com/dev/apikey"); }));
-                o.Add(new OptionItem("Buka Pengaturan Privasi Steam", delegate { OpenDefault("https://steamcommunity.com/my/edit/settings"); }));
-                o.Add(new OptionItem("Hapus Key", delegate { cfg.SteamApiKey = ""; ClearAchvCache(); SaveAndRefresh(); }));
+                o.Add(new OptionItem(Lang.T("Ubah Key..."), EditSteamKey));
+                o.Add(new OptionItem(Lang.T("Buka Halaman Pembuatan Key"), delegate { OpenDefault("https://steamcommunity.com/dev/apikey"); }));
+                o.Add(new OptionItem(Lang.T("Buka Pengaturan Privasi Steam"), delegate { OpenDefault("https://steamcommunity.com/my/edit/settings"); }));
+                o.Add(new OptionItem(Lang.T("Hapus Key"), delegate { cfg.SteamApiKey = ""; ClearAchvCache(); SaveAndRefresh(); }));
                 return o;
             };
             l.Add(sk);
@@ -495,12 +495,12 @@ namespace ZMB
             {
                 if (!string.IsNullOrEmpty(cfg.SteamId)) return cfg.SteamId;
                 string d = Achievements.DetectSteamId();
-                return d.Length > 0 ? "Otomatis: " + d : "Tidak terdeteksi, isi manual";
+                return d.Length > 0 ? Lang.T("Otomatis: ") + d : Lang.T("Tidak terdeteksi, isi manual");
             };
             l.Add(sid);
 
             XmbItem ru = MakeItem("RetroAchievements: Username", "", "\uE77B", EditRaUser);
-            ru.DynSub = delegate { return string.IsNullOrEmpty(cfg.RaUser) ? "Belum diatur" : cfg.RaUser; };
+            ru.DynSub = delegate { return string.IsNullOrEmpty(cfg.RaUser) ? Lang.T("Belum diatur") : cfg.RaUser; };
             l.Add(ru);
 
             XmbItem rk = MakeItem("RetroAchievements: Web API Key", "", "\uE8D7", EditRaKey);
@@ -508,29 +508,29 @@ namespace ZMB
             rk.Options = delegate
             {
                 List<OptionItem> o = new List<OptionItem>();
-                o.Add(new OptionItem("Ubah Key...", EditRaKey));
-                o.Add(new OptionItem("Buka retroachievements.org/settings", delegate { OpenDefault("https://retroachievements.org/settings"); }));
-                o.Add(new OptionItem("Hapus Key", delegate { cfg.RaApiKey = ""; ClearAchvCache(); SaveAndRefresh(); }));
+                o.Add(new OptionItem(Lang.T("Ubah Key..."), EditRaKey));
+                o.Add(new OptionItem(Lang.T("Buka retroachievements.org/settings"), delegate { OpenDefault("https://retroachievements.org/settings"); }));
+                o.Add(new OptionItem(Lang.T("Hapus Key"), delegate { cfg.RaApiKey = ""; ClearAchvCache(); SaveAndRefresh(); }));
                 return o;
             };
             l.Add(rk);
 
-            XmbItem rp = MakeItem("Folder RPCS3", "", "\uE8B7", PickRpcs3Folder);
+            XmbItem rp = MakeItem(Lang.T("Folder RPCS3"), "", "\uE8B7", PickRpcs3Folder);
             rp.DynSub = delegate
             {
                 if (!string.IsNullOrEmpty(cfg.Rpcs3Folder)) return cfg.Rpcs3Folder;
                 string r = Achievements.Rpcs3Root(cfg);
-                return r != null ? "Otomatis: " + r : "Belum diatur (atau atur emulator platform PS3)";
+                return r != null ? Lang.T("Otomatis: ") + r : Lang.T("Belum diatur (atau atur emulator platform PS3)");
             };
             l.Add(rp);
 
-            l.Add(MakeItem("Tes Koneksi", "Cek akun Steam & RetroAchievements", "\uE895", TestAchvAccounts));
-            l.Add(MakeItem("Hapus Cache Trofi", "Hapus data & gambar trofi yang tersimpan", "\uE74D", delegate
+            l.Add(MakeItem(Lang.T("Tes Koneksi"), Lang.T("Cek akun Steam & RetroAchievements"), "\uE895", TestAchvAccounts));
+            l.Add(MakeItem(Lang.T("Hapus Cache Trofi"), Lang.T("Hapus data & gambar trofi yang tersimpan"), "\uE74D", delegate
             {
                 ClearAchvCache();
                 Achievements.ClearCache();
                 RefreshItemsOnly();
-                ShowToast("Cache trofi dihapus");
+                ShowToast(Lang.T("Cache trofi dihapus"));
             }));
             return l;
         }
@@ -538,22 +538,22 @@ namespace ZMB
         void TestAchvAccounts()
         {
             string sk = cfg.SteamApiKey.Trim(), sid = EffectiveSteamId(), ru = cfg.RaUser.Trim(), rk = cfg.RaApiKey.Trim();
-            ShowToast("Mengecek akun...");
+            ShowToast(Lang.T("Mengecek akun..."));
             ThreadPool.QueueUserWorkItem(delegate
             {
                 List<string> res = new List<string>();
                 if (sk.Length > 0 && sid.Length > 0)
                 {
-                    try { List<AchvGameRef> g = Achievements.SteamOwned(sk, sid); res.Add("Steam OK (" + g.Count + " game)"); }
+                    try { List<AchvGameRef> g = Achievements.SteamOwned(sk, sid); res.Add("Steam OK (" + g.Count + Lang.T(" game)")); }
                     catch (Exception ex) { res.Add("Steam: " + ex.Message); }
                 }
-                else res.Add("Steam belum diatur");
+                else res.Add(Lang.T("Steam belum diatur"));
                 if (ru.Length > 0 && rk.Length > 0)
                 {
                     try { Achievements.RetroProfile(ru, rk); res.Add("RetroAchievements OK"); }
                     catch (Exception ex) { res.Add("RA: " + ex.Message); }
                 }
-                else res.Add("RA belum diatur");
+                else res.Add(Lang.T("RA belum diatur"));
                 Dispatcher.BeginInvoke((Action)delegate { ShowToast(string.Join("   |   ", res.ToArray())); });
             });
         }
@@ -602,7 +602,7 @@ namespace ZMB
                 {
                     AnnounceTrophies(fresh, r, before, false);
                     if (fresh.Count == 0) Sfx.Ok();
-                    ShowToast("Selamat! " + gained + " trofi baru di " + r.Title);
+                    ShowToast(Lang.T("Selamat! ") + gained + Lang.T(" trofi baru di ") + r.Title);
                 }
             }, false);
         }

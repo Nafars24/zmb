@@ -29,7 +29,7 @@ namespace ZMB
         Dictionary<string, XmbItem> profItems = new Dictionary<string, XmbItem>();
         double profOpenedAt = 0;
 
-        static readonly string[] HariPendek = { "Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab" };
+        static readonly string[] HariPendek = { Lang.T("Min"), Lang.T("Sen"), Lang.T("Sel"), Lang.T("Rab"), Lang.T("Kam"), Lang.T("Jum"), Lang.T("Sab") };
 
         // Level ala Steam: tiap 10 level butuh XP per level lebih banyak
         static int LevelFromXp(int xp, out int levelStart, out int next)
@@ -60,7 +60,7 @@ namespace ZMB
             for (int i = 0; i < 7; i++)
             {
                 DateTime day = today.AddDays(i - 6);
-                d.DayLabels[i] = i == 6 ? "Hari ini" : HariPendek[(int)day.DayOfWeek];
+                d.DayLabels[i] = i == 6 ? Lang.T("Hari ini") : HariPendek[(int)day.DayOfWeek];
             }
             foreach (PlaySession s in cfg.Sessions)
             {
@@ -134,18 +134,18 @@ namespace ZMB
             if (k == XKey.Options || k == XKey.Select)
             {
                 List<OptionItem> o = new List<OptionItem>();
-                o.Add(new OptionItem("Ganti Foto Profil...", delegate
+                o.Add(new OptionItem(Lang.T("Ganti Foto Profil..."), delegate
                 {
-                    string f = Dialogs.PickFile(Owner32, "Pilih foto profil", "Gambar|*.jpg;*.jpeg;*.png;*.bmp", cfg.PhotoFolder);
+                    string f = Dialogs.PickFile(Owner32, Lang.T("Pilih foto profil"), Lang.T("Gambar|*.jpg;*.jpeg;*.png;*.bmp"), cfg.PhotoFolder);
                     if (f != null) { cfg.AvatarPath = f; cfg.Save(); ForgetImage("avatar:" + f); }
                 }));
-                o.Add(new OptionItem("Hapus Foto Profil", delegate { cfg.AvatarPath = ""; cfg.Save(); }));
-                o.Add(new OptionItem("Hapus Riwayat Sesi Main", delegate
+                o.Add(new OptionItem(Lang.T("Hapus Foto Profil"), delegate { cfg.AvatarPath = ""; cfg.Save(); }));
+                o.Add(new OptionItem(Lang.T("Hapus Riwayat Sesi Main"), delegate
                 {
-                    Confirm("Hapus semua riwayat sesi main? (total jam per game tetap)", delegate { cfg.Sessions.Clear(); cfg.Save(); prof = BuildProfile(); });
+                    Confirm(Lang.T("Hapus semua riwayat sesi main? (total jam per game tetap)"), delegate { cfg.Sessions.Clear(); cfg.Save(); prof = BuildProfile(); });
                 }));
-                o.Add(new OptionItem("Tutup Profil", delegate { mode = Mode.Xmb; }));
-                OpenOptions("Profil", o);
+                o.Add(new OptionItem(Lang.T("Tutup Profil"), delegate { mode = Mode.Xmb; }));
+                OpenOptions(Lang.T("Profil"), o);
             }
         }
 
@@ -153,7 +153,7 @@ namespace ZMB
         {
             if (minutes < 60) return ((int)Math.Round(minutes)) + " mnt";
             double h = minutes / 60.0;
-            return (h < 10 ? h.ToString("0.0") : ((int)Math.Round(h)).ToString()) + " jam";
+            return (h < 10 ? h.ToString("0.0") : ((int)Math.Round(h)).ToString()) + Lang.T(" jam");
         }
 
         static Color LevelColor(int lvl)
@@ -200,7 +200,7 @@ namespace ZMB
 
             double hx = av.Right + 30 * s;
             Txt(dc, Environment.UserName, 42 * s, 2, hx, 62 * s, a, cw * 0.5, 0, true);
-            Txt(dc, "Pemain sejak " + (cfg.Sessions.Count > 0 ? cfg.Sessions.Min(x => x.Start).ToString("MMMM yyyy") : DateTime.Now.ToString("MMMM yyyy")) + "  \u2022  Game favorit: " + d.Favorite, 18 * s, 0, hx, 62 * s + TextH(42 * s), 0.7 * a, cw * 0.55, 0, false);
+            Txt(dc, Lang.T("Pemain sejak ") + (cfg.Sessions.Count > 0 ? cfg.Sessions.Min(x => x.Start).ToString("MMMM yyyy") : DateTime.Now.ToString("MMMM yyyy")) + Lang.T("  \u2022  Game favorit: ") + d.Favorite, 18 * s, 0, hx, 62 * s + TextH(42 * s), 0.7 * a, cw * 0.55, 0, false);
 
             // lencana level
             double lx = W - m - 360 * s, ly = 66 * s;
@@ -211,14 +211,14 @@ namespace ZMB
             FormattedText lt = FT(d.Level.ToString(), 26 * s, 2, false, 0);
             dc.PushOpacity(a); dc.DrawText(lt, new Point(lx + lr - lt.Width / 2, ly + lr - lt.Height / 2)); dc.Pop();
             Txt(dc, "Level " + d.Level, 24 * s, 2, lx + lr * 2 + 18 * s, ly, a, 0, 0, false);
-            Txt(dc, d.Xp + " XP  \u2022  " + (d.XpNext - d.Xp) + " XP lagi ke level " + (d.Level + 1), 15 * s, 0, lx + lr * 2 + 18 * s, ly + 34 * s, 0.7 * a, 260 * s, 0, false);
+            Txt(dc, d.Xp + " XP  \u2022  " + (d.XpNext - d.Xp) + Lang.T(" XP lagi ke level ") + (d.Level + 1), 15 * s, 0, lx + lr * 2 + 18 * s, ly + 34 * s, 0.7 * a, 260 * s, 0, false);
             double xpFrac = d.XpNext > d.XpLevelStart ? (double)(d.Xp - d.XpLevelStart) / (d.XpNext - d.XpLevelStart) : 0;
             dc.DrawRoundedRectangle(WhiteA(0.25 * a), null, new Rect(lx + lr * 2 + 18 * s, ly + 58 * s, 250 * s, 6 * s), 3 * s, 3 * s);
             dc.PushOpacity(a); dc.DrawRoundedRectangle(SolidOf(LevelColor(d.Level)), null, new Rect(lx + lr * 2 + 18 * s, ly + 58 * s, 250 * s * xpFrac, 6 * s), 3 * s, 3 * s); dc.Pop();
 
             // ---- kartu statistik
             double sy = 240 * s, sh = 100 * s;
-            string[] lab = { "Total waktu main", "Minggu ini", "Hari ini", "Game di koleksi", "Pernah dimainkan" };
+            string[] lab = { Lang.T("Total waktu main"), Lang.T("Minggu ini"), Lang.T("Hari ini"), Lang.T("Game di koleksi"), Lang.T("Pernah dimainkan") };
             string[] val = { Jam(d.TotalMin), Jam(d.WeekMin), Jam(d.TodayMin), d.Games.ToString(), d.Played.ToString() };
             double sw = (cw - 4 * 16 * s) / 5;
             for (int i = 0; i < 5; i++)
@@ -235,7 +235,7 @@ namespace ZMB
             double bottom = H - 70 * s;
             Rect topCard = new Rect(m, cy0, colW, bottom - cy0);
             DrawCard(dc, topCard, a);
-            Txt(dc, "Paling sering dimainkan", 22 * s, 2, topCard.X + 22 * s, topCard.Y + 16 * s, a, 0, 0, false);
+            Txt(dc, Lang.T("Paling sering dimainkan"), 22 * s, 2, topCard.X + 22 * s, topCard.Y + 16 * s, a, 0, 0, false);
             double rowH = Math.Min(92 * s, (topCard.Height - 70 * s) / 5);
             double maxMin = d.Top.Count > 0 ? Math.Max(1, d.Top.Max(g => g.Minutes)) : 1;
             for (int i = 0; i < d.Top.Count; i++)
@@ -250,19 +250,19 @@ namespace ZMB
                 else DrawTile(dc, gi, th.X + th.Width / 2, th.Y + th.Height / 2, th.Width, th.Height, a);
                 double tx = th.Right + 18 * s, tw = topCard.Right - tx - 22 * s;
                 Txt(dc, g.Name, 21 * s, 2, tx, ry + 2 * s, a, tw, 0, false);
-                string info = Jam(g.Minutes) + " total  \u2022  dimainkan " + g.PlayCount + "x" + (g.LastPlayed > DateTime.MinValue ? "  \u2022  terakhir " + g.LastPlayed.ToString("dd MMM") : "");
+                string info = Jam(g.Minutes) + Lang.T(" total  \u2022  dimainkan ") + g.PlayCount + "x" + (g.LastPlayed > DateTime.MinValue ? Lang.T("  \u2022  terakhir ") + g.LastPlayed.ToString("dd MMM") : "");
                 Txt(dc, info, 15 * s, 0, tx, ry + 32 * s, 0.65 * a, tw, 0, false);
                 dc.DrawRoundedRectangle(WhiteA(0.2 * a), null, new Rect(tx, ry + rowH - 26 * s, tw, 5 * s), 2.5 * s, 2.5 * s);
                 dc.PushOpacity(a); dc.DrawRoundedRectangle(SolidOf(Rgb(102, 192, 244)), null, new Rect(tx, ry + rowH - 26 * s, tw * g.Minutes / maxMin, 5 * s), 2.5 * s, 2.5 * s); dc.Pop();
             }
-            if (d.Top.Count == 0) Txt(dc, "Belum ada game yang dimainkan lewat ZMB.", 18 * s, 0, topCard.X + 22 * s, topCard.Y + 70 * s, 0.7 * a, colW - 44 * s, 0, false);
+            if (d.Top.Count == 0) Txt(dc, Lang.T("Belum ada game yang dimainkan lewat ZMB."), 18 * s, 0, topCard.X + 22 * s, topCard.Y + 70 * s, 0.7 * a, colW - 44 * s, 0, false);
 
             // ---- grafik mingguan (kanan atas)
             double rx = m + colW + 20 * s, rw = cw - colW - 20 * s;
             double chartH = (bottom - cy0) * 0.52;
             Rect chart = new Rect(rx, cy0, rw, chartH);
             DrawCard(dc, chart, a);
-            Txt(dc, "Aktivitas 7 hari terakhir", 22 * s, 2, chart.X + 22 * s, chart.Y + 16 * s, a, 0, 0, false);
+            Txt(dc, Lang.T("Aktivitas 7 hari terakhir"), 22 * s, 2, chart.X + 22 * s, chart.Y + 16 * s, a, 0, 0, false);
             Txt(dc, Jam(d.WeekMin), 18 * s, 0, chart.Right - 22 * s, chart.Y + 18 * s, 0.7 * a, 0, 2, false);
             double gx = chart.X + 26 * s, gw = chart.Width - 52 * s;
             double gTop = chart.Y + 60 * s, gBot = chart.Bottom - 40 * s;
@@ -286,7 +286,7 @@ namespace ZMB
             // ---- trofi (kanan bawah)
             Rect tro = new Rect(rx, chart.Bottom + 16 * s, rw, bottom - chart.Bottom - 16 * s);
             DrawCard(dc, tro, a);
-            Txt(dc, "Trofi & Achievement", 22 * s, 2, tro.X + 22 * s, tro.Y + 16 * s, a, 0, 0, false);
+            Txt(dc, Lang.T("Trofi & Achievement"), 22 * s, 2, tro.X + 22 * s, tro.Y + 16 * s, a, 0, 0, false);
             double ty = tro.Y + 62 * s;
             string[] gr = { "P", "G", "S", "B" };
             int[] cnt = { d.Plat, d.Gold, d.Silver, d.Bronze };
@@ -298,15 +298,15 @@ namespace ZMB
                 Txt(dc, cnt[i].ToString(), 22 * s, 2, cx + 24 * s, ty + 14 * s - TextH(22 * s) / 2, a, 0, 0, false);
             }
             double ly2 = ty + 50 * s;
-            Txt(dc, "PS3 (RPCS3): " + d.Ps3Games + " game", 16 * s, 0, tro.X + 22 * s, ly2, 0.75 * a, tro.Width - 44 * s, 0, false);
-            Txt(dc, "Steam: " + (d.SteamTotal > 0 ? d.SteamGot + " / " + d.SteamTotal + " achievement (dari game yang sudah dibuka)" : "buka Koleksi Trofi untuk memuat"), 16 * s, 0, tro.X + 22 * s, ly2 + 26 * s, 0.75 * a, tro.Width - 44 * s, 0, false);
-            Txt(dc, "RetroAchievements: " + (d.RaTotal > 0 ? d.RaGot + " / " + d.RaTotal + (d.RaPoints > 0 ? "  \u2022  " + d.RaPoints + " poin" : "") : (RaReady ? "memuat..." : "belum diatur")), 16 * s, 0, tro.X + 22 * s, ly2 + 52 * s, 0.75 * a, tro.Width - 44 * s, 0, false);
+            Txt(dc, "PS3 (RPCS3): " + d.Ps3Games + Lang.T(" game"), 16 * s, 0, tro.X + 22 * s, ly2, 0.75 * a, tro.Width - 44 * s, 0, false);
+            Txt(dc, "Steam: " + (d.SteamTotal > 0 ? d.SteamGot + " / " + d.SteamTotal + Lang.T(" achievement (dari game yang sudah dibuka)") : Lang.T("buka Koleksi Trofi untuk memuat")), 16 * s, 0, tro.X + 22 * s, ly2 + 26 * s, 0.75 * a, tro.Width - 44 * s, 0, false);
+            Txt(dc, "RetroAchievements: " + (d.RaTotal > 0 ? d.RaGot + " / " + d.RaTotal + (d.RaPoints > 0 ? "  \u2022  " + d.RaPoints + Lang.T(" poin") : "") : (RaReady ? "memuat..." : Lang.T("belum diatur"))), 16 * s, 0, tro.X + 22 * s, ly2 + 52 * s, 0.75 * a, tro.Width - 44 * s, 0, false);
 
             // ---- riwayat terbaru
-            string recent = d.Recent.Count == 0 ? "Riwayat sesi akan muncul setelah kamu bermain lewat ZMB." :
-                "Terakhir: " + string.Join("   \u2022   ", d.Recent.Take(4).Select(x => x.Name + " (" + Jam(x.Minutes) + ", " + x.Start.ToString("dd MMM") + ")").ToArray());
+            string recent = d.Recent.Count == 0 ? Lang.T("Riwayat sesi akan muncul setelah kamu bermain lewat ZMB.") :
+                Lang.T("Terakhir: ") + string.Join("   \u2022   ", d.Recent.Take(4).Select(x => x.Name + " (" + Jam(x.Minutes) + ", " + x.Start.ToString("dd MMM") + ")").ToArray());
             Txt(dc, recent, 15 * s, 0, m, H - 52 * s, 0.6 * a, cw * 0.75, 0, false);
-            Txt(dc, "Esc: Kembali   \u2022   Tab: Opsi Profil", 15 * s, 0, W - m, H - 52 * s, 0.6 * a, 0, 2, false);
+            Txt(dc, Lang.T("Esc: Kembali   \u2022   Tab: Opsi Profil"), 15 * s, 0, W - m, H - 52 * s, 0.6 * a, 0, 2, false);
         }
     }
 }

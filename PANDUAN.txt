@@ -423,3 +423,9 @@ H. MASALAH UMUM
              "Trailer di Latar" + "Suara Trailer" -> "Trailer di Latar"
              (Aktif dengan suara / tanpa suara / Mati).
    Splash screen baru beranimasi: garis cahaya, cincin, logo ZMB berkilau.
+
+ BAHASA / LANGUAGE (v2.20)
+   Pengaturan > Sistem > "Bahasa / Language": Bahasa Indonesia atau English.
+   ZMB menawarkan buka ulang supaya bahasa baru dipakai.
+   Settings > System > "Language / Bahasa": English or Bahasa Indonesia.
+   ZMB offers to restart so the new language takes effect.

@@ -212,7 +212,7 @@ namespace ZMB
             int id;
             try { id = SgdbGameId(j, c.SgdbKey); }
             catch (Exception ex) { res.Errors.Add("SteamGridDB: " + ex.Message); return; }
-            if (id <= 0) { res.Errors.Add("SteamGridDB: game tidak ditemukan"); return; }
+            if (id <= 0) { res.Errors.Add(Lang.T("SteamGridDB: game tidak ditemukan")); return; }
             const string common = "types=static&nsfw=false&humor=false";
             try
             {
@@ -247,7 +247,7 @@ namespace ZMB
         public static string TestSgdb(string key)
         {
             string t = GetText(SGDB + "/search/autocomplete/" + Uri.EscapeDataString("Half-Life"), key);
-            return t == null ? "Tidak ada respon" : "OK";
+            return t == null ? Lang.T("Tidak ada respon") : "OK";
         }
 
         // ===================== SCREENSCRAPER =====================
@@ -321,7 +321,7 @@ namespace ZMB
             object jeu;
             try { jeu = SsGame(j, c); }
             catch (Exception ex) { res.Errors.Add("ScreenScraper: " + ex.Message); return; }
-            if (jeu == null) { res.Errors.Add("ScreenScraper: game tidak ditemukan"); return; }
+            if (jeu == null) { res.Errors.Add(Lang.T("ScreenScraper: game tidak ditemukan")); return; }
             string region = string.IsNullOrEmpty(c.Region) ? "wor" : c.Region;
             try
             {
@@ -355,11 +355,11 @@ namespace ZMB
         public static string TestScreenScraper(ScrapeCfg c)
         {
             string t = GetText(SS + "ssuserInfos.php?" + SsAuth(c), null);
-            if (t == null) return "Tidak ada respon";
+            if (t == null) return Lang.T("Tidak ada respon");
             object r = js.DeserializeObject(t);
             object u = P(P(r, "response"), "ssuser");
             string max = S(u, "maxrequestsperday"), today = S(u, "requeststoday");
-            return "OK" + (max.Length > 0 ? " (kuota hari ini " + today + "/" + max + ")" : "");
+            return "OK" + (max.Length > 0 ? Lang.T(" (kuota hari ini ") + today + "/" + max + ")" : "");
         }
 
         // ===================== JALANKAN =====================

@@ -185,9 +185,9 @@ namespace ZMB
             else Glyph(dc, "#TROPHY", "T", gi.X + gi.Width / 2, gi.Y + gi.Height / 2, gi.Height * 0.7, alpha);
             double tx = gi.Right + 18 * s, tw = ringCx - ringR - 18 * s - tx;
             double th1 = TxtW(dc, set.Title, 24 * s, 2, tx, py + pad, tw, 2, alpha);
-            string src = set.Source == "RPCS3" ? "Trofi PlayStation 3" : set.Source == "Steam" ? "Achievement Steam" : "RetroAchievements" + (set.Extra.Length > 0 ? "  \u2022  " + set.Extra : "");
+            string src = set.Source == "RPCS3" ? Lang.T("Trofi PlayStation 3") : set.Source == "Steam" ? "Achievement Steam" : "RetroAchievements" + (set.Extra.Length > 0 ? "  \u2022  " + set.Extra : "");
             TxtW(dc, src, 16 * s, 0, tx, py + pad + th1 + 4 * s, tw, 1, 0.65 * alpha);
-            TxtW(dc, set.Unlocked + " / " + set.Total + " terbuka", 18 * s, 0, tx, py + pad + th1 + 30 * s, tw, 1, 0.9 * alpha);
+            TxtW(dc, set.Unlocked + " / " + set.Total + Lang.T(" terbuka"), 18 * s, 0, tx, py + pad + th1 + 30 * s, tw, 1, 0.9 * alpha);
             DrawRing(dc, ringCx, ringCy, ringR, 9 * s, set.Total > 0 ? (double)set.Unlocked / set.Total : 0, alpha);
 
             // --- baris jenis trofi / poin
@@ -208,12 +208,12 @@ namespace ZMB
             {
                 int pts = set.Items.Sum(a => a.Points), got = set.Items.Where(a => a.Unlocked).Sum(a => a.Points);
                 int hc = set.Items.Count(a => a.Hardcore);
-                TxtW(dc, "Poin  " + got + " / " + pts + "      Hardcore  " + hc + " / " + set.Total, 20 * s, 2, px + pad, y + 4 * s, pw - pad * 2, 1, alpha);
+                TxtW(dc, Lang.T("Poin  ") + got + " / " + pts + "      Hardcore  " + hc + " / " + set.Total, 20 * s, 2, px + pad, y + 4 * s, pw - pad * 2, 1, alpha);
             }
             else
             {
                 Achv rare = set.Items.Where(a => a.Unlocked && a.Rarity >= 0).OrderBy(a => a.Rarity).FirstOrDefault();
-                TxtW(dc, rare != null ? "Paling langka: " + rare.Name + " (" + rare.Rarity.ToString("0.0") + "%)" : "Belum ada achievement langka", 18 * s, 0, px + pad, y + 6 * s, pw - pad * 2, 1, 0.85 * alpha);
+                TxtW(dc, rare != null ? Lang.T("Paling langka: ") + rare.Name + " (" + rare.Rarity.ToString("0.0") + "%)" : Lang.T("Belum ada achievement langka"), 18 * s, 0, px + pad, y + 6 * s, pw - pad * 2, 1, 0.85 * alpha);
             }
             y += 46 * s;
             dc.DrawRectangle(WhiteA(0.35 * alpha), null, new Rect(px + pad, y, pw - pad * 2, 1));
@@ -230,20 +230,20 @@ namespace ZMB
                 if (a0.Unlocked) Glow(dc, ib.X + ib.Width / 2, ib.Y + ib.Height / 2, ib.Width * 0.85, 0.25 * alpha);
                 DrawIconBox(dc, icon, ib, (!a0.Unlocked && string.IsNullOrEmpty(a0.IconLocked)) ? alpha * 0.45 : alpha, a0, set);
                 double dx = ib.Right + 20 * s, dw = px + pw - pad - dx;
-                double hN = TxtW(dc, secret ? "Trofi Tersembunyi" : a0.Name, 24 * s, 2, dx, y, dw, 2, alpha);
-                double hD = TxtW(dc, secret ? "Detail akan terlihat setelah trofi didapat." : (a0.Desc.Length > 0 ? a0.Desc : "-"), 17 * s, 0, dx, y + hN + 4 * s, dw, 3, 0.8 * alpha);
+                double hN = TxtW(dc, secret ? Lang.T("Trofi Tersembunyi") : a0.Name, 24 * s, 2, dx, y, dw, 2, alpha);
+                double hD = TxtW(dc, secret ? Lang.T("Detail akan terlihat setelah trofi didapat.") : (a0.Desc.Length > 0 ? a0.Desc : "-"), 17 * s, 0, dx, y + hN + 4 * s, dw, 3, 0.8 * alpha);
                 double cy2 = y + hN + hD + 14 * s;
-                string chip = a0.Unlocked ? (a0.When > DateTime.MinValue ? "Terbuka " + a0.When.ToString("dd MMM yyyy") : "Terbuka") : "Terkunci";
+                string chip = a0.Unlocked ? (a0.When > DateTime.MinValue ? Lang.T("Terbuka ") + a0.When.ToString("dd MMM yyyy") : Lang.T("Terbuka")) : Lang.T("Terkunci");
                 Color chipC = a0.Unlocked ? Color.FromRgb(60, 170, 90) : Color.FromRgb(90, 94, 104);
                 double cxp = dx;
                 cxp += Chip(dc, chip, chipC, cxp, cy2, alpha) + 8 * s;
                 if (a0.Grade != null) cxp += Chip(dc, GradeName(a0.Grade), GradeColor(a0.Grade), cxp, cy2, alpha) + 8 * s;
-                if (a0.Points > 0 && set.Source == "RetroAchievements") cxp += Chip(dc, a0.Points + " poin" + (a0.Hardcore ? " HC" : ""), Color.FromRgb(30, 100, 180), cxp, cy2, alpha) + 8 * s;
+                if (a0.Points > 0 && set.Source == "RetroAchievements") cxp += Chip(dc, a0.Points + Lang.T(" poin") + (a0.Hardcore ? " HC" : ""), Color.FromRgb(30, 100, 180), cxp, cy2, alpha) + 8 * s;
                 if (a0.Rarity >= 0) Chip(dc, a0.Rarity.ToString("0.0") + "% pemain", Color.FromRgb(120, 70, 160), cxp, cy2, alpha);
             }
             else
             {
-                TxtW(dc, "Terakhir didapat", 17 * s, 0, px + pad, y, pw - pad * 2, 1, 0.65 * alpha);
+                TxtW(dc, Lang.T("Terakhir didapat"), 17 * s, 0, px + pad, y, pw - pad * 2, 1, 0.65 * alpha);
                 double ly = y + 28 * s;
                 foreach (Achv a in set.Items.Where(x => x.Unlocked).OrderByDescending(x => x.When).Take(3))
                 {
@@ -252,7 +252,7 @@ namespace ZMB
                     TxtW(dc, a.Name + (a.When > DateTime.MinValue ? "   " + a.When.ToString("dd MMM yyyy") : ""), 18 * s, 0, ib.Right + 12 * s, ly + 8 * s, pw - pad * 2 - 50 * s, 1, 0.9 * alpha);
                     ly += 44 * s;
                 }
-                if (set.Unlocked == 0) TxtW(dc, "Belum ada yang terbuka. Ayo main!", 18 * s, 0, px + pad, ly, pw - pad * 2, 1, 0.8 * alpha);
+                if (set.Unlocked == 0) TxtW(dc, Lang.T("Belum ada yang terbuka. Ayo main!"), 18 * s, 0, px + pad, ly, pw - pad * 2, 1, 0.8 * alpha);
             }
             y += detailH;
 
@@ -285,7 +285,7 @@ namespace ZMB
                 }
             }
             if (all.Count > startIdx + maxShow && maxShow > 0)
-                Txt(dc, "+" + (all.Count - startIdx - maxShow) + " lagi", 15 * s, 0, px + pw - pad, py + ph - pad + 2 * s, 0.6 * alpha, 0, 2, false);
+                Txt(dc, "+" + (all.Count - startIdx - maxShow) + Lang.T(" lagi"), 15 * s, 0, px + pw - pad, py + ph - pad + 2 * s, 0.6 * alpha, 0, 2, false);
         }
 
         double Chip(DrawingContext dc, string text, Color c, double x, double y, double a)
@@ -318,11 +318,11 @@ namespace ZMB
         {
             TrophyPopup p = new TrophyPopup();
             p.Grade = PopupGrade(a, set);
-            p.Head = "Kamu mendapat trofi.";
+            p.Head = Lang.T("Kamu mendapat trofi.");
             p.Name = a.Name;
             List<string> sub = new List<string>();
             sub.Add(GradeName(p.Grade));
-            if (a.Points > 0 && set.Source == "RetroAchievements") sub.Add(a.Points + " poin");
+            if (a.Points > 0 && set.Source == "RetroAchievements") sub.Add(a.Points + Lang.T(" poin"));
             sub.Add(set.Title);
             p.Sub = string.Join("  \u2022  ", sub.ToArray());
             p.Icon = a.Icon;
@@ -336,9 +336,9 @@ namespace ZMB
         {
             TrophyPopup p = new TrophyPopup();
             p.Grade = "P";
-            p.Head = "Kamu mendapat trofi platinum!";
+            p.Head = Lang.T("Kamu mendapat trofi platinum!");
             p.Name = set.Title;
-            p.Sub = "Platinum  \u2022  " + set.Total + "/" + set.Total + " terbuka";
+            p.Sub = "Platinum  \u2022  " + set.Total + "/" + set.Total + Lang.T(" terbuka");
             p.Icon = set.Icon;
             p.Overlay = overlay && cfg.TrophyOverlay;
             if (p.Overlay) ShowOverlayPopup(p); else popups.Add(p);

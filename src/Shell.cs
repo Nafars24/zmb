@@ -86,7 +86,7 @@ namespace ZMB
                 ok.Text = "OK"; ok.DialogResult = DialogResult.OK; ok.Left = 384; ok.Top = 136; ok.Width = 95; ok.Height = 36;
                 ok.FlatStyle = FlatStyle.Flat; ok.BackColor = Color.FromArgb(40, 90, 180);
                 Button cancel = new Button();
-                cancel.Text = "Batal"; cancel.DialogResult = DialogResult.Cancel; cancel.Left = 489; cancel.Top = 136; cancel.Width = 95; cancel.Height = 36;
+                cancel.Text = Lang.T("Batal"); cancel.DialogResult = DialogResult.Cancel; cancel.Left = 489; cancel.Top = 136; cancel.Width = 95; cancel.Height = 36;
                 cancel.FlatStyle = FlatStyle.Flat; cancel.BackColor = Color.FromArgb(60, 60, 70);
                 f.Controls.Add(l); f.Controls.Add(t); f.Controls.Add(ok); f.Controls.Add(cancel);
                 f.AcceptButton = ok; f.CancelButton = cancel;

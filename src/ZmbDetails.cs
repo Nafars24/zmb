@@ -114,7 +114,7 @@ namespace ZMB
                     {
                         GameEntry g = detGame;
                         List<OptionItem> o = GameOptions(g);
-                        o.Insert(1, new OptionItem("Muat Ulang Detail Game", delegate { FetchMeta(g, true); }));
+                        o.Insert(1, new OptionItem(Lang.T("Muat Ulang Detail Game"), delegate { FetchMeta(g, true); }));
                         OpenOptions(g.Name, o);
                         break;
                     }
@@ -190,8 +190,8 @@ namespace ZMB
 
             // statistik main + trofi
             string stat = g.PlayCount > 0
-                ? "Dimainkan " + g.PlayCount + "x  \u2022  " + Jam(g.Minutes) + "  \u2022  terakhir " + g.LastPlayed.ToString("dd MMM yyyy")
-                : "Belum pernah dimainkan";
+                ? Lang.T("Dimainkan ") + g.PlayCount + "x  \u2022  " + Jam(g.Minutes) + Lang.T("  \u2022  terakhir ") + g.LastPlayed.ToString("dd MMM yyyy")
+                : Lang.T("Belum pernah dimainkan");
             string tro = AchvBrief(g);
             y += TxtW(dc, stat + tro, 17 * s, 0, x0, y, cw, 1, 0.85 * a) + 20 * s;
 
@@ -200,9 +200,9 @@ namespace ZMB
             double descBottom = H - shotsH - 110 * s;
             double descH = Math.Max(60 * s, descBottom - y);
             string desc = g.Desc.Length > 0 ? g.Desc :
-                (detLoading ? "Memuat detail game..." :
-                 (g.Platform == "STEAM" || !string.IsNullOrEmpty(g.SteamAppId) ? "Deskripsi belum tersedia." :
-                  (string.IsNullOrEmpty(cfg.SsUser) ? "Isi akun ScreenScraper (Pengaturan > Unduh Media Otomatis) untuk memuat deskripsi, developer, genre, dan screenshot game retro." : "Deskripsi belum tersedia.")));
+                (detLoading ? Lang.T("Memuat detail game...") :
+                 (g.Platform == "STEAM" || !string.IsNullOrEmpty(g.SteamAppId) ? Lang.T("Deskripsi belum tersedia.") :
+                  (string.IsNullOrEmpty(cfg.SsUser) ? Lang.T("Isi akun ScreenScraper (Pengaturan > Unduh Media Otomatis) untuk memuat deskripsi, developer, genre, dan screenshot game retro.") : Lang.T("Deskripsi belum tersedia."))));
 #pragma warning disable 618
             FormattedText dft = new FormattedText(desc, CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, faces[0], 19 * s, brWhite);
 #pragma warning restore 618
@@ -248,13 +248,13 @@ namespace ZMB
                     }
                     sx += tw + 14 * s;
                 }
-                Txt(dc, detShot >= 0 ? "Screenshot " + (detShot + 1) + " / " + g.Shots.Count + "  (tampil di latar)" : "Kiri/Kanan: lihat screenshot di layar penuh", 15 * s, 0, x0, sy - 26 * s, 0.6 * a, cw, 0, false);
+                Txt(dc, detShot >= 0 ? "Screenshot " + (detShot + 1) + " / " + g.Shots.Count + Lang.T("  (tampil di latar)") : Lang.T("Kiri/Kanan: lihat screenshot di layar penuh"), 15 * s, 0, x0, sy - 26 * s, 0.6 * a, cw, 0, false);
             }
 
             // petunjuk tombol
             bool pad = Gamepad.AnyConnected;
-            string hint = pad ? "A: Mainkan     B: Kembali     Y: Opsi     Kiri/Kanan: Screenshot     Atas/Bawah: Gulir deskripsi"
-                              : "Enter: Mainkan     Esc: Kembali     Tab: Opsi     Kiri/Kanan: Screenshot     Atas/Bawah: Gulir deskripsi";
+            string hint = pad ? Lang.T("A: Mainkan     B: Kembali     Y: Opsi     Kiri/Kanan: Screenshot     Atas/Bawah: Gulir deskripsi")
+                              : Lang.T("Enter: Mainkan     Esc: Kembali     Tab: Opsi     Kiri/Kanan: Screenshot     Atas/Bawah: Gulir deskripsi");
             Txt(dc, hint, 16 * s, 0, W / 2, H - 46 * s, 0.7 * a, W - 80 * s, 1, false);
         }
     }

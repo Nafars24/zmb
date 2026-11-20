@@ -76,7 +76,7 @@ namespace ZMB
         public static OnlineRelease CheckGitHub(string repo)
         {
             repo = NormalizeRepo(repo);
-            if (repo.Length == 0) throw new Exception("Repositori update belum diatur (format: nama/repo)");
+            if (repo.Length == 0) throw new Exception(Lang.T("Repositori update belum diatur (format: nama/repo)"));
             ServicePointManager.SecurityProtocol |= (SecurityProtocolType)3072;
             string json;
             using (WebClient wc = new WebClient())
@@ -89,19 +89,19 @@ namespace ZMB
                 {
                     HttpWebResponse r = ex.Response as HttpWebResponse;
                     if (r != null && (int)r.StatusCode == 404) return CheckBranch(repo, "main"); // belum ada rilis: pakai cabang main
-                    throw new Exception("Gagal cek update: " + ex.Message);
+                    throw new Exception(Lang.T("Gagal cek update: ") + ex.Message);
                 }
             }
             JavaScriptSerializer js = new JavaScriptSerializer();
             js.MaxJsonLength = int.MaxValue;
             Dictionary<string, object> d = js.DeserializeObject(json) as Dictionary<string, object>;
-            if (d == null) throw new Exception("Respon GitHub tidak dikenali");
+            if (d == null) throw new Exception(Lang.T("Respon GitHub tidak dikenali"));
             OnlineRelease rel = new OnlineRelease();
             object v;
             rel.Tag = d.TryGetValue("tag_name", out v) && v != null ? v.ToString() : "";
             rel.Notes = d.TryGetValue("body", out v) && v != null ? v.ToString() : "";
             Match vm = Regex.Match(rel.Tag, @"\d+(\.\d+){1,3}");
-            if (!vm.Success) throw new Exception("Tag rilis tidak berisi nomor versi: " + rel.Tag);
+            if (!vm.Success) throw new Exception(Lang.T("Tag rilis tidak berisi nomor versi: ") + rel.Tag);
             rel.Version = new Version(vm.Value);
             object[] assets = d.TryGetValue("assets", out v) ? v as object[] : null;
             if (assets != null)
@@ -114,7 +114,7 @@ namespace ZMB
                         && ad.TryGetValue("browser_download_url", out url) && url != null)
                     { rel.ZipUrl = url.ToString(); break; }
                 }
-            if (rel.ZipUrl == null) throw new Exception("Rilis " + rel.Tag + " tidak punya file ZIP");
+            if (rel.ZipUrl == null) throw new Exception(Lang.T("Rilis ") + rel.Tag + Lang.T(" tidak punya file ZIP"));
             return rel;
         }
 
@@ -149,13 +149,13 @@ namespace ZMB
                     catch (WebException ex)
                     {
                         HttpWebResponse r = ex.Response as HttpWebResponse;
-                        if (r != null && (int)r.StatusCode == 404) throw new Exception("Repositori " + repo + " belum berisi ZMB (atau bersifat private)");
-                        throw new Exception("Gagal cek update: " + ex.Message);
+                        if (r != null && (int)r.StatusCode == 404) throw new Exception("Repositori " + repo + Lang.T(" belum berisi ZMB (atau bersifat private)"));
+                        throw new Exception(Lang.T("Gagal cek update: ") + ex.Message);
                     }
                 }
             }
             Match m = Regex.Match(prog, "AssemblyVersion\\(\"([0-9.]+)\"\\)");
-            if (!m.Success) throw new Exception("Versi tidak ditemukan di repositori");
+            if (!m.Success) throw new Exception(Lang.T("Versi tidak ditemukan di repositori"));
             OnlineRelease rel = new OnlineRelease();
             rel.Version = new Version(m.Groups[1].Value);
             rel.Tag = branch;
@@ -219,7 +219,7 @@ namespace ZMB
                 }
             }
             srcRoot = FindRoot(tmp);
-            if (srcRoot == null) { log = "Folder src tidak ditemukan di dalam ZIP"; return null; }
+            if (srcRoot == null) { log = Lang.T("Folder src tidak ditemukan di dalam ZIP"); return null; }
 
             string fw = System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory();
             string csc = Path.Combine(fw, "csc.exe");

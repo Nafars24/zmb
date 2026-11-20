@@ -38,7 +38,7 @@ namespace ZMB
         {
             List<int> o = new List<int>();
             o.Add(-1);
-            string[] want = { "Game", "Video", "Musik", "Foto", "Pengaturan", "Pengguna" };
+            string[] want = { Lang.T("Game"), Lang.T("Video"), Lang.T("Musik"), Lang.T("Foto"), Lang.T("Pengaturan"), Lang.T("Pengguna") };
             foreach (string w in want)
                 for (int i = 0; i < cats.Count; i++) if (cats[i].Title == w && !o.Contains(i)) o.Add(i);
             for (int i = 0; i < cats.Count; i++) if (!o.Contains(i)) o.Add(i);
@@ -47,7 +47,7 @@ namespace ZMB
 
         string PivotLabel(int catIdx)
         {
-            if (catIdx < 0) return "beranda";
+            if (catIdx < 0) return Lang.T("beranda");
             return cats[catIdx].Title.ToLowerInvariant();
         }
 
@@ -101,11 +101,11 @@ namespace ZMB
             // ubin besar: game terakhir dimainkan
             MetroTile hero = new MetroTile();
             hero.Col = 1; hero.Row = 0; hero.W = 2; hero.H = 2; hero.Hero = true;
-            if (recent.Count > 0) { hero.Item = GameItem(recent[0], null); hero.Label = "Main " + recent[0].Name; }
+            if (recent.Count > 0) { hero.Item = GameItem(recent[0], null); hero.Label = Lang.T("Main ") + recent[0].Name; }
             else
             {
-                int gp = pivotOf("Game");
-                hero.Label = "Game"; hero.Glyph = "\uE7FC";
+                int gp = pivotOf(Lang.T("Game"));
+                hero.Label = Lang.T("Game"); hero.Glyph = "\uE7FC";
                 hero.Act = delegate { if (gp >= 0) SetPivot(gp); };
             }
             l.Add(hero);
@@ -113,16 +113,16 @@ namespace ZMB
             // kolom kiri: game sebelumnya, favorit, terakhir dimainkan
             MetroTile c0 = new MetroTile(); c0.Col = 0; c0.Row = 0;
             if (recent.Count > 1) { c0.Item = GameItem(recent[1], null); c0.Label = recent[1].Name; }
-            else { c0.Label = "Profil"; c0.Glyph = "\uE77B"; c0.Act = delegate { int pp = pivotOf("Pengguna"); if (pp >= 0) SetPivot(pp); }; }
+            else { c0.Label = Lang.T("Profil"); c0.Glyph = "\uE77B"; c0.Act = delegate { int pp = pivotOf(Lang.T("Pengguna")); if (pp >= 0) SetPivot(pp); }; }
             l.Add(c0);
 
-            MetroTile fav = new MetroTile(); fav.Col = 0; fav.Row = 1; fav.Label = "Favorit"; fav.Glyph = "\uE735";
-            fav.Item = MakeItem("Favorit", "", "\uE735", null);
+            MetroTile fav = new MetroTile(); fav.Col = 0; fav.Row = 1; fav.Label = Lang.T("Favorit"); fav.Glyph = "\uE735";
+            fav.Item = MakeItem(Lang.T("Favorit"), "", "\uE735", null);
             fav.Item.Children = delegate { return cfg.AllKnown().Where(g => g.Favorite).OrderBy(g => g.Name).Select(g => GameItem(g, null)).ToList(); };
             l.Add(fav);
 
-            MetroTile rec = new MetroTile(); rec.Col = 0; rec.Row = 2; rec.Label = "Terakhir Dimainkan"; rec.Glyph = "\uE81C";
-            rec.Item = MakeItem("Terakhir Dimainkan", "", "\uE81C", null);
+            MetroTile rec = new MetroTile(); rec.Col = 0; rec.Row = 2; rec.Label = Lang.T("Terakhir Dimainkan"); rec.Glyph = "\uE81C";
+            rec.Item = MakeItem(Lang.T("Terakhir Dimainkan"), "", "\uE81C", null);
             rec.Item.Children = delegate { return cfg.AllKnown().Where(g => g.PlayCount > 0).OrderByDescending(g => g.LastPlayed).Take(12).Select(g => GameItem(g, null)).ToList(); };
             l.Add(rec);
 
@@ -133,7 +133,7 @@ namespace ZMB
                 if (recent.Count > 2 + k) { t.Item = GameItem(recent[2 + k], null); t.Label = recent[2 + k].Name; }
                 else
                 {
-                    string[] nm = { "Video", "Foto" };
+                    string[] nm = { Lang.T("Video"), Lang.T("Foto") };
                     string[] gl = { "\uE714", "\uEB9F" };
                     string target = nm[k];
                     t.Label = nm[k]; t.Glyph = gl[k]; t.Color = k == 0 ? Color.FromRgb(214, 64, 52) : Color.FromRgb(46, 130, 200);
@@ -144,8 +144,8 @@ namespace ZMB
 
             // kolom kanan: pintasan menu
             string[][] sc = {
-                new[] { "Musik", "\uEC4F" }, new[] { "Video", "\uE714" }, new[] { "Pengaturan", "\uE713" },
-                new[] { "Foto", "\uEB9F" }, new[] { "Pengguna", "\uE77B" }, new[] { "Koleksi Trofi", "#TROPHY" } };
+                new[] { Lang.T("Musik"), "\uEC4F" }, new[] { Lang.T("Video"), "\uE714" }, new[] { Lang.T("Pengaturan"), "\uE713" },
+                new[] { Lang.T("Foto"), "\uEB9F" }, new[] { Lang.T("Pengguna"), "\uE77B" }, new[] { Lang.T("Koleksi Trofi"), "#TROPHY" } };
             Color[] scCol = { Color.FromRgb(232, 120, 30), Color.FromRgb(214, 64, 52), Color.FromRgb(90, 96, 110),
                               Color.FromRgb(46, 130, 200), Color.FromRgb(120, 80, 170), Color.FromRgb(200, 160, 40) };
             for (int k = 0; k < sc.Length; k++)
@@ -153,9 +153,9 @@ namespace ZMB
                 MetroTile t = new MetroTile(); t.Col = 3 + k / 3; t.Row = k % 3;
                 t.Label = sc[k][0]; t.Glyph = sc[k][1]; t.Color = scCol[k];
                 string target = sc[k][0];
-                if (target == "Koleksi Trofi")
+                if (target == Lang.T("Koleksi Trofi"))
                 {
-                    t.Item = MakeItem("Koleksi Trofi", "", "#TROPHY", null);
+                    t.Item = MakeItem(Lang.T("Koleksi Trofi"), "", "#TROPHY", null);
                     t.Item.Children = BuildTrophyHub;
                 }
                 else t.Act = delegate { int pp = pivotOf(target); if (pp >= 0) SetPivot(pp); };
@@ -453,7 +453,7 @@ namespace ZMB
             double s = S;
             bool pad = PadPrompts;
             string[] keys = { "ok", "back", "opt" };
-            string[] labels = { "Pilih", "Kembali", "Opsi" };
+            string[] labels = { Lang.T("Pilih"), Lang.T("Kembali"), Lang.T("Opsi") };
             double fs = 17 * s, kh = 26 * s, x = left, y = H - 78 * s;
             double th = TextH(fs);
             for (int i = 0; i < keys.Length; i++)

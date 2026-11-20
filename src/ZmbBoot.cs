@@ -98,7 +98,7 @@ namespace ZMB
                 string why;
                 if (!bootModelErrors.TryGetValue(kind, out why) || why == null) why = "file assets\\" + kind + "_console.bin tidak ditemukan";
                 Log("Boot anim dilewati: " + why);
-                ShowToast("Animasi boot " + kind.ToUpperInvariant() + " dilewati: " + why);
+                ShowToast(Lang.T("Animasi boot ") + kind.ToUpperInvariant() + Lang.T(" dilewati: ") + why);
                 return false;
             }
             return true;
@@ -415,7 +415,7 @@ namespace ZMB
             bootFade = new Rectangle();
             bootFade.Fill = Brushes.Black; bootFade.Opacity = 0;
             bootHint = new TextBlock();
-            bootHint.Text = "Tekan tombol apa saja untuk melewati";
+            bootHint.Text = Lang.T("Tekan tombol apa saja untuk melewati");
             bootHint.Foreground = new SolidColorBrush(Color.FromArgb(150, 255, 255, 255));
             bootHint.FontSize = Math.Max(12, 15 * S);
             bootHint.HorizontalAlignment = HorizontalAlignment.Center;

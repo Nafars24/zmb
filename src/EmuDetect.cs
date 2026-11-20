@@ -218,18 +218,18 @@ namespace ZMB
                 string path = ri.Game.Path;
                 FileInfo fi;
                 try { fi = new FileInfo(path); } catch { continue; }
-                if (!fi.Exists) { Add(res, ri, "rusak", "File tidak ditemukan"); continue; }
+                if (!fi.Exists) { Add(res, ri, "rusak", Lang.T("File tidak ditemukan")); continue; }
                 string ext = fi.Extension.ToLowerInvariant();
                 string problem = null;
-                if (fi.Length == 0) problem = "Ukuran file 0 byte";
+                if (fi.Length == 0) problem = Lang.T("Ukuran file 0 byte");
                 else if (ext == ".cue" || ext == ".m3u" || ext == ".gdi") problem = CheckSheet(path, ext);
-                else if (fi.Length < 1024 && ext != ".bin") problem = "File terlalu kecil (" + fi.Length + " byte)";
+                else if (fi.Length < 1024 && ext != ".bin") problem = Lang.T("File terlalu kecil (") + fi.Length + " byte)";
                 else if (ext == ".zip") problem = CheckZip(path);
                 if (problem != null) { Add(res, ri, "rusak", problem); continue; }
 
-                if (!ri.HasCover) Add(res, ri, "cover", "Belum ada cover");
-                if (!ri.HasBox) Add(res, ri, "box", "Belum ada box art");
-                if (!ri.HasBg) Add(res, ri, "latar", "Belum ada gambar latar HD");
+                if (!ri.HasCover) Add(res, ri, "cover", Lang.T("Belum ada cover"));
+                if (!ri.HasBox) Add(res, ri, "box", Lang.T("Belum ada box art"));
+                if (!ri.HasBg) Add(res, ri, "latar", Lang.T("Belum ada gambar latar HD"));
 
                 if (ext == ".cue" || ext == ".m3u") continue;
                 string key;
@@ -253,7 +253,7 @@ namespace ZMB
             {
                 if (g.Count < 2) continue;
                 for (int i = 1; i < g.Count; i++)
-                    Add(res, g[i], "duplikat", "Sama dengan: " + Path.GetFileName(g[0].Game.Path));
+                    Add(res, g[i], "duplikat", Lang.T("Sama dengan: ") + Path.GetFileName(g[0].Game.Path));
             }
             return res;
         }
@@ -288,10 +288,10 @@ namespace ZMB
                         Match m = Regex.Match(line, "\\s(\"[^\"]+\"|\\S+\\.(bin|raw))\\s", RegexOptions.IgnoreCase);
                         if (m.Success) ref1 = m.Groups[1].Value.Trim('"');
                     }
-                    if (ref1 != null && !File.Exists(Path.Combine(dir, ref1))) return "File pasangan hilang: " + ref1;
+                    if (ref1 != null && !File.Exists(Path.Combine(dir, ref1))) return Lang.T("File pasangan hilang: ") + ref1;
                 }
             }
-            catch (Exception ex) { return "Tidak bisa dibaca: " + ex.Message; }
+            catch (Exception ex) { return Lang.T("Tidak bisa dibaca: ") + ex.Message; }
             return null;
         }
 
@@ -302,10 +302,10 @@ namespace ZMB
                 using (FileStream fs = File.OpenRead(path))
                 using (System.IO.Compression.ZipArchive z = new System.IO.Compression.ZipArchive(fs, System.IO.Compression.ZipArchiveMode.Read))
                 {
-                    if (z.Entries.Count == 0) return "ZIP kosong";
+                    if (z.Entries.Count == 0) return Lang.T("ZIP kosong");
                 }
             }
-            catch { return "ZIP rusak / tidak bisa dibuka"; }
+            catch { return Lang.T("ZIP rusak / tidak bisa dibuka"); }
             return null;
         }
     }

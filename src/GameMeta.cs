@@ -75,7 +75,7 @@ namespace ZMB
             }
             object root = js.DeserializeObject(json);
             object d = P(P(root, appId), "data");
-            if (d == null) { r.Error = "Data Steam tidak tersedia"; return r; }
+            if (d == null) { r.Error = Lang.T("Data Steam tidak tersedia"); return r; }
             r.Desc = StripHtml(S(d, "short_description"));
             string about = StripHtml(S(d, "about_the_game"));
             if (about.Length > r.Desc.Length + 40) r.Desc = (r.Desc.Length > 0 ? r.Desc + "\n\n" : "") + about;
@@ -89,8 +89,8 @@ namespace ZMB
             string mc = S(P(d, "metacritic"), "score");
             if (mc.Length > 0) r.Rating = "Metacritic " + mc;
             List<string> cats = A(d, "categories").Select(c => S(c, "description").ToLowerInvariant()).ToList();
-            bool multi = cats.Any(c => c.Contains("multi") || c.Contains("co-op") || c.Contains("pemain banyak"));
-            r.Players = multi ? "Satu & banyak pemain" : "Satu pemain";
+            bool multi = cats.Any(c => c.Contains("multi") || c.Contains("co-op") || c.Contains(Lang.T("pemain banyak")));
+            r.Players = multi ? Lang.T("Satu & banyak pemain") : Lang.T("Satu pemain");
             int i = 0;
             foreach (object sh in A(d, "screenshots").Take(8))
             {
@@ -118,7 +118,7 @@ namespace ZMB
         {
             MetaResult r = new MetaResult();
             object jeu = MediaScraper.SsGamePublic(j, c);
-            if (jeu == null) { r.Error = "Game tidak ditemukan di ScreenScraper"; return r; }
+            if (jeu == null) { r.Error = Lang.T("Game tidak ditemukan di ScreenScraper"); return r; }
             string[] langs = { "en", "id", "fr" };
             r.Desc = PickLang(A(jeu, "synopsis"), langs, "text").Trim();
             r.Developer = S(P(jeu, "developpeur"), "text");
@@ -133,7 +133,7 @@ namespace ZMB
             }
             r.Genre = string.Join(", ", genres.ToArray());
             string pl = S(P(jeu, "joueurs"), "text");
-            if (pl.Length > 0) r.Players = pl + " pemain";
+            if (pl.Length > 0) r.Players = pl + Lang.T(" pemain");
             string note = S(P(jeu, "note"), "text");
             if (note.Length > 0) r.Rating = note + " / 20";
             int i = 0;

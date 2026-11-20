@@ -23,26 +23,26 @@ namespace ZMB
             List<SaveLoc> locs = SaveManager.Locations(p);
             if (locs.Count == 0)
             {
-                l.Add(MakeItem("Folder save tidak ditemukan", "Atur emulator dulu, atau isi folder save manual lewat Opsi", "\uE783", null));
+                l.Add(MakeItem(Lang.T("Folder save tidak ditemukan"), Lang.T("Atur emulator dulu, atau isi folder save manual lewat Opsi"), "\uE783", null));
             }
-            l.Add(MakeItem("Cadangkan Sekarang", "Simpan semua save " + p.Short + " ke file ZIP di folder backups", "\uE896", delegate
+            l.Add(MakeItem(Lang.T("Cadangkan Sekarang"), Lang.T("Simpan semua save ") + p.Short + Lang.T(" ke file ZIP di folder backups"), "\uE896", delegate
             {
-                if (locs.Count == 0) { ShowToast("Tidak ada folder save untuk dicadangkan"); return; }
-                ShowToast("Mencadangkan save " + p.Short + " ...");
+                if (locs.Count == 0) { ShowToast(Lang.T("Tidak ada folder save untuk dicadangkan")); return; }
+                ShowToast(Lang.T("Mencadangkan save ") + p.Short + " ...");
                 ThreadPool.QueueUserWorkItem(delegate
                 {
                     string res = null, err = null;
                     try { res = SaveManager.Backup(p, locs); } catch (Exception ex) { err = ex.Message; }
                     Dispatcher.BeginInvoke((Action)delegate
                     {
-                        if (err != null) ShowToast("Gagal mencadangkan: " + err);
-                        else if (res == null) ShowToast("Tidak ada file save untuk dicadangkan");
-                        else { Sfx.Ok(); ShowToast("Cadangan dibuat: " + Path.GetFileName(res)); RefreshItemsOnly(); }
+                        if (err != null) ShowToast(Lang.T("Gagal mencadangkan: ") + err);
+                        else if (res == null) ShowToast(Lang.T("Tidak ada file save untuk dicadangkan"));
+                        else { Sfx.Ok(); ShowToast(Lang.T("Cadangan dibuat: ") + Path.GetFileName(res)); RefreshItemsOnly(); }
                     });
                 });
             }));
-            XmbItem rest = MakeItem("Pulihkan dari Cadangan", "", "\uE777", null);
-            rest.DynSub = delegate { int n = SaveManager.Backups(p).Count; return n == 0 ? "Belum ada cadangan" : n + " cadangan tersedia"; };
+            XmbItem rest = MakeItem(Lang.T("Pulihkan dari Cadangan"), "", "\uE777", null);
+            rest.DynSub = delegate { int n = SaveManager.Backups(p).Count; return n == 0 ? Lang.T("Belum ada cadangan") : n + Lang.T(" cadangan tersedia"); };
             rest.Children = delegate
             {
                 List<XmbItem> bl = new List<XmbItem>();
@@ -52,22 +52,22 @@ namespace ZMB
                     XmbItem it = MakeItem(File.GetLastWriteTime(zip).ToString("dd MMM yyyy, HH:mm"), Path.GetFileName(zip) + "  \u2022  " + FormatSize(new FileInfo(zip).Length), "\uE7B8", null);
                     it.Activate = delegate
                     {
-                        Confirm("Pulihkan save dari cadangan ini? Save sekarang akan dicadangkan dulu.", delegate
+                        Confirm(Lang.T("Pulihkan save dari cadangan ini? Save sekarang akan dicadangkan dulu."), delegate
                         {
                             ThreadPool.QueueUserWorkItem(delegate
                             {
                                 string err = null; int n = 0;
                                 try { if (locs.Count > 0) SaveManager.Backup(p, locs); n = SaveManager.Restore(z); }
                                 catch (Exception ex) { err = ex.Message; }
-                                Dispatcher.BeginInvoke((Action)delegate { ShowToast(err != null ? "Gagal: " + err : n + " file save dipulihkan"); });
+                                Dispatcher.BeginInvoke((Action)delegate { ShowToast(err != null ? Lang.T("Gagal: ") + err : n + Lang.T(" file save dipulihkan")); });
                             });
                         });
                     };
                     it.Options = delegate
                     {
                         List<OptionItem> o = new List<OptionItem>();
-                        o.Add(new OptionItem("Buka Lokasi File", delegate { ShowInExplorer(z); }));
-                        o.Add(new OptionItem("Hapus Cadangan Ini", delegate { Confirm("Hapus cadangan ini?", delegate { try { File.Delete(z); } catch { } RefreshItemsOnly(); }); }));
+                        o.Add(new OptionItem(Lang.T("Buka Lokasi File"), delegate { ShowInExplorer(z); }));
+                        o.Add(new OptionItem(Lang.T("Hapus Cadangan Ini"), delegate { Confirm(Lang.T("Hapus cadangan ini?"), delegate { try { File.Delete(z); } catch { } RefreshItemsOnly(); }); }));
                         return o;
                     };
                     bl.Add(it);
@@ -95,7 +95,7 @@ namespace ZMB
                     bool filtered = files.Count > 0;
                     if (!filtered) files = SaveManager.Files(lc, null);
                     if (g != null && !filtered && files.Count > 0)
-                        fl.Add(MakeItem("Menampilkan semua save", "Emulator ini menamai save dengan kode game, jadi tidak bisa difilter per judul", "\uE946", null));
+                        fl.Add(MakeItem(Lang.T("Menampilkan semua save"), Lang.T("Emulator ini menamai save dengan kode game, jadi tidak bisa difilter per judul"), "\uE946", null));
                     foreach (string file in files.Take(200))
                     {
                         string ff = file;
@@ -104,10 +104,10 @@ namespace ZMB
                         it.Options = delegate
                         {
                             List<OptionItem> o = new List<OptionItem>();
-                            o.Add(new OptionItem("Buka Lokasi File", delegate { ShowInExplorer(ff); }));
-                            o.Add(new OptionItem("Pindahkan ke Sampah ZMB", delegate
+                            o.Add(new OptionItem(Lang.T("Buka Lokasi File"), delegate { ShowInExplorer(ff); }));
+                            o.Add(new OptionItem(Lang.T("Pindahkan ke Sampah ZMB"), delegate
                             {
-                                Confirm("Pindahkan " + Path.GetFileName(ff) + " ke folder backups\\_dihapus?", delegate
+                                Confirm(Lang.T("Pindahkan ") + Path.GetFileName(ff) + Lang.T(" ke folder backups\\_dihapus?"), delegate
                                 {
                                     try
                                     {
@@ -116,43 +116,43 @@ namespace ZMB
                                         File.Move(ff, dest);
                                         RefreshItemsOnly();
                                     }
-                                    catch (Exception ex) { ShowToast("Gagal: " + ex.Message); }
+                                    catch (Exception ex) { ShowToast(Lang.T("Gagal: ") + ex.Message); }
                                 });
                             }));
                             return o;
                         };
                         fl.Add(it);
                     }
-                    if (fl.Count == 0) fl.Add(MakeItem("Belum ada file save", lc.Dir, "\uE7BA", null));
+                    if (fl.Count == 0) fl.Add(MakeItem(Lang.T("Belum ada file save"), lc.Dir, "\uE7BA", null));
                     return fl;
                 };
                 f.Options = delegate
                 {
                     List<OptionItem> o = new List<OptionItem>();
-                    o.Add(new OptionItem("Buka di Explorer", delegate { ShowInExplorer(lc.Dir); }));
+                    o.Add(new OptionItem(Lang.T("Buka di Explorer"), delegate { ShowInExplorer(lc.Dir); }));
                     return o;
                 };
                 l.Add(f);
             }
 
-            XmbItem man = MakeItem("Folder Save Manual", "", "\uE70F", delegate
+            XmbItem man = MakeItem(Lang.T("Folder Save Manual"), "", "\uE70F", delegate
             {
-                string v = Dialogs.Input(Owner32, "Folder Save", "Folder tambahan yang berisi save/memory card " + p.Name + ". Pisahkan dengan titik koma (;):", p.SaveDirs);
+                string v = Dialogs.Input(Owner32, Lang.T("Folder Save"), Lang.T("Folder tambahan yang berisi save/memory card ") + p.Name + Lang.T(". Pisahkan dengan titik koma (;):"), p.SaveDirs);
                 if (v != null) { p.SaveDirs = v.Trim(); SaveAndRefresh(); }
             });
-            man.DynSub = delegate { return string.IsNullOrEmpty(p.SaveDirs) ? "Otomatis dari emulator" : p.SaveDirs; };
+            man.DynSub = delegate { return string.IsNullOrEmpty(p.SaveDirs) ? Lang.T("Otomatis dari emulator") : p.SaveDirs; };
             l.Add(man);
 
-            XmbItem ra = MakeItem("Argumen Lanjutkan (Save State)", "", "\uE768", delegate { EditResumeArgs(p); });
-            ra.DynSub = delegate { string r = SaveManager.ResumeArgsFor(p); return r == null ? "Belum diatur (DuckStation otomatis)" : r; };
+            XmbItem ra = MakeItem(Lang.T("Argumen Lanjutkan (Save State)"), "", "\uE768", delegate { EditResumeArgs(p); });
+            ra.DynSub = delegate { string r = SaveManager.ResumeArgsFor(p); return r == null ? Lang.T("Belum diatur (DuckStation otomatis)") : r; };
             l.Add(ra);
             return l;
         }
 
         void EditResumeArgs(PlatformCfg p)
         {
-            string v = Dialogs.Input(Owner32, "Argumen Lanjutkan",
-                "Argumen untuk membuka game langsung ke save state terakhir. {args} = argumen biasa.\nDuckStation: -resume {args}   (otomatis)\nCek dokumentasi emulator lain untuk opsi load state lewat command line.", p.ResumeArgs);
+            string v = Dialogs.Input(Owner32, Lang.T("Argumen Lanjutkan"),
+                Lang.T("Argumen untuk membuka game langsung ke save state terakhir. {args} = argumen biasa.\nDuckStation: -resume {args}   (otomatis)\nCek dokumentasi emulator lain untuk opsi load state lewat command line."), p.ResumeArgs);
             if (v != null) { p.ResumeArgs = v.Trim(); SaveAndRefresh(); }
         }
 
@@ -168,9 +168,9 @@ namespace ZMB
 
         void DetectEmulators()
         {
-            if (detecting) { ShowToast("Sedang mencari emulator..."); return; }
+            if (detecting) { ShowToast(Lang.T("Sedang mencari emulator...")); return; }
             detecting = true;
-            ShowToast("Mencari emulator di laptop (bisa sampai 1 menit)...");
+            ShowToast(Lang.T("Mencari emulator di laptop (bisa sampai 1 menit)..."));
             ThreadPool.QueueUserWorkItem(delegate
             {
                 List<EmuFound> found = null; string err = null;
@@ -178,7 +178,7 @@ namespace ZMB
                 Dispatcher.BeginInvoke((Action)delegate
                 {
                     detecting = false;
-                    if (err != null) { ShowToast("Gagal: " + err); return; }
+                    if (err != null) { ShowToast(Lang.T("Gagal: ") + err); return; }
                     ShowEmuResults(found);
                 });
             });
@@ -194,35 +194,35 @@ namespace ZMB
 
         void ShowEmuResults(List<EmuFound> found)
         {
-            if (found == null || found.Count == 0) { Sfx.Error(); ShowToast("Tidak ada emulator yang dikenali. Atur manual lewat Opsi platform."); return; }
+            if (found == null || found.Count == 0) { Sfx.Error(); ShowToast(Lang.T("Tidak ada emulator yang dikenali. Atur manual lewat Opsi platform.")); return; }
             Dictionary<string, EmuFound> best = EmuDetect.BestPerPlatform(found);
             List<EmuFound> missing = best.Values.Where(f => { PlatformCfg p = cfg.FindPlatform(f.Platform); return p != null && (string.IsNullOrEmpty(p.Emulator) || !File.Exists(p.Emulator)); }).ToList();
             List<OptionItem> o = new List<OptionItem>();
-            o.Add(new OptionItem("Pasang ke platform yang belum diatur (" + missing.Count + ")", delegate
+            o.Add(new OptionItem(Lang.T("Pasang ke platform yang belum diatur (") + missing.Count + ")", delegate
             {
                 foreach (EmuFound f in missing) ApplyEmu(f);
                 Achievements.ResetRootCache();
                 SaveAndRefresh();
-                ShowToast(missing.Count + " emulator dipasang");
+                ShowToast(missing.Count + Lang.T(" emulator dipasang"));
             }));
-            o.Add(new OptionItem("Pasang & timpa semua (" + best.Count + ")", delegate
+            o.Add(new OptionItem(Lang.T("Pasang & timpa semua (") + best.Count + ")", delegate
             {
-                Confirm("Timpa pengaturan emulator semua platform dengan hasil deteksi?", delegate
+                Confirm(Lang.T("Timpa pengaturan emulator semua platform dengan hasil deteksi?"), delegate
                 {
                     foreach (EmuFound f in best.Values) ApplyEmu(f);
                     Achievements.ResetRootCache();
                     SaveAndRefresh();
-                    ShowToast(best.Count + " emulator dipasang");
+                    ShowToast(best.Count + Lang.T(" emulator dipasang"));
                 });
             }));
             foreach (EmuFound f in best.Values.OrderBy(x => x.Platform))
             {
                 EmuFound ff = f;
                 PlatformCfg p = cfg.FindPlatform(f.Platform);
-                string cur = (p != null && !string.IsNullOrEmpty(p.Emulator)) ? " (sekarang: " + Path.GetFileNameWithoutExtension(p.Emulator) + ")" : " (belum diatur)";
+                string cur = (p != null && !string.IsNullOrEmpty(p.Emulator)) ? Lang.T(" (sekarang: ") + Path.GetFileNameWithoutExtension(p.Emulator) + ")" : Lang.T(" (belum diatur)");
                 o.Add(new OptionItem(f.Platform + "  \u2190  " + f.Name + cur, delegate { ApplyEmu(ff); Achievements.ResetRootCache(); SaveAndRefresh(); ShowToast(ff.Platform + ": " + ff.Name); }));
             }
-            OpenOptions("Ditemukan " + found.Count + " emulator", o);
+            OpenOptions(Lang.T("Ditemukan ") + found.Count + Lang.T(" emulator"), o);
         }
 
         // ===================== PEMERIKSA ROM =====================
@@ -255,30 +255,30 @@ namespace ZMB
             List<RomIssue> res = Peek<List<RomIssue>>("romcheck");
             if (res == null && !asyncPending.Contains("romcheck"))
             {
-                l.Add(MakeItem("Mulai Periksa", "Cek file rusak, duplikat, dan media yang belum ada", "\uE721", StartRomCheck));
+                l.Add(MakeItem(Lang.T("Mulai Periksa"), Lang.T("Cek file rusak, duplikat, dan media yang belum ada"), "\uE721", StartRomCheck));
                 return l;
             }
             if (res == null) return LoadingItems();
-            l.Add(MakeItem("Periksa Ulang", "Total masalah: " + res.Count, "\uE72C", StartRomCheck));
+            l.Add(MakeItem(Lang.T("Periksa Ulang"), Lang.T("Total masalah: ") + res.Count, "\uE72C", StartRomCheck));
             string[] kinds = { "rusak", "duplikat", "cover", "box", "latar" };
-            string[] names = { "File Rusak / Bermasalah", "Duplikat", "Tanpa Cover", "Tanpa Box Art", "Tanpa Latar HD" };
+            string[] names = { Lang.T("File Rusak / Bermasalah"), Lang.T("Duplikat"), Lang.T("Tanpa Cover"), Lang.T("Tanpa Box Art"), Lang.T("Tanpa Latar HD") };
             string[] glyphs = { "\uE783", "\uE8C8", "\uE91B", "\uE8F1", "\uE8B9" };
             for (int i = 0; i < kinds.Length; i++)
             {
                 string kd = kinds[i];
                 List<RomIssue> items = res.Where(x => x.Kind == kd).ToList();
-                XmbItem f = MakeItem(names[i] + " (" + items.Count + ")", items.Count == 0 ? "Aman, tidak ada masalah" : "Tekan untuk melihat daftar", glyphs[i], null);
+                XmbItem f = MakeItem(names[i] + " (" + items.Count + ")", items.Count == 0 ? Lang.T("Aman, tidak ada masalah") : Lang.T("Tekan untuk melihat daftar"), glyphs[i], null);
                 if (items.Count > 0)
                 {
                     f.Children = delegate
                     {
                         List<XmbItem> il = new List<XmbItem>();
                         if (kd == "cover" || kd == "box" || kd == "latar")
-                            il.Add(MakeItem("Unduh Media untuk Semua (" + items.Count + ")", "Pakai SteamGridDB / ScreenScraper", "\uE896", delegate { StartScrape(items.Select(x => x.Game).Distinct().ToList(), false); }));
+                            il.Add(MakeItem(Lang.T("Unduh Media untuk Semua (") + items.Count + ")", "Pakai SteamGridDB / ScreenScraper", "\uE896", delegate { StartScrape(items.Select(x => x.Game).Distinct().ToList(), false); }));
                         if (kd == "duplikat")
-                            il.Add(MakeItem("Pindahkan Semua Duplikat", "Ke subfolder _duplikat di folder ROM masing-masing", "\uE8DE", delegate
+                            il.Add(MakeItem(Lang.T("Pindahkan Semua Duplikat"), Lang.T("Ke subfolder _duplikat di folder ROM masing-masing"), "\uE8DE", delegate
                             {
-                                Confirm("Pindahkan " + items.Count + " file duplikat ke folder _duplikat?", delegate
+                                Confirm(Lang.T("Pindahkan ") + items.Count + Lang.T(" file duplikat ke folder _duplikat?"), delegate
                                 {
                                     int moved = 0;
                                     foreach (RomIssue x in items)
@@ -292,7 +292,7 @@ namespace ZMB
                                         }
                                         catch { }
                                     }
-                                    ShowToast(moved + " file dipindahkan");
+                                    ShowToast(moved + Lang.T(" file dipindahkan"));
                                     InvalidateAsync("romcheck");
                                     SaveAndRefresh();
                                 });
@@ -307,8 +307,8 @@ namespace ZMB
                             it.Options = delegate
                             {
                                 List<OptionItem> o = new List<OptionItem>();
-                                o.Add(new OptionItem("Buka Lokasi File", delegate { ShowInExplorer(xx.Path); }));
-                                if (xx.Game != null) o.Add(new OptionItem("Unduh Media Game Ini", delegate { StartScrape(new List<GameEntry> { xx.Game }, true); }));
+                                o.Add(new OptionItem(Lang.T("Buka Lokasi File"), delegate { ShowInExplorer(xx.Path); }));
+                                if (xx.Game != null) o.Add(new OptionItem(Lang.T("Unduh Media Game Ini"), delegate { StartScrape(new List<GameEntry> { xx.Game }, true); }));
                                 return o;
                             };
                             il.Add(it);
@@ -325,10 +325,10 @@ namespace ZMB
         {
             List<RomCheckInput> input = RomCheckInputs();
             InvalidateAsync("romcheck");
-            ShowToast("Memeriksa " + input.Count + " file game...");
+            ShowToast(Lang.T("Memeriksa ") + input.Count + Lang.T(" file game..."));
             GetAsync<List<RomIssue>>("romcheck", delegate { return RomChecker.Check(input); }, 1e9, delegate (List<RomIssue> r)
             {
-                if (r != null) ShowToast("Pemeriksaan selesai: " + r.Count(x => x.Kind == "rusak") + " rusak, " + r.Count(x => x.Kind == "duplikat") + " duplikat");
+                if (r != null) ShowToast(Lang.T("Pemeriksaan selesai: ") + r.Count(x => x.Kind == "rusak") + Lang.T(" rusak, ") + r.Count(x => x.Kind == "duplikat") + Lang.T(" duplikat"));
             }, true);
             RefreshItemsOnly();
         }
@@ -342,11 +342,11 @@ namespace ZMB
         {
             if (updating) return;
             Version v = Updater.ZipVersion(zip);
-            if (v == null) { Sfx.Error(); ShowToast("ZIP ini bukan paket ZMB"); return; }
+            if (v == null) { Sfx.Error(); ShowToast(Lang.T("ZIP ini bukan paket ZMB")); return; }
             Action build = delegate
             {
                 updating = true;
-                ShowToast("Membangun ZMB " + v + " ... (sekitar 10-30 detik)");
+                ShowToast(Lang.T("Membangun ZMB ") + v + Lang.T(" ... (sekitar 10-30 detik)"));
                 ThreadPool.QueueUserWorkItem(delegate
                 {
                     string log = null, root = null, exe = null, err = null;
@@ -357,22 +357,22 @@ namespace ZMB
                         if (exe == null)
                         {
                             Sfx.Error();
-                            string msg = err ?? log ?? "tidak diketahui";
+                            string msg = err ?? log ?? Lang.T("tidak diketahui");
                             try { File.WriteAllText(Path.Combine(Config.BaseDir, "zmb_update_error.log"), msg); } catch { }
-                            ShowToast("Update gagal dibangun. Detail di zmb_update_error.log (kirim ke Claude)");
+                            ShowToast(Lang.T("Update gagal dibangun. Detail di zmb_update_error.log (kirim ke Claude)"));
                             return;
                         }
                         string r2 = root, e2 = exe;
-                        Confirm("Update siap. Restart ZMB sekarang?", delegate
+                        Confirm(Lang.T("Update siap. Restart ZMB sekarang?"), delegate
                         {
                             cfg.Save();
                             try { Updater.InstallAndRestart(e2, r2); System.Windows.Application.Current.Shutdown(); }
-                            catch (Exception ex) { ShowToast("Gagal memasang: " + ex.Message); }
+                            catch (Exception ex) { ShowToast(Lang.T("Gagal memasang: ") + ex.Message); }
                         });
                     });
                 });
             };
-            if (askFirst) Confirm("Pasang ZMB versi " + v + " (sekarang " + Updater.Current + ")?", build);
+            if (askFirst) Confirm(Lang.T("Pasang ZMB versi ") + v + Lang.T(" (sekarang ") + Updater.Current + ")?", build);
             else build();
         }
 
@@ -383,11 +383,11 @@ namespace ZMB
         void CheckOnlineUpdate(bool silent)
         {
             string repo = Updater.NormalizeRepo(cfg.UpdateRepo);
-            if (repo.Length == 0) { if (!silent) ShowToast("Isi dulu Repositori Update (GitHub) di Pengaturan > Update ZMB"); return; }
+            if (repo.Length == 0) { if (!silent) ShowToast(Lang.T("Isi dulu Repositori Update (GitHub) di Pengaturan > Update ZMB")); return; }
             if (checkingOnline || updating) return;
             checkingOnline = true;
             lastOnlineCheck = T;
-            if (!silent) ShowToast("Mengecek update di GitHub...");
+            if (!silent) ShowToast(Lang.T("Mengecek update di GitHub..."));
             ThreadPool.QueueUserWorkItem(delegate
             {
                 Updater.OnlineRelease rel = null; string err = null;
@@ -396,14 +396,14 @@ namespace ZMB
                 {
                     checkingOnline = false;
                     if (err != null) { if (!silent) ShowToast(err); return; }
-                    if (rel.Version <= Updater.Current) { if (!silent) ShowToast("ZMB sudah versi terbaru (" + Updater.Current + ")"); return; }
+                    if (rel.Version <= Updater.Current) { if (!silent) ShowToast(Lang.T("ZMB sudah versi terbaru (") + Updater.Current + ")"); return; }
                     string note = rel.Notes.Split('\n').Select(x => x.Trim().TrimStart('-', '*', ' ')).FirstOrDefault(x => x.Length > 0) ?? "";
                     if (note.Length > 90) note = note.Substring(0, 90) + "...";
-                    if (confirmOpen || mode != Mode.Xmb) { ShowToast("Update ZMB " + rel.Version + " tersedia. Buka Pengaturan > Update ZMB"); return; }
+                    if (confirmOpen || mode != Mode.Xmb) { ShowToast("Update ZMB " + rel.Version + Lang.T(" tersedia. Buka Pengaturan > Update ZMB")); return; }
                     Updater.OnlineRelease r = rel;
-                    Confirm("Update ZMB " + r.Version + " tersedia" + (note.Length > 0 ? ": " + note : "") + ". Unduh & pasang sekarang?", delegate
+                    Confirm("Update ZMB " + r.Version + Lang.T(" tersedia") + (note.Length > 0 ? ": " + note : "") + Lang.T(". Unduh & pasang sekarang?"), delegate
                     {
-                        ShowToast("Mengunduh ZMB " + r.Version + " ...");
+                        ShowToast(Lang.T("Mengunduh ZMB ") + r.Version + " ...");
                         updating = true;
                         ThreadPool.QueueUserWorkItem(delegate
                         {
@@ -412,7 +412,7 @@ namespace ZMB
                             Dispatcher.BeginInvoke((Action)delegate
                             {
                                 updating = false;
-                                if (zip == null) { Sfx.Error(); ShowToast("Gagal mengunduh update: " + derr); return; }
+                                if (zip == null) { Sfx.Error(); ShowToast(Lang.T("Gagal mengunduh update: ") + derr); return; }
                                 InstallUpdate(zip, false);
                             });
                         });
@@ -428,8 +428,8 @@ namespace ZMB
                 Version v; string f = Updater.FindNewerInDownloads(out v);
                 Dispatcher.BeginInvoke((Action)delegate
                 {
-                    if (f == null) { if (!silentIfNone) ShowToast("Tidak ada update baru di folder Downloads (versi sekarang " + Updater.Current + ")"); return; }
-                    if (confirmOpen || mode != Mode.Xmb) { ShowToast("Update ZMB " + v + " ada di Downloads. Pasang lewat Pengaturan > Update ZMB"); return; }
+                    if (f == null) { if (!silentIfNone) ShowToast(Lang.T("Tidak ada update baru di folder Downloads (versi sekarang ") + Updater.Current + ")"); return; }
+                    if (confirmOpen || mode != Mode.Xmb) { ShowToast("Update ZMB " + v + Lang.T(" ada di Downloads. Pasang lewat Pengaturan > Update ZMB")); return; }
                     InstallUpdate(f);
                 });
             });
@@ -438,28 +438,28 @@ namespace ZMB
         List<XmbItem> BuildUpdateItems()
         {
             List<XmbItem> l = new List<XmbItem>();
-            l.Add(MakeItem("Versi Sekarang: " + Updater.Current, "ZMB menyusun ulang dirinya sendiri dari file ZIP, tanpa BUILD.bat", "\uE946", null));
-            l.Add(MakeItem("Cek Folder Downloads", "Cari file ZMB*.zip yang lebih baru di folder Downloads", "\uE896", delegate { CheckDownloadsForUpdate(false); }));
-            l.Add(MakeItem("Pasang dari File ZIP...", "Pilih file ZMB.zip versi baru", "\uE8E5", delegate
+            l.Add(MakeItem(Lang.T("Versi Sekarang: ") + Updater.Current, Lang.T("ZMB menyusun ulang dirinya sendiri dari file ZIP, tanpa BUILD.bat"), "\uE946", null));
+            l.Add(MakeItem(Lang.T("Cek Folder Downloads"), Lang.T("Cari file ZMB*.zip yang lebih baru di folder Downloads"), "\uE896", delegate { CheckDownloadsForUpdate(false); }));
+            l.Add(MakeItem(Lang.T("Pasang dari File ZIP..."), Lang.T("Pilih file ZMB.zip versi baru"), "\uE8E5", delegate
             {
-                string f = Dialogs.PickFile(Owner32, "Pilih ZMB.zip versi baru", "ZIP|*.zip", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads"));
+                string f = Dialogs.PickFile(Owner32, Lang.T("Pilih ZMB.zip versi baru"), "ZIP|*.zip", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads"));
                 if (f != null) InstallUpdate(f);
             }));
-            l.Add(Toggle("Cek Otomatis Saat Mulai", "Tawarkan update kalau ada ZMB.zip baru di Downloads", "\uE72C", delegate { return cfg.CheckUpdateDownloads; }, delegate (bool v) { cfg.CheckUpdateDownloads = v; }));
+            l.Add(Toggle(Lang.T("Cek Otomatis Saat Mulai"), Lang.T("Tawarkan update kalau ada ZMB.zip baru di Downloads"), "\uE72C", delegate { return cfg.CheckUpdateDownloads; }, delegate (bool v) { cfg.CheckUpdateDownloads = v; }));
 
-            XmbItem repo = MakeItem("Repositori Update (GitHub)", "", "\uE774", delegate
+            XmbItem repo = MakeItem(Lang.T("Repositori Update (GitHub)"), "", "\uE774", delegate
             {
-                string r = Dialogs.Input(Owner32, "Repositori Update", "Nama repositori GitHub tempat rilis ZMB (format: namakamu/zmb, atau tempel link github.com/...):", cfg.UpdateRepo);
+                string r = Dialogs.Input(Owner32, "Repositori Update", Lang.T("Nama repositori GitHub tempat rilis ZMB (format: namakamu/zmb, atau tempel link github.com/...):"), cfg.UpdateRepo);
                 if (r == null) return;
                 string n = Updater.NormalizeRepo(r);
-                if (r.Trim().Length > 0 && n.Length == 0) { Sfx.Error(); ShowToast("Format repositori tidak dikenali"); return; }
+                if (r.Trim().Length > 0 && n.Length == 0) { Sfx.Error(); ShowToast(Lang.T("Format repositori tidak dikenali")); return; }
                 cfg.UpdateRepo = n; cfg.Save();
                 if (n.Length > 0) CheckOnlineUpdate(false);
             });
-            repo.DynSub = delegate { return string.IsNullOrEmpty(cfg.UpdateRepo) ? "Belum diatur" : "github.com/" + cfg.UpdateRepo; };
+            repo.DynSub = delegate { return string.IsNullOrEmpty(cfg.UpdateRepo) ? Lang.T("Belum diatur") : "github.com/" + cfg.UpdateRepo; };
             l.Add(repo);
-            l.Add(MakeItem("Cek Update Online Sekarang", "Ambil versi terbaru dari GitHub", "\uE895", delegate { CheckOnlineUpdate(false); }));
-            l.Add(Toggle("Update Otomatis dari Internet", "Cek GitHub saat ZMB dibuka dan tiap 6 jam", "\uE774", delegate { return cfg.AutoUpdateOnline; }, delegate (bool v) { cfg.AutoUpdateOnline = v; }));
+            l.Add(MakeItem(Lang.T("Cek Update Online Sekarang"), Lang.T("Ambil versi terbaru dari GitHub"), "\uE895", delegate { CheckOnlineUpdate(false); }));
+            l.Add(Toggle(Lang.T("Update Otomatis dari Internet"), Lang.T("Cek GitHub saat ZMB dibuka dan tiap 6 jam"), "\uE774", delegate { return cfg.AutoUpdateOnline; }, delegate (bool v) { cfg.AutoUpdateOnline = v; }));
             return l;
         }
     }

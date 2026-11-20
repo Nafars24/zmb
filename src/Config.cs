@@ -130,6 +130,7 @@ namespace ZMB
         public bool Ps1BootAnim = true;
         public bool TrophyOverlay = true;
         public bool AutoFullscreen = true;
+        public string Language = "id";      // id / en
         public bool HomeHotkey = true;
         public string AvatarPath = "";
         public bool CheckUpdateDownloads = true;
@@ -178,7 +179,7 @@ namespace ZMB
             List<PlatformCfg> l = new List<PlatformCfg>();
             l.Add(new PlatformCfg("PlayStation 1", "PS1", "cue;chd;pbp;iso;m3u;bin;img;ecm", "#8A8F99", "DuckStation / ePSXe / RetroArch"));
             l.Add(new PlatformCfg("PlayStation 2", "PS2", "iso;chd;cso;bin;gz", "#2B3FA8", "PCSX2"));
-            l.Add(new PlatformCfg("PlayStation 3", "PS3", "iso;bin", "#1A1A1A", "RPCS3 (file .iso atau folder game)"));
+            l.Add(new PlatformCfg("PlayStation 3", "PS3", "iso;bin", "#1A1A1A", Lang.T("RPCS3 (file .iso atau folder game)")));
             l.Add(new PlatformCfg("PlayStation Portable", "PSP", "iso;cso;pbp;chd", "#202020", "PPSSPP"));
             l.Add(new PlatformCfg("PlayStation Vita", "VITA", "vpk", "#1E4FA0", "Vita3K"));
             l.Add(new PlatformCfg("Nintendo (NES)", "NES", "nes;fds;zip", "#B22222", "Mesen / FCEUX / RetroArch"));
@@ -191,7 +192,7 @@ namespace ZMB
             l.Add(new PlatformCfg("Nintendo Switch", "SWITCH", "nsp;xci;nca;nro", "#E60012", "Ryujinx / Eden / Citron / Sudachi"));
             l.Add(new PlatformCfg("Xbox 360", "X360", "iso;xex;zar", "#107C10", "Xenia / Xenia Canary"));
             l.Add(new PlatformCfg("Sega Genesis", "MD", "md;gen;bin;smd;zip", "#111111", "Kega Fusion / RetroArch"));
-            l.Add(new PlatformCfg("Arcade (MAME)", "ARC", "zip;7z", "#D35400", "MAME / FBNeo (argumen: {romname})"));
+            l.Add(new PlatformCfg("Arcade (MAME)", "ARC", "zip;7z", "#D35400", Lang.T("MAME / FBNeo (argumen: {romname})")));
             return l;
         }
 
@@ -228,7 +229,7 @@ namespace ZMB
                 if (p.Short == "PS3" && !p.ExtList().Contains(".iso"))
                 {
                     p.Extensions = "iso;" + p.Extensions;
-                    if (p.Hint.Contains("EBOOT")) p.Hint = "RPCS3 (file .iso atau folder game)";
+                    if (p.Hint.Contains("EBOOT")) p.Hint = Lang.T("RPCS3 (file .iso atau folder game)");
                 }
         }
 

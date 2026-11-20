@@ -557,7 +557,7 @@ namespace ZMB
             dc.DrawRectangle(WhiteA(0.25 * fade), null, new Rect(0, by, W, 1.2 * s));
             XmbItem cur = items[Math.Max(0, Math.Min(items.Count - 1, index))];
             Txt(dc, cur.Title, 32 * s, 2, W / 2, by + 12 * s, fade, W * 0.8, 1, true);
-            string info = (index + 1) + " dari " + items.Count;
+            string info = (index + 1) + Lang.T(" dari ") + items.Count;
             string sub = cur.Sub;
             Txt(dc, info + (string.IsNullOrEmpty(sub) ? "" : "   \u2022   " + sub), 17 * s, 0, W / 2, by + 12 * s + TextH(32 * s), 0.75 * fade, W * 0.86, 1, false);
             if (cur.Progress >= 0)
@@ -574,7 +574,7 @@ namespace ZMB
             double s = S;
             bool pad = PadPrompts;
             string[] keys = { "ok", "back", "sel", "opt", "updown", "bumpers" };
-            string[] labels = { "Pilih", "Kembali", "Detail", "Opsi", stack.Count > 0 ? "Atas: Kembali" : "Kategori", "Lagu" };
+            string[] labels = { Lang.T("Pilih"), Lang.T("Kembali"), "Detail", Lang.T("Opsi"), stack.Count > 0 ? Lang.T("Atas: Kembali") : Lang.T("Kategori"), Lang.T("Lagu") };
             double fs = 17 * s, kh = 28 * s;
             double total = 0;
             double[] kw = new double[keys.Length], lw = new double[keys.Length];

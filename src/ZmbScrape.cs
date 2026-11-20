@@ -118,12 +118,12 @@ namespace ZMB
 
         void StartScrape(List<GameEntry> games, bool overwrite)
         {
-            if (scraping) { ShowToast("Unduhan media sedang berjalan"); return; }
+            if (scraping) { ShowToast(Lang.T("Unduhan media sedang berjalan")); return; }
             if (!ScrapeReady)
             {
                 Sfx.Error();
-                ShowToast("Isi SteamGridDB API Key atau akun ScreenScraper dulu");
-                XmbItem it = MakeItem("Unduh Media Otomatis", "", "\uE896", null);
+                ShowToast(Lang.T("Isi SteamGridDB API Key atau akun ScreenScraper dulu"));
+                XmbItem it = MakeItem(Lang.T("Unduh Media Otomatis"), "", "\uE896", null);
                 it.Children = BuildScrapeMenu;
                 PushLevel(it);
                 return;
@@ -134,7 +134,7 @@ namespace ZMB
                 ScrapeJob j = MakeJob(g, overwrite);
                 if (j.NeedCover || j.NeedBg || j.NeedLogo || j.NeedVideo || j.NeedBox || ((j.NeedSpine || j.NeedDisc) && !string.IsNullOrEmpty(cfg.SsUser))) jobs.Add(j);
             }
-            if (jobs.Count == 0) { ShowToast("Semua media sudah lengkap"); return; }
+            if (jobs.Count == 0) { ShowToast(Lang.T("Semua media sudah lengkap")); return; }
 
             scraping = true; scrapeCancel = false;
             scrapeDone = 0; scrapeTotal = jobs.Count; scrapeName = "";
@@ -142,7 +142,7 @@ namespace ZMB
             lastScrapeErr = null;
             ScrapeCfg c = ScrapeConfig();
             bool useSs = !string.IsNullOrEmpty(c.SsUser);
-            ShowToast("Mulai mengunduh media untuk " + jobs.Count + " game");
+            ShowToast(Lang.T("Mulai mengunduh media untuk ") + jobs.Count + Lang.T(" game"));
 
             Thread th = new Thread(delegate ()
             {
@@ -194,8 +194,8 @@ namespace ZMB
             scraping = false;
             cfg.Save();
             RefreshAll();
-            string msg = (scrapeCancel ? "Dibatalkan. " : "Selesai! ") + cntCover + " cover, " + cntBg + " latar, " + cntLogo + " logo, " + cntVid + " video";
-            if (cntErr > 0) msg += "  \u2022  " + cntErr + " gagal" + (lastScrapeErr != null ? " (" + lastScrapeErr + ")" : "");
+            string msg = (scrapeCancel ? Lang.T("Dibatalkan. ") : Lang.T("Selesai! ")) + cntCover + Lang.T(" cover, ") + cntBg + Lang.T(" latar, ") + cntLogo + Lang.T(" logo, ") + cntVid + Lang.T(" video");
+            if (cntErr > 0) msg += "  \u2022  " + cntErr + Lang.T(" gagal") + (lastScrapeErr != null ? " (" + lastScrapeErr + ")" : "");
             Sfx.Ok();
             ShowToast(msg);
         }
@@ -209,11 +209,11 @@ namespace ZMB
             dc.PushOpacity(0.92);
             dc.DrawRoundedRectangle(brToast, penThin, r, 12 * s, 12 * s);
             dc.Pop();
-            Txt(dc, "Mengunduh media " + Math.Min(scrapeDone + 1, scrapeTotal) + " / " + scrapeTotal + "  \u2022  " + scrapeName, 18 * s, 0, r.X + 22 * s, r.Y + 12 * s, 0.95, w - 44 * s, 0, false);
+            Txt(dc, Lang.T("Mengunduh media ") + Math.Min(scrapeDone + 1, scrapeTotal) + " / " + scrapeTotal + "  \u2022  " + scrapeName, 18 * s, 0, r.X + 22 * s, r.Y + 12 * s, 0.95, w - 44 * s, 0, false);
             double frac = scrapeTotal > 0 ? (double)scrapeDone / scrapeTotal : 0;
             dc.DrawRoundedRectangle(WhiteA(0.25), null, new Rect(r.X + 22 * s, r.Y + 46 * s, w - 44 * s, 6 * s), 3 * s, 3 * s);
             dc.DrawRoundedRectangle(brWhite, null, new Rect(r.X + 22 * s, r.Y + 46 * s, (w - 44 * s) * frac, 6 * s), 3 * s, 3 * s);
-            Txt(dc, cntCover + " cover  \u2022  " + cntBg + " latar  \u2022  " + cntVid + " video", 14 * s, 0, r.Right - 22 * s, r.Y + 56 * s, 0.6, 0, 2, false);
+            Txt(dc, cntCover + Lang.T(" cover  \u2022  ") + cntBg + Lang.T(" latar  \u2022  ") + cntVid + Lang.T(" video"), 14 * s, 0, r.Right - 22 * s, r.Y + 56 * s, 0.6, 0, 2, false);
         }
 
         void DrawGameLogo(DrawingContext dc, double W, double H, double vis)
@@ -241,7 +241,7 @@ namespace ZMB
         XmbItem SecretSetting(string title, string glyph, Func<string> get, Action<string> set, string prompt, bool mask, string helpUrl)
         {
             XmbItem it = MakeItem(title, "", glyph, null);
-            it.DynSub = delegate { string v = get(); return mask ? Mask(v) : (string.IsNullOrEmpty(v) ? "Belum diatur" : v); };
+            it.DynSub = delegate { string v = get(); return mask ? Mask(v) : (string.IsNullOrEmpty(v) ? Lang.T("Belum diatur") : v); };
             it.Activate = delegate
             {
                 string v = Dialogs.Input(Owner32, title, prompt, get());
@@ -251,9 +251,9 @@ namespace ZMB
                 it.Options = delegate
                 {
                     List<OptionItem> o = new List<OptionItem>();
-                    o.Add(new OptionItem("Ubah...", it.Activate));
-                    o.Add(new OptionItem("Buka Halaman Bantuan", delegate { OpenDefault(helpUrl); }));
-                    o.Add(new OptionItem("Hapus", delegate { set(""); cfg.Save(); }));
+                    o.Add(new OptionItem(Lang.T("Ubah..."), it.Activate));
+                    o.Add(new OptionItem(Lang.T("Buka Halaman Bantuan"), delegate { OpenDefault(helpUrl); }));
+                    o.Add(new OptionItem(Lang.T("Hapus"), delegate { set(""); cfg.Save(); }));
                     return o;
                 };
             return it;
@@ -262,43 +262,43 @@ namespace ZMB
         List<XmbItem> BuildScrapeMenu()
         {
             List<XmbItem> l = new List<XmbItem>();
-            XmbItem run = MakeItem("Unduh Media yang Belum Ada", "Cover, latar, logo, dan video untuk semua game", "\uE896", delegate { StartScrape(GamesOf(null), false); });
+            XmbItem run = MakeItem(Lang.T("Unduh Media yang Belum Ada"), Lang.T("Cover, latar, logo, dan video untuk semua game"), "\uE896", delegate { StartScrape(GamesOf(null), false); });
             run.DynSub = delegate
             {
-                if (scraping) return "Berjalan: " + scrapeDone + " / " + scrapeTotal + "  \u2022  " + scrapeName;
-                return ScrapeReady ? "Cover, latar, logo, dan video untuk semua game" : "Isi SteamGridDB API Key / akun ScreenScraper di bawah dulu";
+                if (scraping) return Lang.T("Berjalan: ") + scrapeDone + " / " + scrapeTotal + "  \u2022  " + scrapeName;
+                return ScrapeReady ? Lang.T("Cover, latar, logo, dan video untuk semua game") : Lang.T("Isi SteamGridDB API Key / akun ScreenScraper di bawah dulu");
             };
             l.Add(run);
-            l.Add(MakeItem("Unduh Ulang Semua (Timpa)", "Ganti semua media dengan versi baru", "\uE72C", delegate
+            l.Add(MakeItem(Lang.T("Unduh Ulang Semua (Timpa)"), Lang.T("Ganti semua media dengan versi baru"), "\uE72C", delegate
             {
-                Confirm("Unduh ulang & timpa media semua game?", delegate { StartScrape(GamesOf(null), true); });
+                Confirm(Lang.T("Unduh ulang & timpa media semua game?"), delegate { StartScrape(GamesOf(null), true); });
             }));
-            XmbItem cancel = MakeItem("Batalkan Unduhan", "", "\uE711", delegate
+            XmbItem cancel = MakeItem(Lang.T("Batalkan Unduhan"), "", "\uE711", delegate
             {
-                if (scraping) { scrapeCancel = true; ShowToast("Membatalkan..."); } else ShowToast("Tidak ada unduhan yang berjalan");
+                if (scraping) { scrapeCancel = true; ShowToast(Lang.T("Membatalkan...")); } else ShowToast(Lang.T("Tidak ada unduhan yang berjalan"));
             });
-            cancel.DynSub = delegate { return scraping ? "Hentikan setelah game yang sedang diproses" : "Tidak ada unduhan berjalan"; };
+            cancel.DynSub = delegate { return scraping ? Lang.T("Hentikan setelah game yang sedang diproses") : Lang.T("Tidak ada unduhan berjalan"); };
             l.Add(cancel);
 
             l.Add(SecretSetting("SteamGridDB API Key", "\uE8D7", delegate { return cfg.SgdbKey; }, delegate (string v) { cfg.SgdbKey = v; },
-                "API Key SteamGridDB (gratis): login di steamgriddb.com > Preferences > API, salin key-nya.", true,
+                Lang.T("API Key SteamGridDB (gratis): login di steamgriddb.com > Preferences > API, salin key-nya."), true,
                 "https://www.steamgriddb.com/profile/preferences/api"));
             l.Add(SecretSetting("ScreenScraper: Username", "\uE77B", delegate { return cfg.SsUser; }, delegate (string v) { cfg.SsUser = v; },
-                "Username akun screenscraper.fr (daftar gratis):", false, "https://www.screenscraper.fr/membreinscription.php"));
+                Lang.T("Username akun screenscraper.fr (daftar gratis):"), false, "https://www.screenscraper.fr/membreinscription.php"));
             l.Add(SecretSetting("ScreenScraper: Password", "\uE72E", delegate { return cfg.SsPass; }, delegate (string v) { cfg.SsPass = v; },
-                "Password akun screenscraper.fr:", true, null));
+                Lang.T("Password akun screenscraper.fr:"), true, null));
             l.Add(SecretSetting("ScreenScraper: Dev ID", "\uE943", delegate { return cfg.SsDevId; }, delegate (string v) { cfg.SsDevId = v; },
-                "Developer ID ScreenScraper. API ScreenScraper meminta identitas developer: minta di forum screenscraper.fr (bagian API). Jika kosong, tes koneksi akan memberi tahu apakah diperlukan.", false,
+                Lang.T("Developer ID ScreenScraper. API ScreenScraper meminta identitas developer: minta di forum screenscraper.fr (bagian API). Jika kosong, tes koneksi akan memberi tahu apakah diperlukan."), false,
                 "https://www.screenscraper.fr/forumsujets.php?frub=12&numpage=0"));
             l.Add(SecretSetting("ScreenScraper: Dev Password", "\uE72E", delegate { return cfg.SsDevPass; }, delegate (string v) { cfg.SsDevPass = v; },
-                "Developer password ScreenScraper:", true, null));
+                Lang.T("Developer password ScreenScraper:"), true, null));
 
-            l.Add(Toggle("Unduh Video Gameplay", "Dari ScreenScraper, dipakai sebagai trailer latar", "\uE714", delegate { return cfg.ScrapeVideos; }, delegate (bool v) { cfg.ScrapeVideos = v; }));
-            l.Add(Toggle("Logo Game di Latar", "Tampilkan logo game di pojok kanan bawah seperti PS3", "\uE8B9", delegate { return cfg.ShowLogo; }, delegate (bool v) { cfg.ShowLogo = v; }));
+            l.Add(Toggle(Lang.T("Unduh Video Gameplay"), Lang.T("Dari ScreenScraper, dipakai sebagai trailer latar"), "\uE714", delegate { return cfg.ScrapeVideos; }, delegate (bool v) { cfg.ScrapeVideos = v; }));
+            l.Add(Toggle(Lang.T("Logo Game di Latar"), Lang.T("Tampilkan logo game di pojok kanan bawah seperti PS3"), "\uE8B9", delegate { return cfg.ShowLogo; }, delegate (bool v) { cfg.ShowLogo = v; }));
 
-            XmbItem reg = MakeItem("Region Media", "", "\uE774", null);
+            XmbItem reg = MakeItem(Lang.T("Region Media"), "", "\uE774", null);
             string[] codes = { "wor", "us", "eu", "jp", "ss" };
-            string[] names = { "Dunia", "Amerika (US)", "Eropa (EU)", "Jepang (JP)", "ScreenScraper" };
+            string[] names = { Lang.T("Dunia"), Lang.T("Amerika (US)"), Lang.T("Eropa (EU)"), Lang.T("Jepang (JP)"), "ScreenScraper" };
             reg.DynSub = delegate { int i = Array.IndexOf(codes, cfg.ScrapeRegion); return i >= 0 ? names[i] : cfg.ScrapeRegion; };
             reg.Options = delegate
             {
@@ -306,17 +306,17 @@ namespace ZMB
                 for (int i = 0; i < codes.Length; i++) { string cc = codes[i]; o.Add(new OptionItem(names[i], delegate { cfg.ScrapeRegion = cc; cfg.Save(); }, cfg.ScrapeRegion == cc)); }
                 return o;
             };
-            reg.Activate = delegate { OpenOptions("Region Media", reg.Options()); };
+            reg.Activate = delegate { OpenOptions(Lang.T("Region Media"), reg.Options()); };
             l.Add(reg);
 
-            l.Add(MakeItem("Tes Koneksi", "Cek SteamGridDB & ScreenScraper", "\uE895", TestScrapers));
+            l.Add(MakeItem(Lang.T("Tes Koneksi"), Lang.T("Cek SteamGridDB & ScreenScraper"), "\uE895", TestScrapers));
             return l;
         }
 
         void TestScrapers()
         {
             ScrapeCfg c = ScrapeConfig();
-            ShowToast("Mengecek layanan media...");
+            ShowToast(Lang.T("Mengecek layanan media..."));
             ThreadPool.QueueUserWorkItem(delegate
             {
                 List<string> res = new List<string>();
@@ -325,13 +325,13 @@ namespace ZMB
                     try { res.Add("SteamGridDB " + MediaScraper.TestSgdb(c.SgdbKey)); }
                     catch (Exception ex) { res.Add("SteamGridDB: " + ex.Message); }
                 }
-                else res.Add("SteamGridDB belum diatur");
+                else res.Add(Lang.T("SteamGridDB belum diatur"));
                 if (c.SsUser.Length > 0)
                 {
                     try { res.Add("ScreenScraper " + MediaScraper.TestScreenScraper(c)); }
                     catch (Exception ex) { res.Add("ScreenScraper: " + ex.Message); }
                 }
-                else res.Add("ScreenScraper belum diatur");
+                else res.Add(Lang.T("ScreenScraper belum diatur"));
                 Dispatcher.BeginInvoke((Action)delegate { ShowToast(string.Join("   |   ", res.ToArray())); });
             });
         }

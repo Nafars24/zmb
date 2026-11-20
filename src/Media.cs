@@ -77,7 +77,7 @@ namespace ZMB
             mp.MediaFailed += delegate (object s, ExceptionEventArgs e)
             {
                 failStreak++;
-                Msg("Format tidak didukung: " + Path.GetFileName(Current ?? ""));
+                Msg(Lang.T("Format tidak didukung: ") + Path.GetFileName(Current ?? ""));
                 if (Queue.Count > 1 && failStreak < Math.Min(Queue.Count, 15)) PlayIndex((Pos + 1) % Queue.Count);
                 else { Stop(); failStreak = 0; }
             };
@@ -87,7 +87,7 @@ namespace ZMB
 
         public void PlayList(List<string> files, int start)
         {
-            if (files == null || files.Count == 0) { Msg("Tidak ada lagu di folder ini"); return; }
+            if (files == null || files.Count == 0) { Msg(Lang.T("Tidak ada lagu di folder ini")); return; }
             Queue = new List<string>(files);
             if (Shuffle)
             {
@@ -115,7 +115,7 @@ namespace ZMB
                 mp.Play();
                 Playing = true; Paused = false;
             }
-            catch (Exception ex) { Msg("Gagal memutar: " + ex.Message); Playing = false; }
+            catch (Exception ex) { Msg(Lang.T("Gagal memutar: ") + ex.Message); Playing = false; }
         }
 
         public void ApplyVolume() { mp.Volume = Math.Max(0, Math.Min(1, Volume / 100.0 * duck)); }
