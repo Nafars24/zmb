@@ -325,7 +325,9 @@ namespace ZMB
                     }
                     if (kv.Key == bm.LedPart && bm.LedTex != null)
                     {
-                        bootLedImg = new ImageBrush(bm.LedTex);
+                        ImageSource ledTex = bm.LedTex;
+                        if (psp) { ImageSource scr = PspScreenArt(g); if (scr != null) ledTex = scr; }
+                        bootLedImg = new ImageBrush(ledTex);
                         bootLedImg.ViewportUnits = BrushMappingMode.Absolute;
                         bootLedImg.Viewport = new Rect(0, 0, 1, 1);
                         bootLedImg.Opacity = 0;
@@ -570,6 +572,39 @@ namespace ZMB
             bootPowerT.OffsetY = 0.025 * Pulse(t, 3.4, 3.7);
             if (t >= 3.5 && !bootSndPower) { bootSndPower = true; Sfx.Ok(); }
             if (bootLedImg != null) bootLedImg.Opacity = Smooth(Seg(t, 3.6, 3.95)); // layar menyala
+        }
+
+        // Layar PSP menyala memakai background game (atau cover kalau tidak ada background)
+        ImageSource PspScreenArt(GameEntry g)
+        {
+            try
+            {
+                PlatformCfg p = cfg.FindPlatform(g.Platform);
+                string f = null;
+                bool crisp;
+                try { f = GameScanner.FindBackground(g, p, out crisp); } catch { }
+                if (string.IsNullOrEmpty(f) || !File.Exists(f)) f = !string.IsNullOrEmpty(g.Background) && File.Exists(g.Background) ? g.Background : null;
+                if (f == null) { try { f = GameScanner.FindCover(p, g.Path, g.Cover); } catch { } }
+                if (f == null || !File.Exists(f)) return null;
+                ImageSource img = ImgConv.LoadFile(f, 1280);
+                if (img == null) return null;
+                // UV layar memakai pita bawah tekstur (v 0.439 - 1.0), lebar penuh, tidak tercermin
+                const int N = 1024;
+                DrawingVisual dv = new DrawingVisual();
+                using (DrawingContext dc = dv.RenderOpen())
+                {
+                    dc.DrawRectangle(Brushes.Black, null, new Rect(0, 0, N, N));
+                    Rect scr = new Rect(0, N * 0.439, N, N * 0.561);
+                    dc.PushClip(new RectangleGeometry(scr));
+                    DrawImageFill(dc, img, scr, 1.0);
+                    dc.Pop();
+                }
+                RenderTargetBitmap rtb = new RenderTargetBitmap(N, N, 96, 96, PixelFormats.Pbgra32);
+                rtb.Render(dv);
+                rtb.Freeze();
+                return rtb;
+            }
+            catch { return null; }
         }
 
         // UMD: persegi (bidang XY, menghadap -Z) dengan gambar cangkang UMD bertransparansi
