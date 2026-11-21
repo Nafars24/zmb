@@ -939,7 +939,11 @@ namespace ZMB
             List<string> roms = GameScanner.ListRoms(p);
             HashSet<string> set = new HashSet<string>(roms, StringComparer.OrdinalIgnoreCase);
             foreach (GameEntry m in cfg.Meta)
-                if (m.Platform == p.Short && !set.Contains(m.Path) && File.Exists(m.Path)) { roms.Add(m.Path); set.Add(m.Path); }
+                if (m.Platform == p.Short && !set.Contains(m.Path) && File.Exists(m.Path))
+                {
+                    if (p.Short == "X360" && Path.GetExtension(m.Path).Equals(".xex", StringComparison.OrdinalIgnoreCase) && !GameScanner.IsDefaultXex(m.Path)) continue; // LinkApp.xex dll.
+                    roms.Add(m.Path); set.Add(m.Path);
+                }
             roms = GameScanner.CleanRomList(roms); // entri lama (disc 2, track 02, ...) ikut dirapikan
 
             List<XmbItem> games = new List<XmbItem>();
@@ -947,6 +951,8 @@ namespace ZMB
             {
                 GameEntry g = cfg.GetMeta(rom, p.Short, GameScanner.RomDisplayName(p, rom));
                 if (GameScanner.HasDiscOrTrackLabel(g.Name)) g.Name = GameScanner.CleanRomName(g.Name); // nama tersimpan dari versi lama
+                if (string.Equals(g.Name, Path.GetFileNameWithoutExtension(rom), StringComparison.OrdinalIgnoreCase) && GameScanner.RomKey(rom) != g.Name)
+                    g.Name = GameScanner.RomDisplayName(p, rom); // "default" / "main" lama -> nama folder game
                 games.Add(GameItem(g, null));
             }
             games.Sort((a, b) => string.Compare(a.Title, b.Title, StringComparison.OrdinalIgnoreCase));

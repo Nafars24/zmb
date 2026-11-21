@@ -217,6 +217,9 @@ namespace ZMB
                 res = res.Where(f => Ps3Meta.IsIso(f) ||
                     (Path.GetFileName(f).Equals("EBOOT.BIN", StringComparison.OrdinalIgnoreCase) &&
                      Path.GetFileName(Path.GetDirectoryName(f)).Equals("USRDIR", StringComparison.OrdinalIgnoreCase))).ToList();
+            // Xbox 360 JTAG: tiap game cukup default.xex (LinkApp.xex dan .xex lain diabaikan)
+            if (p.Short == "X360")
+                res = res.Where(f => !Path.GetExtension(f).Equals(".xex", StringComparison.OrdinalIgnoreCase) || IsDefaultXex(f)).ToList();
             // Switch 2 (Lichii): folder game hasil ekstrak, yang dijalankan exefs\main
             if (p.Short == "SWITCH2")
             {
@@ -367,12 +370,31 @@ namespace ZMB
             catch { return false; }
         }
 
+        // Game Xbox 360 format JTAG/folder: <folder game>\default.xex
+        public static bool IsDefaultXex(string f)
+        {
+            return !string.IsNullOrEmpty(f) && Path.GetFileName(f).Equals("default.xex", StringComparison.OrdinalIgnoreCase);
+        }
+
+        // folder yang mewakili game berbentuk folder (Switch 2 / Xbox 360 JTAG), null kalau bukan
+        static string GameFolderOf(string rom)
+        {
+            try
+            {
+                if (IsExefsMain(rom)) return Path.GetDirectoryName(Path.GetDirectoryName(rom));
+                if (IsDefaultXex(rom)) return Path.GetDirectoryName(rom);
+            }
+            catch { }
+            return null;
+        }
+
         // Nama kunci file media (cover/logo/spine/...) untuk sebuah ROM
         public static string RomKey(string rom)
         {
-            if (IsExefsMain(rom))
+            string gf = GameFolderOf(rom);
+            if (!string.IsNullOrEmpty(gf))
             {
-                try { return Path.GetFileName(Path.GetDirectoryName(Path.GetDirectoryName(rom))); } catch { }
+                try { return Path.GetFileName(gf); } catch { }
             }
             return Path.GetFileNameWithoutExtension(rom);
         }
@@ -398,7 +420,7 @@ namespace ZMB
 
         public static string RomDisplayName(PlatformCfg p, string rom)
         {
-            if (IsExefsMain(rom))
+            if (GameFolderOf(rom) != null)
             {
                 string k = RomKey(rom);
                 if (!string.IsNullOrEmpty(k)) return Regex.Replace(k, @"\s*\[[^\]]*\]", "").Trim();
@@ -441,7 +463,8 @@ namespace ZMB
             string name = RomKey(rom);
             List<string> dirs = new List<string>();
             string rd = Path.GetDirectoryName(rom);
-            if (IsExefsMain(rom)) rd = Path.GetDirectoryName(Path.GetDirectoryName(rd)); // folder berisi folder game
+            string gfo = GameFolderOf(rom);
+            if (gfo != null) { dirs.Add(gfo); string up = Path.GetDirectoryName(gfo); if (!string.IsNullOrEmpty(up)) rd = up; } // cover di sebelah folder game (atau di dalamnya)
             dirs.Add(rd);
             dirs.Add(Path.Combine(rd, "covers"));
             if (p != null && !string.IsNullOrEmpty(p.RomFolder)) dirs.Add(Path.Combine(p.RomFolder, "covers"));

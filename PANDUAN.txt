@@ -465,3 +465,8 @@ H. MASALAH UMUM
    Saat ZMB dibuka, media lama yang masih menunjuk ke luar folder ZMB ikut disalin
    otomatis (kalau file aslinya masih ada). Musik/video dari folder Musik/Video
    pustaka kamu tidak disalin.
+
+ XBOX 360 FORMAT JTAG / FOLDER (v2.23.3)
+   Tiap game cukup dibaca dari default.xex di foldernya; LinkApp.xex dan .xex
+   lain diabaikan. Nama game = nama folder game. Cover boleh ditaruh di sebelah
+   folder game dengan nama yang sama, atau di dalam folder game itu.
